@@ -30,6 +30,12 @@ classdef murine < subject
             m.litterID = litterID;
             m.supplier = supplier;
         end
+        
+        function display(s,str) 
+            dispStr = sprintf('strain:\t\t%s\tgender:\t\t%s\tbirthdate:\t\t%s\t%s',s.strain,s.gender,datestr(s.birthDate),str);
+            display@subject(s,dispStr);
+        end
+        
     end
     
 end

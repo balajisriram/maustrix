@@ -768,8 +768,8 @@ classdef trialManager
             
         end  % end function
         
-        function out = get.percentCorrectionTrials()
-            
+        function out = get.percentCorrectionTrials(t)
+            out = 0;
         end
         
     end

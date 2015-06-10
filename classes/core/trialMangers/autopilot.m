@@ -53,7 +53,50 @@ classdef autopilot <trialManager
                 % this should be the only allowable result in autopilot
                 result='timedout'; % so we continue to next trial
             end
-        end  % end function
+        end
+        
+        function [stimSpecs startingStimSpecInd] = createStimSpecsFromParams(trialManager,preRequestStim,...
+                preResponseStim,discrimStim,postDiscrimStim,interTrialStim,...
+                targetPorts,distractorPorts,requestPorts,interTrialLuminance,...
+                hz,indexPulses)
+            responseWindowMs=getResponseWindowMs(trialManager);
+            dm = getDelayManager(trialManager);
+            if ~isempty(dm)
+                framesUntilOnset=floor(calcAutoRequest(dm)*hz/1000); % autorequest is in ms, convert to frames
+            else
+                framesUntilOnset=[]; % only if request port is triggered
+            end
+            % get responseWindow
+            responseWindow=floor(responseWindowMs*hz/1000); % can you floor inf?
+            
+            startingStimSpecInd=1;
+            i=1;
+
+            % do autopilot stuff..
+            % required discrim phase
+            criterion={[],i+1,[targetPorts distractorPorts],i+1};
+            if isinf(responseWindow(2))
+                framesUntilTimeout=[];
+            else
+                framesUntilTimeout=responseWindow(2);
+            end
+            if isfield(discrimStim,'framesUntilTimeout') && ~isempty(discrimStim.framesUntilTimeout)
+                if ~isempty(framesUntilTimeout)
+                    error('had a finite responseWindow but also defined framesUntilTimeout in discrimStim - CANNOT USE BOTH!');
+                else
+                    framesUntilTimeout=discrimStim.framesUntilTimeout;
+                end
+            end
+            stimSpecs{i} = stimSpec(discrimStim.stimulus,criterion,discrimStim.stimType,discrimStim.startFrame,...
+                framesUntilTimeout,discrimStim.autoTrigger,discrimStim.scaleFactor,0,hz,'discrim','discrim',false,true,indexPulses,[],discrimStim.ledON); % do not punish responses here
+            i=i+1;
+            % required final ITL phase
+            criterion={[],i+1};
+            stimSpecs{i} = stimSpec(interTrialLuminance,criterion,'cache',0,interTrialStim.duration,[],0,1,hz,'itl','intertrial luminance',false,false,[],false); % do not punish responses here
+            i=i+1;
+            
+            
+        end
     end
     
 end

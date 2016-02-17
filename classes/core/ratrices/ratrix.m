@@ -14,6 +14,13 @@ classdef ratrix
             switch nargin
                 case 0
                     % pass
+                case 1
+                    % if single argument of this class type, return it
+                    if (isa(varargin{1},'ratrix'))
+                        r = varargin{1};
+                    else
+                        error('Input argument is not a ratrix object')
+                    end
                 case 2
                     r = establishDB(r,varargin{1},varargin{2});
                 case 3
@@ -319,6 +326,7 @@ classdef ratrix
         end
         
         function r = establishDB(r,dataPath,replaceExistingDB)
+            
             if ischar(dataPath)
                 r.serverDataPath = dataPath;
             else
@@ -336,7 +344,7 @@ classdef ratrix
                 r.dbpath = fullfile(pathstr, fileStr);
                 if checkPath(pathstr)
                     found=dir(r.dbpath);
-                    if isempty(found)==0
+                    if isempty(found)
                         if replaceExistingDB
                             saveDB(r,1);
                         else
@@ -350,6 +358,7 @@ classdef ratrix
                         else
                             disp('loading existing db')
                             startTime=GetSecs();
+                            keyboard
                             saved=load(r.dbpath,'-mat');
                             disp(sprintf('done loading ratrix db: %g s elapsed',GetSecs()-startTime))
                             
@@ -1610,8 +1619,7 @@ classdef ratrix
         end
         
         function out=testBoxSubjectAndStationDirs(r,b,sIDs)
-            out=1;
-            
+            out=1;            
             if isa(b,'box')
                 stationInds=getStationInds(r,sIDs,getID(b));
                 if all(stationInds>0)

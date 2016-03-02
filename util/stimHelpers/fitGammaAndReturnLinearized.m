@@ -1,5 +1,5 @@
 
-function [linearizedCLUT g]=fitGammaAndReturnLinearized(sent, measured, l_range, sensorRange, gamutRange, colorMapSize,plotOn)
+function [linearizedCLUT, g]=fitGammaAndReturnLinearized(sent, measured, l_range, sensorRange, gamutRange, colorMapSize,plotOn)
 %[linearizedCLUT g]=fitGamma(sent, measured, [0.02 0.2] ,256)
 % Finds the best fitting gamma function and then creates a colormap [1 x colorMapSize]
 % that produces a linear range of values between l_range min and max where

@@ -227,7 +227,7 @@ oldMethod=0;
 
 %% 
     
-    
+
     if radius(i)~=Inf  %only compute gaussian mask if you need to
         mask=zeros(ySize,xSize);
         mask(1:xSize*ySize)=mvnpdf([reshape(repmat((-ySize/2:(-ySize/2 + ySize -1))',1,xSize),xSize*ySize,1) reshape(repmat(-xSize/2:(-xSize/2+xSize-1),ySize,1),xSize*ySize,1)],[yPosPct(i)*ySize-ySize/2 xPosPct(i)*xSize-xSize/2],(radius(i)*diag([normalizedLength normalizedLength])).^2);

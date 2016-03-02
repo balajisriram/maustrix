@@ -17,6 +17,7 @@ classdef stimSpec
         indexPulses=[];
         lockoutDuration=0;
         ledON = false;
+        punishResponses='';
     end
     
     methods
@@ -251,9 +252,6 @@ classdef stimSpec
                 else
                     error('ledON must be logical vector length < 2')
                 end
-
-
-                spec = class(spec,'stimSpec');
 
             otherwise
                 error('Wrong number of input arguments')

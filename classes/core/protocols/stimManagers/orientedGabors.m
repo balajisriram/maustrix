@@ -103,6 +103,13 @@ classdef orientedGabors<stimManager
                         end
                     end
 
+
+                    
+                    s.maxWidth=varargin{9};
+                    s.maxHeight=varargin{10};
+                    s.scaleFactor=varargin{11};
+                    s.interTrialLuminance=varargin{12};
+
                 otherwise
                     error('Wrong number of input arguments')
             end
@@ -117,8 +124,8 @@ classdef orientedGabors<stimManager
             trialManagerClass = class(trialManager);
             indexPulses=[];
             imagingTasks=[];
-            LUTbits
-            displaySize
+            LUTbits;
+            displaySize;
             [LUT, stimulus, updateSM]=getLUT(stimulus,LUTbits);
             [junk, mac] = getMACaddress();
             switch mac
@@ -203,6 +210,8 @@ classdef orientedGabors<stimManager
             details.xPosPcts = xPosPcts([targetPorts'; distractorLocs']);
 
             details.contrast=stimulus.contrasts(ceil(rand*length(stimulus.contrasts))); % pick a random contrast from list
+            
+
 
             params = [repmat([stimulus.radius details.pixPerCyc],numGabors,1) details.phases details.orientations repmat([details.contrast stimulus.thresh],numGabors,1) details.xPosPcts repmat([stimulus.yPosPct],numGabors,1)];
             out(:,:,1)=computeGabors(params,stimulus.mean,min(width,getMaxWidth(stimulus)),min(height,getMaxHeight(stimulus)),stimulus.waveform, stimulus.normalizedSizeMethod,0);
@@ -309,13 +318,12 @@ classdef orientedGabors<stimManager
             verifyAllFieldsNCols(out,length(trialRecords));
         end
         
-        function s=fillLUT(s,method,linearizedRange,plotOn);
+        function s=fillLUT(s,method,linearizedRange,plotOn)
             %function s=fillLUT(s,method,linearizedRange [,plotOn]);
             %stim=fillLUT(stim,'linearizedDefault');
             %note:
             % PR added method 'hardwiredLinear' (hardwired linearized lut range 0-1)
             %   note, this could also be loaded from file
-
             if ~exist('plotOn','var')
                 plotOn=0;
             end
@@ -467,17 +475,17 @@ classdef orientedGabors<stimManager
                 if plotOn
                     subplot([311]);
                 end
-                [linearizedCLUT(:,1) g.R]=fitGammaAndReturnLinearized(sent, measured_R, linearizedRange, sensorRange, gamutRange, 2^LUTBitDepth,plotOn);
+                [linearizedCLUT(:,1), g.R]=fitGammaAndReturnLinearized(sent, measured_R, linearizedRange, sensorRange, gamutRange, 2^LUTBitDepth,plotOn);
 
                 if plotOn
                     subplot([312]);
                 end
-                [linearizedCLUT(:,2) g.G]=fitGammaAndReturnLinearized(sent, measured_G, linearizedRange, sensorRange, gamutRange, 2^LUTBitDepth,plotOn);
+                [linearizedCLUT(:,2), g.G]=fitGammaAndReturnLinearized(sent, measured_G, linearizedRange, sensorRange, gamutRange, 2^LUTBitDepth,plotOn);
 
                 if plotOn
                     subplot([313]);
                 end
-                [linearizedCLUT(:,3) g.B]=fitGammaAndReturnLinearized(sent, measured_B, linearizedRange, sensorRange, gamutRange, 2^LUTBitDepth,plotOn);
+                [linearizedCLUT(:,3), g.B]=fitGammaAndReturnLinearized(sent, measured_B, linearizedRange, sensorRange, gamutRange, 2^LUTBitDepth,plotOn);
             end
 
             s.LUT=linearizedCLUT;
@@ -499,11 +507,12 @@ classdef orientedGabors<stimManager
                 % s=fillLUT(s,'linearizedDefault',[0 1],false);
             %     s=fillLUT(s,'hardwiredLinear',[0 1],false);
                 [a b] = getMACaddress;
-                if ismember(b,{'7CD1C3E5176F',... balaji Macbook air
+
+                if ismember(b,{'7CD1C3E5176F','F8BC128444CB'... balaji Macbook air, robert analysis comp #####
                         })
                     s=fillLUT(s,'useThisMonitorsUncorrectedGamma');
                 else
-                    s=fillLUT(s,'localCalibStore');
+                    s=fillLUT(s,'localCalibStore'); 
                 end
             else
                 updateSM=false;

@@ -462,10 +462,10 @@ classdef trialManager
             % p - current training protocol
             % t - current training step index
             % ts - current trainingStep object
-            if isempty(rn)
-                rn = rnet('server'); % #####
-            end
-            if isa(station,'station') && isa(stimManager,'stimManager') && isa(r,'ratrix') && isa(subject,'subject') && ((isempty(rn) && strcmp(station.rewardMethod,'localTimed')) || isa(rn,'rnet'))
+
+            % #####
+            % if isa(station,'station') && isa(stimManager,'stimManager') && isa(r,'ratrix') && isa(subject,'subject') && ((isempty(rn) && strcmp(station.rewardMethod,'localTimed')) || isa(rn,'rnet'))
+            if isa(station,'station') && isa(stimManager,'stimManager') && isa(r,'ratrix') && isa(subject,'subject')
                 if stationOKForTrialManager(trialManager,station)
 
                     if ~isempty(rn)
@@ -497,7 +497,7 @@ classdef trialManager
 
                         stns=getStationsForBoxID(r,getBoxIDForSubjectID(r,getID(subject)));
                         for stNum=1:length(stns)
-                            trialRecords(trialInd).stationIDsInBox{stNum} = getID(stns(stNum));
+                            trialRecords(trialInd).stationIDsInBox{stNum} = stns(stNum).id;
                         end
 
                         trialRecords(trialInd).subjectsInBox = getSubjectIDsForBoxID(r,getBoxIDForSubjectID(r,getID(subject)));
@@ -518,7 +518,9 @@ classdef trialManager
                             case 'LED'
                                 resolutions=[];
                             otherwise
-                                error('shouldn''t happen')
+                                resolutions=getResolutions(station);
+                                warning('no display method, assuming ptb by default'); % #####
+                                %error('shouldn''t happen')
                         end
 
                         % calcStim should return the following:
@@ -565,11 +567,11 @@ classdef trialManager
                             resolutions, ...
                             getDisplaySize(station), ...
                             getLUTbits(station), ...
-                            getResponsePorts(trialManager,getNumPorts(station)), ...
-                            getNumPorts(station), ...
+                            getResponsePorts(trialManager,station.numPorts), ...
+                            station.numPorts, ...
                             trialRecords, ...
                             compiledRecords,...
-                            getArduinoCONN(station));
+                            station.arduinoCONN);
 
                         % test must a single string now - dont bother w/ complicated stuff here
                         if ~ischar(text)
@@ -585,14 +587,16 @@ classdef trialManager
                                 trialRecords(trialInd).resolution.pixelSize=uint8(16); %should set using 2nd output of openNidaqForAnalogOutput
                                 trialRecords(trialInd).resolution.hz=resInd;
                             otherwise
-                                error('shouldn''t happen')
+                                [station, trialRecords(trialInd).resolution,trialRecords(trialInd).imagingTasks]=setResolutionAndPipeline(station,resolutions(resInd),imagingTasks);
+                                warning('No display method so assuming ptb');
+                                %error('shouldn''t happen') #####
                         end
 
                         [newSM, updateSM, stimulusDetails]=postScreenResetCheckAndOrCache(newSM,updateSM,stimulusDetails); %enables SM to check or cache their tex's if they control that
 
                         trialRecords(trialInd).station = structize(station); %wait til now to record, so we get an updated ifi measurement in the station object
 
-                        refreshRate=1/getIFI(station); %resolution.hz is 0 on OSX
+                        refreshRate=1/station.ifi; %resolution.hz is 0 on OSX
 
                         % check port logic (depends on trialManager class)
                         if (isempty(trialRecords(trialInd).targetPorts) || isvector(trialRecords(trialInd).targetPorts))...
@@ -609,7 +613,7 @@ classdef trialManager
             %                     end
             %                 else
                                 if length(unique(portUnion))~=length(portUnion) ||...
-                                        any(~ismember(portUnion, getResponsePorts(trialManager,getNumPorts(station))))
+                                        any(~ismember(portUnion, getResponsePorts(trialManager,station.numPorts)))
 
                                     trialRecords(trialInd).targetPorts
                                     trialRecords(trialInd).distractorPorts
@@ -631,10 +635,12 @@ classdef trialManager
                         checkPorts(trialManager,trialRecords(trialInd).targetPorts,trialRecords(trialInd).distractorPorts);
 
                         [stimSpecs, startingStimSpecInd] = createStimSpecsFromParams(trialManager,preRequestStim,preResponseStim,discrimStim,postDiscrimStim,interTrialStim,...
-                            trialRecords(trialInd).targetPorts,trialRecords(trialInd).distractorPorts,getRequestPorts(trialManager,getNumPorts(station)),...
+                            trialRecords(trialInd).targetPorts,trialRecords(trialInd).distractorPorts,getRequestPorts(trialManager,station.numPorts),...
                             trialRecords(trialInd).interTrialLuminance,refreshRate,indexPulses);
-                        validateStimSpecs(stimSpecs);
+                        
+                        % validateStimSpecs(stimSpecs); #####
 
+                        station.soundOn = false; % ##### temp for testing
                         [tempSoundMgr, updateSndM] = cacheSounds(getSoundManager(trialManager),station);
                         trialManager = setSoundManager(trialManager, tempSoundMgr);
                         updateTM = updateTM || updateSndM;

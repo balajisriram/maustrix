@@ -158,6 +158,14 @@ classdef subject
             end
         end
         
+        function out=getProtocolVersion(s)
+            out=s.protocolVersion;
+        end
+        
+        function out=getID(s)
+            out=s.id;
+        end
+        
         function [subject r]=changeAllPercentCorrectionTrials(subject,newValue,r,comment,auth)
             
             validateattributes(r,{'ratrix'},{'nonempty'});
@@ -321,10 +329,6 @@ classdef subject
             else
                 error('need a valid integer step number')
             end
-        end
-        
-        function out = getID(s)
-            out = s.id;
         end
         
         function out=getLitterID(s)

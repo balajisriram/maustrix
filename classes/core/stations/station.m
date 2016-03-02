@@ -7,9 +7,10 @@ classdef station
         soundOn = false;
         MACAddress = '';
         physicalLocation = [];
-        numPorts = 0;
+        numPorts = 3;
         rewardMethod='';
         responseMethod = 'Keyboard';
+        arduinoCONN=[];
     end
     
     properties (Transient=true)
@@ -47,18 +48,13 @@ classdef station
                     
                     validateattributes(in.physicalLocation,{'numeric'},{'positive','vector','numel',3})
                     st.physicalLocation = in.physicalLocation;
-                    
-                    validateattributes(in.numPorts,{'numeric'},{'positive','integer','numel',1})
-                    st.numPorts = in.numPorts;
-                    
-                    validateattributes(in.responseMethod,{'char'},{'nonempty'})
-                    st.responseMethod = in.responseMethod;
+                             
                 otherwise
                     error('station:unknownInputType','please input no or one input')
             end
         end
         
-        function out=display(boxes)
+          function out=display(boxes)
             out='';
             for i=1:length(boxes)
                 b=boxes(i);
@@ -70,7 +66,35 @@ classdef station
                     out=sprintf(d);
                 end
             end
-        end
+          end
+          
+          function currentValveStates=verifyValvesClosed(station)
+            currentValveStates=getValves(station);
+            if any(currentValveStates)
+
+                currentValveStates =...
+                    setAndCheckValves(station,0*currentValveStates,0*currentValveStates,[],GetSecs,'verify valves closed found open valves');
+
+
+
+                warning('verify valves closed found open valves')
+            end  
+          end
+        
+          function valves =getValves(s)
+            if strcmp(s.responseMethod,'parallelPort')
+
+                status=fastDec2Bin(lptread(s.valvePins.decAddr));
+
+                valves=status(s.valvePins.bitLocs)=='1'; %need to set parity in station, assumes normally closed valves
+                valves(s.valvePins.invs)=~valves(s.valvePins.invs);
+            else
+                if ~ismac
+                    warning('can''t read ports without parallel port')
+                end
+                valves=false(1,s.numPorts);%*s.valvePins.bitLocs;
+            end
+          end
         
         function sub=getCurrentSubject(s,r)
             validateattributes(r,{'ratrix'},{'nonempty'})
@@ -83,12 +107,23 @@ classdef station
         end
         
         function out=getDisplaySize(s)
-            [a, b]=Screen('DisplaySize',s.screenNum);
+            wind=Screen('OpenWindow', 0, 0);
+            [a, b]=Screen('DisplaySize',wind);
+            %[a, b]=Screen('DisplaySize',s.screenNum); #####
             out=[a b];
         end
         
+        function out=getResolutions(s)
+            wind=Screen('OpenWindow', 0, 0);
+            out=Screen('Resolutions',wind);
+            %out=Screen('Resolutions',s.screenNum); #####
+        end
+        
         function out=getLUTbits(s)
-            [~, dacbits, reallutsize] = Screen('ReadNormalizedGammaTable', s.screenNum);
+            wind=Screen('OpenWindow', 0, 0);
+            [~, dacbits, reallutsize] = Screen('ReadNormalizedGammaTable', wind);
+            % #####
+            %[~, dacbits, reallutsize] = Screen('ReadNormalizedGammaTable', s.screenNum);
             if dacbits==log2(reallutsize)
                 out=dacbits;
             elseif log2(reallutsize)==8
@@ -190,12 +225,16 @@ classdef station
                 error('station:setResolutionAndPipeline:improperValue','color depth must be 32')
             end
             
-            oldRes=Screen('Resolution', s.screenNum);
+            wind=Screen('OpenWindow', 0, 0);
+            oldRes=Screen('Resolution', wind);
+            %oldRes=Screen('Resolution', s.screenNum); #####
             
             if oldRes.width~=res.width || oldRes.height~=res.height || oldRes.hz ~=res.hz || oldRes.pixelSize~=res.pixelSize || ...
                     ~station.allImagingTasksSame(s.imagingTasks,imagingTasks)
                 
-                resolutions=Screen('Resolutions', s.screenNum);
+                wind=Screen('OpenWindow', 0, 0);
+                resolutions=Screen('Resolutions', wind);
+                %resolutions=Screen('Resolutions', s.screenNum); #####
                 
                 match=[[resolutions.width]==res.width; [resolutions.height]==res.height; [resolutions.hz]==res.hz; [resolutions.pixelSize]==res.pixelSize];
                 
@@ -218,14 +257,22 @@ classdef station
                 
                 s=stopPTB(s);
                 
-                Screen('Resolution', s.screenNum, res.width, res.height, res.hz, res.pixelSize);
+
+                
+                wind=Screen('OpenWindow', 0, 0);
+                Screen('Resolution', wind);
+                %Screen('Resolution', s.screenNum, res.width, res.height, res.hz, res.pixelSize);
+                % #####
 
                 s=startPTB(s,imagingTasks);
                 imagingTasksApplied=imagingTasks; % is there a way to confirm they took effect?
                 
-                newRes=Screen('Resolution', s.screenNum);
+                wind=Screen('OpenWindow', 0, 0);
+                newRes=Screen('Resolution', wind);
+                %newRes=Screen('Resolution', s.screenNum); #####
                 if ~all([newRes.width==res.width newRes.height==res.height newRes.pixelSize==res.pixelSize newRes.hz==res.hz])
-                    error('station:configurationUnavailable','failed to get desired res') %needs to be warning to work with remotedesktop
+                    %error('station:configurationUnavailable','failed to get desired res') %needs to be warning to work with remotedesktop
+                    % #####
                 end
                 
             else
@@ -286,8 +333,9 @@ classdef station
             %         PsychImaging('AddTask', 'AllViews', 'GeometryCorrection', 'C:\Documents and Settings\Owner\Application Data\Psychtoolbox\GeometryCalibration\SphereCalibdata_0_1600_1200.mat');
             %         [windowPtr,rect]=Screen('OpenWindow',windowPtrOrScreenNumber [,color] [,rect][,pixelSize][,numberOfBuffers][,stereomode][,multisample][,imagingmode][,specialFlags][,clientRect]);
             %         s.window = PsychImaging('OpenWindow',s.screenNum,0);%,[],32,2);  %%color, rect, depth, buffers (none can be changed in basic version)
-
-                    [s.window,~] = Screen('OpenWindow',s.screenNum);%,[],32,2);  %%color, rect, depth, buffers (none can be changed in basic version)
+                    wind=Screen('OpenWindow', 0, 0);
+                    [s.window,~] = Screen('OpenWindow',wind);
+                    % ##### [s.window,~] = Screen('OpenWindow',s.screenNum);%,[],32,2);  %%color, rect, depth, buffers (none can be changed in basic version)
 
                 else
 
@@ -317,7 +365,9 @@ classdef station
                 end
                 disp(sprintf('took %g to call screen(openwindow)',GetSecs()-preScreen))
 
-                res=Screen('Resolution', s.screenNum);
+                wind=Screen('OpenWindow', 0, 0);
+                res=Screen('Resolution', wind);
+                %res=Screen('Resolution', s.screenNum); #####
 
                 s.ifi = Screen('GetFlipInterval',s.window);%,200); %numSamples
 
@@ -404,52 +454,6 @@ classdef station
             %validateattributes(val,{'boolean'},{'nonempty','numel',1});#####
             s.soundOn = val;
         end
-    end
-    
-    methods (Static)
-        function out = allImagingTasksSame(oldTasks,newTasks)
-            % compare the two lists of imaging tasks and return if they are the same or not
-            out=true;
-            % do they have same # of tasks?
-            if ~all(size(oldTasks)==size(newTasks))
-                out=false;
-                return
-            end
-            % check that each task is the same...what about if they are in diff order?
-            % for now, enforce that the tasks must be in same order as well
-            % ie [4 5 6] is not equal to [5 4 6]
-            for i=1:length(oldTasks)
-                a=oldTasks{i};
-                b=newTasks{i};
-                if length(a)~=length(b)
-                    out=false;
-                    return
-                end
-                for j=1:length(a)
-                    if strcmp(class(a{j}),class(b{j})) % same class, now check that they are equal
-                        if ischar(a{j})
-                            if strcmp(a{j},b{j})
-                                %pass
-                            else
-                                out=false;
-                                return
-                            end
-                        elseif isnumeric(a{j})
-                            if a{j}==b{j}
-                                %pass
-                            else
-                                out=false;
-                                return
-                            end
-                        else
-                            error('found an argument that was neither char nor numeric');
-                        end
-                    else
-                        out=false; % args have diff class
-                        return
-                    end
-                end
-            end
-        end % end function
+        
     end
 end

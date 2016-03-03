@@ -1,7 +1,7 @@
 function rackID=getRackIDFromIP
 error('should call getServerNameFromIP instead')
 rackID=[];
-if IsWin
+if ispc
     [a b]=dos('ipconfig');
     if a==0
         conn=dbConn;

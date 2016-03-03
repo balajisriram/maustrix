@@ -2,7 +2,7 @@ function [serverName ip] = getServerNameFromIP
 
 serverName='';
 ip='';
-if IsWin
+if ispc
     [a b]=dos('ipconfig');
     if a==0
         conn=dbConn;

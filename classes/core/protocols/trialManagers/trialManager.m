@@ -3834,7 +3834,7 @@ classdef trialManager
                 FlushEvents('mouseUp','mouseDown','keyDown','autoKey','update');
                 ListenChar(0);
 
-                if IsWin
+                if ispc
                     daqreset;
                 end
 

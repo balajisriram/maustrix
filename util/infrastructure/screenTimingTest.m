@@ -11,7 +11,7 @@ diary(fullfile(logDir,sprintf('%s.%s.log',mfilename,dstr)));
 
 scrNum=max(Screen('Screens'));
 
-if IsWin
+if ispc
     Screen('Resolution',scrNum,1024,768,100,32);
 end
 
@@ -161,7 +161,7 @@ try
         rspStr=[rspStr ' ' num2str(rsps(i))];
     end
 
-    doText=IsWin;
+    doText=ispc;
     yTxtPos=100;
     xTxtPos=100;
     txtCol=1;

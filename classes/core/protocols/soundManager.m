@@ -80,7 +80,7 @@ classdef soundManager
                     sm=uninit(sm,station); %need to clean up any existing buffers
 
                     dllPath=fullfile(PsychtoolboxRoot, 'portaudio_x86.dll');
-                    if IsWin && exist(dllPath,'file') && length(soundNames)>1
+                    if ispc && exist(dllPath,'file') && length(soundNames)>1
                         warning('found enhanced asio driver -- disabling because this only allows us to make one buffer')
                         %note that we could instead just select a non-asio device (i
                         %think MME is next most preferred)
@@ -100,7 +100,7 @@ classdef soundManager
                     % 3) rig dell w/ati card
                     % 4) rig dell w/nvidia + audigy cards, settings below don't work as well, consider moving to asio (need to use new playlist functionality in psychportaudio for this)
                     latclass=1; %4 is max, higher means less latency + stricter checks.  lowering may reduce system load if having frame drops.  1 seems ok on systems 1-3.
-                    if IsWin
+                    if ispc
                         buffsize=1250; %max is 4096 i think.  the larger this is, the larger the audio latency, but if too small, sound is distorted, and system load increases (could cause frame drops).  1250 is good on systems 1-3.
                     else
                         buffsize=[];

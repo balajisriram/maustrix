@@ -1,4 +1,4 @@
-function standAloneRun(subjectID,ratrixPath,setupFile,recordInOracle,backupToServer,testMode)
+function standAloneRun(subjectID,ratrixPath,setupFile)
 %standAloneRun([ratrixPath],[setupFile],[subjectID],[recordInOracle],[backupToServer])
 %
 % ratrixPath (optional, string path to preexisting ratrix 'db.mat' file)
@@ -13,37 +13,8 @@ function standAloneRun(subjectID,ratrixPath,setupFile,recordInOracle,backupToSer
 % default is some unspecified subject in ratrix (you can't depend on which
 % one unless there is only one)
 %
-% recordInOracle (optional, must be logical, default false)
-% if true, subject must be in oracle database and history file name loading from
-% database will be exercised.
-%
-% backupOnServer (optional, must be logical or a path to the server, default false)
-% if true, will also replicate to a hard-coded server path
-% all trial record indexing (standAlonePath) is still handled locally
-
 %
 setupEnvironment;
-
-if ~exist('recordInOracle','var') || isempty(recordInOracle)
-    recordInOracle = false;
-elseif ~islogical(recordInOracle)
-    error('recordInOracle must be logical')
-end
-
-if ~exist('backupToServer','var') || isempty(backupToServer)
-    [backupToServer, xtraServerBackupPath] = getExtraBackupServers();    
-elseif islogical(backupToServer);
-    xtraServerBackupPath='\\Reinagel-lab.AD.ucsd.edu\RLAB\Rodent-Data\behavior\standAloneRecords';
-elseif isDirRemote(backupToServer)
-    xtraServerBackupPath=backupToServer;
-    backupToServer=true;
-else
-    error('backupToServer must be logical or a valid path')
-end
-
-if ~exist('testMode','var') || isempty(testMode)
-    testMode = false;
-end
 
 if exist('ratrixPath','var') && ~isempty(ratrixPath)
     if isdir(ratrixPath)
@@ -77,13 +48,6 @@ else
         rx=setStandAlonePath(rx,permStorePath);
         fprintf('created new ratrix\n')
     end
-end
-
-%ensure that this subject is allowed to run here
-[correctBox, whichBox] = ensureCorrectBoxForSubject(subjectID);
-if ~correctBox
-    whichBox
-    error('run animal on the correct box please');
 end
 
 needToAddSubject=false;
@@ -256,124 +220,3 @@ FlushEvents('mouseUp','mouseDown','keyDown','autoKey','update');
 ListenChar(0)
 ShowCursor(0)
 end
-
-function [backupToserver, xtraServerBackupPath] = getExtraBackupServers
-backupToserver = false;
-xtraServerBackupPath = '';
-[a, b] = getMACaddress();
-switch b
-    case 'A41F7278B4DE' %gLab-Behavior1
-        backupToserver = true;
-        xtraServerBackupPath='\\ghosh-nas.ucsd.edu\ghosh\Behavior\Box1\Permanent';
-    case 'A41F729213E2' %gLab-Behavior2 'A41F729213E2','001D7DA80EFC'
-        backupToserver = true;
-        xtraServerBackupPath='\\ghosh-nas.ucsd.edu\ghosh\Behavior\Box2\Permanent';
-    case 'A41F726EC11C' %gLab-Behavior3
-        backupToserver = true;
-        xtraServerBackupPath='\\ghosh-nas.ucsd.edu\ghosh\Behavior\Box3\Permanent';
-    case '7845C4256F4C' %gLab-Behavior4
-        backupToserver = true;
-        xtraServerBackupPath='\\ghosh-nas.ucsd.edu\ghosh\Behavior\Box4\Permanent';
-    case '7845C42558DF' %gLab-Behavior5
-        backupToserver = true;
-        xtraServerBackupPath='\\ghosh-nas.ucsd.edu\ghosh\Behavior\Box5\Permanent';
-    case 'A41F729211B1' %gLab-Behavior6
-        backupToserver = true;
-        xtraServerBackupPath='\\ghosh-nas.ucsd.edu\ghosh\Behavior\Box6\Permanent';
-    case 'BC305BD38BFB' %ephys-stim
-        backupToserver = true;
-        xtraServerBackupPath='\\ghosh-nas.ucsd.edu\ghosh\Behavior\ephys-stim\Permanent';
-    case '180373337162' %ephys-data
-        backupToServer = false;
-    case 'A41F72921700' % bas workstation
-        backupToServer = false;
-    case 'F8BC128444CB' % robert-analysis
-        backupToServer = false;
-    otherwise
-        warning('not sure which computer you are using. add that mac to this step. delete db and then continue. also deal with the other createStep functions.');
-        keyboard;
-end
-end
-
-function [correctBox, whichBox] = ensureCorrectBoxForSubject(subjID)
-allowedTestSubjects = {'demo1','999'};
-
-Box1Subjects = {'272','266','270','271','276'};
-Box2Subjects = {'273','267','253','254','277'};
-Box3Subjects = {'274','268','255','256','278'};
-Box4Subjects = {'275','269','264','265','279'};
-Box5Subjects = {'227','249','252','259'};
-Box6Subjects = {'280','281','282','283','284'};
-BoxEPhysSubjects = {'310'};
-Subjects = {Box1Subjects,Box2Subjects,Box3Subjects,Box4Subjects,Box5Subjects,Box6Subjects,BoxEPhysSubjects};
-currSubj = {subjID,subjID,subjID,subjID,subjID,subjID,subjID};
-whichBox = find(cellfun(@ismember,currSubj,Subjects));
-[junk, mac] = getMACaddress();
-correctBox = false;
-switch mac
-    case 'A41F7278B4DE' %gLab-Behavior1
-        if whichBox==1
-            correctBox = true;
-        end
-    case 'A41F729213E2' %gLab-Behavior2
-        if whichBox==2
-            correctBox = true;
-        end
-    case 'A41F726EC11C' %gLab-Behavior3
-        if whichBox==3
-            correctBox = true;
-        end
-    case '7845C4256F4C' %gLab-Behavior4
-        if whichBox==4
-            correctBox = true;
-        end
-    case '7845C42558DF' %gLab-Behavior5
-        if whichBox==5
-            correctBox = true;
-        end
-    case 'A41F729211B1' %gLab-Behavior6
-        if whichBox==6
-            correctBox = true;
-        end
-    case 'BC305BD38BFB' %ephys-stim
-        if whichBox==7
-            correctBox = true;
-        end
-end
-
-if ismember(subjID, allowedTestSubjects)
-    correctBox = true;
-end
-end
-
-function [isExperimentSubject, xtraExptBackupPath, experiments] = identifySpecificExperiment(subjectID);
-isExperimentSubject = false;
-xtraExptBackupPath = '';
-experiments = '';
-
-
-onGoingExperiments = {...
-    'VarDur2';...
-    'Reversal2';...
-    };
-
-onGoingExperimentSubjects = {...
-    {'227','249','252','255','256','259','270','272','273','274','275','276','277'};...
-    {'253','254','264','265','266','267','268','269','271','278','279'};...
-    };
-
-experimentBackupLocation = {
-    '\\ghosh-nas.ucsd.edu\ghosh\Behavior\VarDur2\Permanent';...
-    '\\ghosh-nas.ucsd.edu\ghosh\Behavior\Reversal2\Permanent';...
-};
-
-x = cellfun(@any,cellfun(@ismember,onGoingExperimentSubjects,repmat({subjectID},size(onGoingExperimentSubjects)),'UniformOutput',false));
-isExperimentSubject = any(x);
-
-if isExperimentSubject
-    xtraExptBackupPath = experimentBackupLocation(x);
-end
-
-experiments = onGoingExperiments(x);
-end
-

@@ -23,7 +23,7 @@ warning('on','MATLAB:dispatcher:nameConflict')
 
 clearJavaComponents();
 closeAllSerials
-if IsWin
+if ispc
     daqreset
 end
 

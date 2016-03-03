@@ -6,9 +6,9 @@ try
 catch ex
     % java not working probably
     warning('This works only for ucsd.edu IP addresses');
-    if IsWin
+    if ispc
         [junk, b]=dos('ipconfig');
-    elseif IsOSX || IsLinux
+    elseif ismac || isunix
         [junk, b]=system('ifconfig');
     end
     [junk, tokens] = regexpi(b, '(132.239.\d{2,3}.\d{2,3})', 'match', 'tokens'); % was 158

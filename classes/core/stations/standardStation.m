@@ -28,17 +28,23 @@ classdef standardStation <station
                     %pass
                 case 2
                     in = varargin{2};
- 
-                    validateattributes(in.decPPortAddr,{'char'},{'nonempty'})
-                    st.decPPortAddr = in.decPPortAddr;
+
+                    % ##### not set in make default station?
+%                     validateattributes(in.decPPortAddr,{'char'},{'nonempty'})
+%                     st.decPPortAddr = in.decPPortAddr;
+
+                    % this is how its set in older station implementation
+                    s.decPPortAddr=hex2dec(in.parallelPortAddress);
                     
-                    validateattributes(in.rewardMethod,{'char','<pump>'},{'nonempty'})
-                    st.rewardMethod = in.rewardMethod;
+                    validateattributes(stationParams.rewardMethod,{'char','<pump>'},{'nonempty'})
+                    st.rewardMethod = stationParams.rewardMethod;
                     
                     usedPins = [];
                     
-                    validateattributes(in.valvePins,{'numeric'},{'integer','vector'})
-                    st.valvePins = in.valvePins;
+                    
+                    validateattributes(in.valveSpec,{'numeric'},{'integer','vector'})
+                    % ##### guessing meant valveSpec???
+                    st.valvePins = in.valveSpec;
                     if intersect(usedPins,st.valvePins), error('standardStation:improperValue','valvePins uses already used pin'); end
                     usedPins = union(usedPins,st.valvePins);
                         
@@ -72,18 +78,19 @@ classdef standardStation <station
                     if intersect(usedPins,st.trialPins), error('standardStation:improperValue','trialPins uses already used pin'); end
                     usedPins = union(usedPins,st.trialPins);
                     
-                    validateattributes(in.LED1Pins,{'numeric'},{'integer'})
-                    st.LED1Pins = in.LED1Pins;
+                    validateattributes(in.LED1Pin,{'numeric'},{'integer'})
+                    st.LED1Pins = in.LED1Pin;
                     if intersect(usedPins,st.LED1Pins), error('standardStation:improperValue','LED1Pins uses already used pin'); end
                     usedPins = union(usedPins,st.LED1Pins);
                     
-                    validateattributes(in.LED2Pins,{'numeric'},{'integer'})
-                    st.LED2Pins = in.LED2Pins;
+                    validateattributes(in.LED2Pin,{'numeric'},{'integer'})
+                    st.LED2Pins = in.LED2Pin;
                     if intersect(usedPins,st.LED2Pins), error('standardStation:improperValue','LED2Pins uses already used pin'); end
                     usedPins = union(usedPins,st.LED2Pins);
                     
-                    st.responseMethod = 'parallelPort';
-                    
+                    % st.responseMethod = 'parallelPort'; #####
+                    % for testing purposes response method = keyboard
+                    st.responseMethod = 'Keyboard';
             end
         end
         
@@ -137,15 +144,16 @@ classdef standardStation <station
             end
         end
         
-        function [r, exitByFinishingTrialQuota]=doTrials(s,r,n,trustOsRecordFiles)
-            setValves(s, 0*getValves(s))
+        function [r, exitByFinishingTrialQuota]=doTrials(s,r,n,rn,trustOsRecordFiles)
+             setValves(s, 0*getValves(s))
              % only difference is setValve. All the rest of the method is
              % identical to doTrial of station
              
-            [r, exitByFinishingTrialQuota]=doTrials@station(s,r,n,trustOsRecordFiles);         
+            [r, exitByFinishingTrialQuota]=doTrials@station(s,r,n,rn,trustOsRecordFiles);
         end
         
         function valves =getValves(s)
+            keyboard
             if strcmp(s.responseMethod,'parallelPort')
                 
                 status=fastDec2Bin(lptread(s.valvePins.decAddr));
@@ -267,7 +275,8 @@ classdef standardStation <station
         end
         
         function setValves(s, valves)
-            if length(valves)==s.numPorts
+            keyboard
+            if length(valves)==getNumPorts(s)
                 valves=logical(valves);
                 valves(s.valvePins.invs)=~valves(s.valvePins.invs);
                 lptWriteBits(s.valvePins.decAddr,s.valvePins.bitLocs,valves);

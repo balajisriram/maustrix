@@ -1,16 +1,29 @@
 classdef station
     
     properties
-        id = '';
+        id='';
         path = '';
         screenNum = 0;
         soundOn = false;
         MACAddress = '';
         physicalLocation = [];
         numPorts = 3;
-        rewardMethod='';
-        responseMethod = 'Keyboard';
+        responseMethod = '';
         arduinoCONN=[];
+        datanet=[];
+        eyeTracker=[];
+        
+        decPPortAddr = '';
+        rewardMethod = 'localTimed';
+        valvePins = [];
+        sensorPins=[];
+        framePins=[];
+        phasePins=[];
+        stimPins=[];
+        indexPins=[];
+        trialPins = [];
+        LED1Pins = [];
+        LED2Pins = [];
     end
     
     properties (Transient=true)
@@ -24,35 +37,174 @@ classdef station
     end
     
     methods
-        function st = station(varargin)
+        function s = station(varargin)
+            needToInit=false;
+            usingPport=false;
             switch nargin
                 case 0
                     % default station - nothing happens
-                case 1
-                    in = varargin{1};
-                    
-                    %validateattributes(in.id,{'numeric'},{'integer','positive'})#####
-                    st.id = in.id;
-                    
-                    validateattributes(in.path,{'char'},{'nonempty'})
-                    st.path = in.path;
-                    
-                    %validateattributes(in.screenNum,{'numeric'},{'integer','positive'})#####
-                    st.screenNum = in.screenNum;
-                    
-                    validateattributes(in.soundOn,{'logical'},{'numel', 1})
-                    st.soundOn = in.soundOn;
-                    
-                    validateattributes(in.MACaddress,{'char'},{'nonempty'})
-                    st.MACAddress = in.MACaddress;
-                    
-                    validateattributes(in.physicalLocation,{'numeric'},{'positive','vector','numel',3})
-                    st.physicalLocation = in.physicalLocation;
-                             
+                case 1              
+                    if isa(varargin{1},'station')
+                        s = varargin{1};
+                    elseif isstruct(varargin{1}) && all(ismember({'id','path','screenNum','soundOn','rewardMethod','MACaddress','physicalLocation','portSpec','datanet','eyeTracker'},fields(varargin{1})))
+                        in=varargin{1};
+                        if isscalar(in.portSpec) && isinteger(in.portSpec)&& in.portSpec>0 %no parallel port
+                            s.responseMethod='keyboard';
+                            s.numPorts=in.portSpec;
+                            needToInit=true;
+                        elseif isstruct(in.portSpec) && all(ismember({'parallelPortAddress','valveSpec','sensorPins','indexPins','framePins','stimPins','phasePins','eyePuffPins','trialPins'},fields(in.portSpec))) %with parallel port
+                            s.responseMethod='parallelPort';
+                            s.decPPortAddr=hex2dec(in.portSpec.parallelPortAddress);
+
+                            if isstruct(in.portSpec.valveSpec) && all(ismember({'valvePins','pumpObject'},fields(in.portSpec.valveSpec))) && ((isvector(in.portSpec.valveSpec.valvePins) && isinteger(in.portSpec.valveSpec.valvePins)) || isempty(in.portSpec.valveSpec.valvePins)) && isa(in.portSpec.valveSpec.pumpObject,'localPump')
+                                s.valvePins=in.portSpec.valveSpec.valvePins;
+                                s.localPump=in.portSpec.valveSpec.pumpObject;
+                                warning('station:potentialPinAssignmentConflict','currently no one checks that the pump''s pins don''t conflict with the other assigned pins -- needs to be fixed!  (do this when change pump to use our porttalk method rather than the dataacq toolbox...)')
+                            elseif (isvector(in.portSpec.valveSpec) && isinteger(in.portSpec.valveSpec)) || isempty(in.portSpec.valveSpec)
+                                s.valvePins=in.portSpec.valveSpec;
+                            else
+                                error('valveSpec must be vector of integers or struct with fields valvePins (vector of integers) and pumpObject (a localPump object)')
+                            end
+
+                            if isvector(in.portSpec.sensorPins) && isinteger(in.portSpec.sensorPins)
+                                s.sensorPins=in.portSpec.sensorPins;
+                            else
+                                error('sensorPins must be vector of integers')
+                            end
+
+                            optionalPins={'indexPins','framePins','phasePins','stimPins','eyePuffPins','LED1Pin','LED2Pin','trialPins'};%,'LEDPins'
+
+                            for eNum=1:length(optionalPins)
+                                eVal=in.portSpec.(optionalPins{eNum});
+                                if isempty(eVal) || (isvector(eVal) && isinteger(eVal) && all(eVal>0))
+                                    s.(optionalPins{eNum})=eVal;
+                                else
+                                    error('%s must be empty or vector of positive integers',optionalPins{eNum})
+                                end
+                            end
+                            if ~isempty(s.localPump)&&~isempty(s.LEDPins)
+                                error('station:degeneratePinAssignment','LEDs and pumpObject use the same pins. They cannot currently be used together');
+                            end
+
+                            if ~isempty(s.localPump)&&~isempty(s.trialPins)
+                                error('station:degeneratePinAssignment','trialPins and pumpObject use the same pins. They cannot currently be used together');
+                            end
+
+                            if isfield(in.portSpec,'arduinoON')
+                                s.arduinoON = in.portSpec.arduinoON;
+                            end
+
+                            usingPport=true;
+                            needToInit=true;
+
+                        else
+                            in.portSpec
+                            class(in.portSpec)
+                            if isstruct(in.portSpec)
+                                fields(in.portSpec)
+                            end
+                            error('portSpec must be scalar integer >0 or a parallel port struct')
+                        end
+                    else
+                        error('Input argument is not a station object or struct')
+                    end         
                 otherwise
                     error('station:unknownInputType','please input no or one input')
             end
+            if usingPport
+                if ismember(s.decPPortAddr,hex2dec({'B888','0378','FFF8','D010'}))
+                    %pass
+                else
+                    error('need a parallel port base address (should be ''0378'' (built-in) ''B888'' (pci) or ''FFF8'' (pcmcia) or ''D010'' (pci-e)) -- under LPT ports in device manager, resources tab, I/O Range (first number is base address).');
+                    %base address is DATA register -- output -- pins 2-9
+                    %add 1 for STATUS register -- input -- pins 10,11(inverted),12,13,15
+                    %add 2 for CONTROL register -- bidirectional -- pins 1(inverted),14(inverted),16,17(inverted)
+                end
+
+                if ~strcmp(s.responseMethod,'parallelPort') && isinteger(s.sensorPins) && isscalar(s.sensorPins) && s.sensorPins>0
+                    s.numPorts=s.sensorPins;
+                    if length(s.valvePins)==s.numPorts || isempty(s.valvePins)
+                        %pass
+                    else
+                        error('if response method is not parallel port, sensorPins should be integer >0 that is number of ports, and valvePins should either be empty or have that number of elements')
+                    end
+                elseif strcmp(s.responseMethod,'parallelPort') && (length(s.valvePins)==length(s.sensorPins) || isempty(s.valvePins)) && length(s.sensorPins)>0
+                    s.numPorts=length(s.sensorPins);
+
+                    [s.sensorPins assignedSoFar]=assignPins(s.sensorPins,'read',s.decPPortAddr,[],'sensorPins');
+                else
+                    error('if responseMethod is parallelPort, sensorPins and valvePins must be same length and have at least one element (or valvePins can be empty).  if responseMethod is not parallelPort, sensorPins must be scalar integer >0 that is number of ports.')
+                end
+
+                [s.valvePins assignedSoFar]=assignPins(s.valvePins,'write',s.decPPortAddr,assignedSoFar,'valvePins');
+
+                for eNum=1:length(optionalPins)
+                    [s.(optionalPins{eNum}) assignedSoFar]=assignPins(s.(optionalPins{eNum}),'write',s.decPPortAddr,assignedSoFar,optionalPins{eNum});
+                end
+            end
+
+            if needToInit
+                s.id=in.id;
+                s.path=in.path;
+                s.screenNum=in.screenNum;
+                s.soundOn=in.soundOn;
+                s.rewardMethod=in.rewardMethod;
+                s.MACAddress=in.MACaddress;
+                s.physicalLocation=in.physicalLocation;
+                s.datanet=in.datanet;
+                s.eyeTracker=in.eyeTracker;
+            end   
         end
+        
+        function [out assignedSoFar]=assignPins(pins,dir,baseAddr,dontMatch,pinGroupName)
+            out=[];
+            checks={};
+            for cNum=1:length(pins)
+                checks{end+1}={dec2hex(baseAddr),pins(cNum)};
+            end
+
+            if all(goodPins(checks)) && length(unique(pins))==length(pins)
+
+                for cNum=1:length(pins)
+                    if getDirForPinNum(pins(cNum),dir)
+                        spec=getBitSpecForPinNum(pins(cNum));
+
+                        out(cNum).pin=pins(cNum);
+                        out(cNum).decAddr=baseAddr+double(spec(2));
+                        out(cNum).bitLoc=spec(1);
+                        out(cNum).inv=logical(spec(3));
+                    else
+                        error('pin not available for that dir')
+                    end
+                end
+
+            else
+                error('pins must be unique integers that represent parallel port pins')
+            end
+
+            for cNum=1:length(out)
+                if ismember(out(cNum).pin,dontMatch)
+                    error('pin matches an already assigned pin')
+                end
+            end
+
+            emptyPinRec=struct('decAddr',{},'pinNums',{},'invs',{},'bitLocs',{});
+
+            if isempty(pins)
+                thisRec=emptyPinRec;
+            elseif all(out(1).decAddr==[out.decAddr])
+                thisRec.decAddr=out(1).decAddr;
+                thisRec.pinNums=[out.pin];
+                thisRec.invs=[out.inv];
+                thisRec.bitLocs=[out.bitLoc];
+            else
+                error('%s pins must be all on the same parallel port register',pinGroupName)
+            end
+            out=thisRec;
+
+            assignedSoFar=[dontMatch pins];
+        end
+
         
           function out=display(boxes)
             out='';
@@ -68,6 +220,111 @@ classdef station
             end
           end
           
+          function p=getNumPorts(st)
+              p=st.numPorts;
+          end
+                  
+        function securePins(st)
+            setValves(st,0*getValves(st))
+            setPuff(st,false);
+            setStatePins(st,'all',false);
+            verifyValvesClosed(st);
+        end
+        
+        function setValves(s, valves)
+            if strcmp(s.responseMethod,'parallelPort')
+                if length(valves)==s.numPorts
+                    valves=logical(valves);
+                    valves(s.valvePins.invs)=~valves(s.valvePins.invs);
+                    lptWriteBits(s.valvePins.decAddr,s.valvePins.bitLocs,valves);
+                else
+                    error('valves must be a vector of length numValves')
+                end
+            else
+                if ~ismac
+                    warning('can''t set valves without parallel port')
+                end
+            end
+        end
+          
+        function setPuff(s,state )
+            if strcmp(s.responseMethod,'parallelPort')
+                if ~isempty(s.eyePuffPins)
+                    if islogical(state)
+                        state(s.eyePuffPins.invs)=~state(s.eyePuffPins.invs);
+                        lptWriteBits(s.eyePuffPins.decAddr,s.eyePuffPins.bitLocs,state);
+                    else
+                        error('state must be logical');
+                    end
+                else
+                    warning('no airpuff on this station')
+                end
+            else
+                if ~ismac
+                    warning('can''t set puff without parallel port')
+                end
+            end
+        end
+        
+        function setStatePins(s,pinClass,state)
+
+            if strcmp(s.responseMethod,'parallelPort')
+                if isscalar(state)
+                    state=logical(state);
+                else
+                    error('state must be scalar')
+                end
+
+                done=false;
+                possibles={ ... %edf worries this is slow
+                    'frame',s.framePins; ...
+                    'stim',s.stimPins; ...
+                    'phase',s.phasePins; ...
+                    'index',s.indexPins;...
+                    'LED1',s.LED1Pin;...
+                    'LED2',s.LED2Pin;...
+                    'trial',s.trialPins};
+
+
+                for i=1:size(possibles,1)
+                    if strcmp('all',pinClass) || strcmp(pinClass,possibles{i,1}) %pmm finds this faster
+                        %if ismember(pinClass,{'all',possibles{i,1}}) %edf worries this is slow
+                        done=true;
+                        pins=possibles{i,2}; %edf worries this is slow
+                        if ~isempty(pins)
+                            thisState=state(ones(1,length(pins.pinNums)));
+                            thisState(pins.invs)=~thisState(pins.invs);
+                            lptWriteBits(pins.decAddr,pins.bitLocs,thisState);
+                        else
+                            warning('setStatePins:unavailableStatePins','station asked to set optional state pins it doesn''t have')
+                        end
+                    end
+                end
+                if ~done
+                    error('unrecognized pinClass')
+                end
+
+            else
+                if ~ismac
+                    warning('setStatePins:noPPort','can''t set state pins without parallel port')
+                end
+            end
+        end
+        
+        function ports=readPorts(s)
+            if strcmp(s.responseMethod,'parallelPort')
+                status=fastDec2Bin(lptread(s.sensorPins.decAddr));
+                ports=status(s.sensorPins.bitLocs)=='0'; %need to set parity in station, assumes sensors emit +5V for unbroken beams
+                ports(s.sensorPins.invs)=~ports(s.sensorPins.invs);
+            else
+                if ~ismac
+                    %s.responseMethod
+                    warning('can''t read ports without parallel port')
+                end
+                ports=false(1,s.numPorts);
+            end
+        end
+        
           function currentValveStates=verifyValvesClosed(station)
             currentValveStates=getValves(station);
             if any(currentValveStates)
@@ -107,23 +364,20 @@ classdef station
         end
         
         function out=getDisplaySize(s)
-            wind=Screen('OpenWindow', 0, 0);
-            [a, b]=Screen('DisplaySize',wind);
-            %[a, b]=Screen('DisplaySize',s.screenNum); #####
+            
+            [a, b]=Screen('DisplaySize',s.screenNum); 
             out=[a b];
         end
         
         function out=getResolutions(s)
-            wind=Screen('OpenWindow', 0, 0);
-            out=Screen('Resolutions',wind);
-            %out=Screen('Resolutions',s.screenNum); #####
+            
+            out=Screen('Resolutions',s.screenNum);
         end
         
         function out=getLUTbits(s)
-            wind=Screen('OpenWindow', 0, 0);
-            [~, dacbits, reallutsize] = Screen('ReadNormalizedGammaTable', wind);
-            % #####
-            %[~, dacbits, reallutsize] = Screen('ReadNormalizedGammaTable', s.screenNum);
+            
+            
+            [~, dacbits, reallutsize] = Screen('ReadNormalizedGammaTable', s.screenNum);
             if dacbits==log2(reallutsize)
                 out=dacbits;
             elseif log2(reallutsize)==8
@@ -225,16 +479,14 @@ classdef station
                 error('station:setResolutionAndPipeline:improperValue','color depth must be 32')
             end
             
-            wind=Screen('OpenWindow', 0, 0);
-            oldRes=Screen('Resolution', wind);
-            %oldRes=Screen('Resolution', s.screenNum); #####
+            
+            oldRes=Screen('Resolution', s.screenNum); 
             
             if oldRes.width~=res.width || oldRes.height~=res.height || oldRes.hz ~=res.hz || oldRes.pixelSize~=res.pixelSize || ...
                     ~station.allImagingTasksSame(s.imagingTasks,imagingTasks)
                 
-                wind=Screen('OpenWindow', 0, 0);
-                resolutions=Screen('Resolutions', wind);
-                %resolutions=Screen('Resolutions', s.screenNum); #####
+                
+                resolutions=Screen('Resolutions', s.screenNum);
                 
                 match=[[resolutions.width]==res.width; [resolutions.height]==res.height; [resolutions.hz]==res.hz; [resolutions.pixelSize]==res.pixelSize];
                 
@@ -256,23 +508,20 @@ classdef station
                 end
                 
                 s=stopPTB(s);
+                       
                 
-
+                oldRes = Screen('Resolution', s.screenNum, res.width, res.height, res.hz, res.pixelSize);
                 
-                wind=Screen('OpenWindow', 0, 0);
-                Screen('Resolution', wind);
-                %Screen('Resolution', s.screenNum, res.width, res.height, res.hz, res.pixelSize);
-                % #####
 
                 s=startPTB(s,imagingTasks);
                 imagingTasksApplied=imagingTasks; % is there a way to confirm they took effect?
                 
-                wind=Screen('OpenWindow', 0, 0);
-                newRes=Screen('Resolution', wind);
-                %newRes=Screen('Resolution', s.screenNum); #####
+                
+                
+                newRes=Screen('Resolution', s.screenNum); 
                 if ~all([newRes.width==res.width newRes.height==res.height newRes.pixelSize==res.pixelSize newRes.hz==res.hz])
-                    %error('station:configurationUnavailable','failed to get desired res') %needs to be warning to work with remotedesktop
-                    % #####
+                    error('station:configurationUnavailable','failed to get desired res') %needs to be warning to work with remotedesktop
+
                 end
                 
             else
@@ -333,9 +582,7 @@ classdef station
             %         PsychImaging('AddTask', 'AllViews', 'GeometryCorrection', 'C:\Documents and Settings\Owner\Application Data\Psychtoolbox\GeometryCalibration\SphereCalibdata_0_1600_1200.mat');
             %         [windowPtr,rect]=Screen('OpenWindow',windowPtrOrScreenNumber [,color] [,rect][,pixelSize][,numberOfBuffers][,stereomode][,multisample][,imagingmode][,specialFlags][,clientRect]);
             %         s.window = PsychImaging('OpenWindow',s.screenNum,0);%,[],32,2);  %%color, rect, depth, buffers (none can be changed in basic version)
-                    wind=Screen('OpenWindow', 0, 0);
-                    [s.window,~] = Screen('OpenWindow',wind);
-                    % ##### [s.window,~] = Screen('OpenWindow',s.screenNum);%,[],32,2);  %%color, rect, depth, buffers (none can be changed in basic version)
+                    [s.window,~] = Screen('OpenWindow',s.screenNum,0);%,[],32,2);  %%color, rect, depth, buffers (none can be changed in basic version)
 
                 else
 
@@ -365,9 +612,8 @@ classdef station
                 end
                 disp(sprintf('took %g to call screen(openwindow)',GetSecs()-preScreen))
 
-                wind=Screen('OpenWindow', 0, 0);
-                res=Screen('Resolution', wind);
-                %res=Screen('Resolution', s.screenNum); #####
+               
+                res=Screen('Resolution', s.screenNum);
 
                 s.ifi = Screen('GetFlipInterval',s.window);%,200); %numSamples
 

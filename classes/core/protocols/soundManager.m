@@ -185,7 +185,8 @@ classdef soundManager
                 d=[d '\n\t\t\t\t' display(s.clips{i})];
 
             end
-            d=sprintf(d);
+            
+            %d=sprintf(d); ##### doesnt do anything anyways
         end
         
         function [clip sampleRate sm updateSMCache] = getSound(sm,soundName)
@@ -241,7 +242,7 @@ classdef soundManager
                 if station.soundOn
                     %can't put in soundManager.decache() directly, because need to be able to call decache without closing psychportaudio + losing buffers
                     
-                    initPPA();
+                    soundManager.initPPA();
                     PsychPortAudio('Close'); %does this work OK if sounds currently playing?  yes on osx...
                     clear PsychPortAudio;
                 end
@@ -256,7 +257,7 @@ classdef soundManager
     
         function sm=doSound(sm,soundName,station,duration,isLoop)
             if isa(station,'station')
-                if getSoundOn(station)
+                if station.soundOn
                     if isempty(soundName)
                         if isLoop && duration==0
                             sm=stopPlayer(sm);

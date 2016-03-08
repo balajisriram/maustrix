@@ -145,7 +145,7 @@ classdef soundClip
                         s.clip = sum(sin(diag(freqs)*raw));
 
                     case 'tritones'
-                        s.clip = getClip(soundClip('annonymous','allOctaves',[s.fundamentalFreqs tritones(s.fundamentalFreqs)],s.maxFreq));
+                        s.clip = getClip(soundClip('annonymous','allOctaves',[s.fundamentalFreqs s.tritones(s.fundamentalFreqs)],s.maxFreq));
                     case 'dualChannel'
                         s.clip(1,:) = getClip(s.leftSoundClip);
                         s.clip(2,:) = getClip(s.rightSoundClip);
@@ -172,7 +172,7 @@ classdef soundClip
             sampleRate=s.sampleRate;
         end
         
-        function t=tritones(freqs)
+        function t=tritones(sc, freqs)
             t=freqs*2.^(6/12); % to get i halfsteps over freq, use freq*2.^[i/12]
         end
     

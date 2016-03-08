@@ -360,8 +360,47 @@ classdef trialManager
 
 
                     otherwise
-                        tm.displayMethod
-                        error('bad displayMethod')
+                        
+                        %error('bad displayMethod')
+                        floatprecision=0;
+                        if isreal(stim)
+                            switch class(stim)
+                                case {'double','single'}
+                                    if any(stim(:)>1) || any(stim(:)<0)
+                                        error('stim had elements <0 or >1 ')
+                                    else
+                                        floatprecision=1;%will tell maketexture to use 0.0-1.0 format with 16bpc precision (2 would do 32bpc)
+                                    end
+
+                                    %maketexture barfs on singles
+                                    if strcmp(class(stim),'single')
+                                        stim=double(stim);
+                                    end
+
+                                case 'uint8'
+                                    %do nothing
+                                case 'uint16'
+                                    stim=single(stim)/intmax('uint16');
+                                    floatprecision=1;
+                                case 'logical'
+                                    stim=uint8(stim)*intmax('uint8'); %force to 8 bit
+                                otherwise
+                                    error('unexpected stim variable class; currently stimOGL expects double, single, unit8, uint16, or logical')
+                            end
+                        else
+                            stim
+                            class(stim)
+                            error('stim  must be real')
+                        end
+
+                        if floatprecision ~=0 || ~strcmp(class(stim),'uint8')
+                            %convert stim/floatprecision to uint8 so when drawFrameUsingTextureCache calls maketexture it is fast
+                            %(especially when strategy is noCache and we make each texture during each frame)
+                            floatprecision=0;
+                            warning('off','MATLAB:intConvertNonIntVal')
+                            stim=uint8(stim*double(intmax('uint8')));
+                            warning('on','MATLAB:intConvertNonIntVal')
+                        end
                 end
             end
 
@@ -519,8 +558,7 @@ classdef trialManager
                                 resolutions=[];
                             otherwise
                                 resolutions=getResolutions(station);
-                                warning('no display method, assuming ptb by default'); % #####
-                                %error('shouldn''t happen')
+                                error('shouldn''t happen')
                         end
 
                         % calcStim should return the following:
@@ -588,8 +626,7 @@ classdef trialManager
                                 trialRecords(trialInd).resolution.hz=resInd;
                             otherwise
                                 [station, trialRecords(trialInd).resolution,trialRecords(trialInd).imagingTasks]=setResolutionAndPipeline(station,resolutions(resInd),imagingTasks);
-                                warning('No display method so assuming ptb');
-                                %error('shouldn''t happen') #####
+                                error('shouldn''t happen')
                         end
 
                         [newSM, updateSM, stimulusDetails]=postScreenResetCheckAndOrCache(newSM,updateSM,stimulusDetails); %enables SM to check or cache their tex's if they control that
@@ -638,9 +675,8 @@ classdef trialManager
                             trialRecords(trialInd).targetPorts,trialRecords(trialInd).distractorPorts,getRequestPorts(trialManager,station.numPorts),...
                             trialRecords(trialInd).interTrialLuminance,refreshRate,indexPulses);
                         
-                        % validateStimSpecs(stimSpecs); #####
+                        trialManager.validateStimSpecs(stimSpecs);
 
-                        station.soundOn = false; % ##### temp for testing
                         [tempSoundMgr, updateSndM] = cacheSounds(getSoundManager(trialManager),station);
                         trialManager = setSoundManager(trialManager, tempSoundMgr);
                         updateTM = updateTM || updateSndM;
@@ -669,7 +705,7 @@ classdef trialManager
 
                         trialLabel=sprintf('session:%d trial:%d (%d)',sessionNumber,sum(trialRecords(trialInd).sessionNumber == [trialRecords.sessionNumber]),trialRecords(trialInd).trialNumber);
 
-                        if ~isempty(getDatanet(station))
+                        if ~isempty(station.datanet)
                             % 4/11/09 - also save the stimRecord here, before trial starts (but just the stimManagerClass)
                             % also send over the filename of the neuralRecords file (so we can create it on the phys side, and then append every 30 secs)
                             datanet_constants = getConstants(getDatanet(station));
@@ -735,17 +771,17 @@ classdef trialManager
                                 LUT, ...
                                 trialRecords(trialInd).targetPorts, ...
                                 trialRecords(trialInd).distractorPorts, ...
-                                getRequestPorts(trialManager, getNumPorts(station)), ...
+                                getRequestPorts(trialManager, station.numPorts), ...
                                 trialRecords(trialInd).interTrialLuminance, ...
                                 station, ...
                                 manualOn, ...
                                 .1, ... % 10% should be ~1 ms of acceptable frametime error
-                                text,rn,getID(subject),class(newSM),pStr,trialLabel,getEyeTracker(station),0,trialRecords,compiledRecords,subject);
+                                text,rn,subject.id,class(newSM),pStr,trialLabel,station.eyeTracker,0,trialRecords,compiledRecords,subject);
                         end
 
-                        if ~isempty(getEyeTracker(station))
+                        if ~isempty(station.eyeTracker)
                             %[junk junk eyeDataVarNames]=getSample(getEyeTracker(station)); %throws out a sample in order to get variable names... dirty
-                            saveEyeData(getEyeTracker(station),eyeData,eyeDataFrameInds,getEyeDataVarNames(getEyeTracker(station)),gaze,trialRecords(trialInd).trialNumber,trialRecords(trialInd).date)
+                            saveEyeData(station.eyeTracker,eyeData,eyeDataFrameInds,getEyeDataVarNames(station.eyeTracker),gaze,trialRecords(trialInd).trialNumber,trialRecords(trialInd).date)
                         end
 
                         trialRecords(trialInd).trainingStepName = generateStepName(ts,ratrixSVNInfo,ptbSVNInfo);
@@ -909,7 +945,7 @@ classdef trialManager
 
         end
 
-        function validateStimSpecs(stimSpecs)
+        function validateStimSpecs(tm, stimSpecs)
             for i=1:length(stimSpecs)
                 spec = stimSpecs{i};
                 cr = getTransitions(spec);
@@ -2447,6 +2483,7 @@ classdef trialManager
             updateRM = false;
             securePins(station);
             setStatePins(station,'trial',true); % start the trial
+
             % =====================================================================================================================
             %   show movie following mario's 'ProgrammingTips' for the OpenGL version of PTB
             %   http://www.kyb.tuebingen.mpg.de/bu/people/kleinerm/ptbosx/ptbdocu-1.0.5MK4R1.html
@@ -2641,7 +2678,7 @@ classdef trialManager
                 constants = getConstants(rn);
             end
 
-            if strcmp(getRewardMethod(station),'serverPump')
+            if strcmp(station.rewardMethod,'serverPump')
                 if isempty(rn) || ~isa(rn,'rnet')
                     error('need an rnet for station with rewardMethod of serverPump')
                 end
@@ -2650,12 +2687,14 @@ classdef trialManager
             [keyIsDown,secs,keyCode]=KbCheck; %load mex files into ram + preallocate return vars
             GetSecs;
             Screen('Screens');
+            
 
             if window>0
                 standardFontSize=12;
-                oldFontSize = Screen('TextSize',window,standardFontSize);
+                     oldFontSize = Screen('TextSize',window,standardFontSize);
                 [normBoundsRect, offsetBoundsRect]= Screen('TextBounds', window, 'TEST');
             end
+
 
             KbName('UnifyKeyNames'); %does not appear to choose keynamesosx on windows - KbName('KeyNamesOSX') comes back wrong
 
@@ -2758,7 +2797,7 @@ classdef trialManager
                     %     keyboard
                 end
             end
-
+            
             timestamps.lastFrameTime=GetSecs;
             timestamps.missesRecorded       = timestamps.lastFrameTime;
             timestamps.eyeTrackerDone       = timestamps.lastFrameTime;
@@ -2773,7 +2812,7 @@ classdef trialManager
             timestamps.prevPostFlipPulse    = timestamps.lastFrameTime;
 
             %show stim -- be careful in this realtime loop!
-            while ~done && ~Quit;
+            while ~done && ~Quit; % ##### SEGFAULT OCCURING IN HERE
                 timestamps.loopStart=GetSecs;
 
                 xOrigTextPos = 10;
@@ -2781,6 +2820,7 @@ classdef trialManager
                 yTextPos = 20;
 
                 if updatePhase == 1
+                    %wind=Screen('OpenWindow', 0, 0);
                     Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                     setStatePins(station,'stim',false);
                     setStatePins(station,'phase',true);
@@ -2900,7 +2940,7 @@ classdef trialManager
                     % =========================================================================
 
                     setStatePins(station,'phase',false);
-                    if isStim(spec)
+                    if spec.isStim
                         setStatePins(station,'stim',true);
                     end
 
@@ -3349,7 +3389,7 @@ classdef trialManager
 
                 timestamps.rewardDone=GetSecs;
 
-                if ~isempty(rn) || strcmp(getRewardMethod(station),'serverPump')
+                if ~isempty(rn) || strcmp(station.rewardMethod,'serverPump')
                     [done, Quit, phaseRecords(thisRewardPhaseNum).valveErrorDetails, serverValveStates, serverValveChange, ...
                         trialRecords(trialInd).result, newValveState, ...
                         requestRewardDone, requestRewardOpenCmdDone] ...
@@ -3357,14 +3397,14 @@ classdef trialManager
                         requestRewardStartLogged, requestRewardOpenCmdDone, ...
                         requestRewardDone, station, ports, serverValveStates, doValves, ...
                         trialRecords(trialInd).result);
-                elseif isempty(rn) && strcmp(getRewardMethod(station),'serverPump')
+                elseif isempty(rn) && strcmp(station.rewardMethod,'serverPump')
                     error('need a rnet for serverPump')
                 end
 
                 % also do datanet handling here
                 % this should only handle 'server Quit' commands for now.... (other stuff is caught by doTrial/bootstrap)
-                if ~isempty(getDatanet(station))
-                    [~, Quit] = handleCommands(getDatanet(station),[]);
+                if ~isempty(station.datanet)
+                    [~, Quit] = handleCommands(station.datanet,[]);
                 end
 
                 timestamps.serverCommDone=GetSecs;
@@ -3434,6 +3474,7 @@ classdef trialManager
                 timestamps.loopEnd=GetSecs;
             end
 
+            keyboard
             securePins(station);
 
             trialRecords(trialInd).phaseRecords=phaseRecords;
@@ -3761,7 +3802,7 @@ classdef trialManager
             phaseData = cell(1,length(stimSpecs));
 
             if strcmp(tm.displayMethod,'ptb')
-                window=getPTBWindow(station);
+                window=station.window;
                 if window<=0
                     error('window must be >0')
                 end
@@ -3769,11 +3810,15 @@ classdef trialManager
             else
                 window=0;
             end
-            ifi=getIFI(station);
+            ifi=station.ifi;
 
             frameDropCorner.size=[.05 .05];
             frameDropCorner.loc=[1 0];
-            frameDropCorner.on=~strcmp(tm.frameDropCorner{1},'off');
+            if ~isempty(tm.frameDropCorner)
+                frameDropCorner.on=~strcmp(tm.frameDropCorner{1},'off');
+            else
+                tm.frameDropCorner{1}='off';
+            end
             frameDropCorner.ind=1;
 
             try
@@ -3847,7 +3892,7 @@ classdef trialManager
                 rethrow(ex);
             end
         end
-        
+
         function testStimOGL(trialManager) %laboratory for finding and fixing framedrops - call like testStimOGL(trialManager)
 
             %any of the following will cause frame drops (just on entering new code blocks) on the first subsequent run, but not runs thereafter:

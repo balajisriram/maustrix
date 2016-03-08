@@ -54,13 +54,15 @@ if ~exist('rewardMethod','var') || isempty(rewardMethod)
 end
 
 if ~exist('screenNum','var') || isempty(screenNum)
-    screenNum=int8(0);
+    %screenNum=int8(0); #####
+    screenNum = 0;
     if length(Screen('Screens'))>1 % some multi head setups
         
         switch mac
             case {'000000000000'}
                 %screenNum=int8(max(Screen('Screens')));
-                screenNum=int8(0); %normally used for single header phys on CRT
+                % ##### screenNum=int8(0); %normally used for single header phys on CRT
+                screenNum = 0;
                 %screenNum=int8(2); %used for other monitor on OLED tests, or dual header tests
                 %screenNum=int8(1); %used for local screen tests
             otherwise
@@ -120,13 +122,14 @@ stationSpec.portSpec.stimPins                 = int8(17);
 stationSpec.portSpec.indexPins                = int8(8);
 
 
-if ismac || IsLinux
+if ismac || IsLinux || strcmp(mac, 'F8BC128444CB') % ##### no parallel port
     stationSpec.portSpec = int8(3);
 elseif ispc
     %do nothing
 else
     error('unknown OS')
 end
+
 
 if ismember(stationSpec.id,{'3A','3B','3C','3D','3E','3F'}) || strcmp(rewardMethod,'localPump')
     infTooFarPin=int8(1);
@@ -166,14 +169,12 @@ elseif strcmp(mac,'7845C42558DF') % rig 5
     stationSpec.portSpec.LED2Pin = int8(7);
     stationSpec.portSpec.trialPins = int8(14);
     stationSpec.portSpec.arduinoON = true;
-else
+elseif ~strcmp(mac, 'F8BC128444CB') % ##### leave portspec as int
     stationSpec.portSpec.LED1Pin = int8([]);
     stationSpec.portSpec.LED2Pin = int8([]);
     stationSpec.portSpec.trialPins = int8([]);
     stationSpec.portSpec.arduinoON = false;
 end
 
-% stationSpec.responseMethod = 'Keyboard'; % #####
-% stationSpec.numPorts = 3; % #####
-% stationSpec.screenNum = 1;
+%st = standardStation(stationSpec, stationSpec.portSpec);
 st=station(stationSpec);

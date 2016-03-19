@@ -14,7 +14,7 @@ classdef murine < subject
     
     methods
         
-        function m = murine(id,strain,gender,birthDate,receivedDate,litterID,supplier)
+        function m = murine(id,gender,strain,birthDate,receivedDate,litterID,supplier)
             m = m@subject(id);
             validateattributes(strain,{'char'},{'nonempty'});
             assert(ismember(gender,{'male','female'}),'murine:improperValue','gender has to be ''male'' or ''female''');
@@ -31,9 +31,9 @@ classdef murine < subject
             m.supplier = supplier;
         end
         
-        function display(s,str) 
+        function disp(s,str) 
             dispStr = sprintf('strain:\t\t%s\tgender:\t\t%s\tbirthdate:\t\t%s\t%s',s.strain,s.gender,datestr(s.birthDate),str);
-            display@subject(s,dispStr);
+            disp@subject(s,dispStr);
         end
         
     end

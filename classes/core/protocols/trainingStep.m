@@ -412,11 +412,8 @@ classdef trainingStep
             end
         end
         
-        function tsName = generateStepName(ts,ratrixSVN,ptbSVN)
+        function tsName = generateStepName(ts)
             % assembles a name by calling a getNameFragment() method on its trialMgr, stimMgr, rewadrMgr, and scheduler,
-            % together with the actual svnRev and ptbRev for that trial 
-            % (which should be added to the trialRecord in trialManager.doTrial() anyway --
-            %   return ptbVersion and ratrixVersion from stimOGL). 
             % the base class inherited implementation for each getNameFragment() could just return 
             % an abbreviated class name, but could be overridden by subclasses to include important parameter values.
 
@@ -426,9 +423,6 @@ classdef trainingStep
             if ~strcmp(usersNameOfWholeStep,'')
                 tsName=[usersNameOfWholeStep '_' tsName];
             end
-
-            % append ratrix and ptb svn info
-            tsName = [tsName '_' ratrixSVN '_' ptbSVN];
 
         end % end function
         
@@ -483,8 +477,9 @@ classdef trainingStep
         end
         
         function ts=setReinforcementParam(ts,param,val)
-
-            ts=setTrialManager(ts,setReinforcementParam(getTrialManager(ts),param,val));
+            tM = ts.trialManager;
+            tM = tM.setReinforcementParam(param,val);
+            ts.trialManager = tM;
         end 
         
         function ts = setStimManager(ts, stim)

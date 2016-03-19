@@ -275,7 +275,8 @@ classdef stimSpec
         end
         
         function out=getIndexPulse(s,i)
-            if exist('i','var') && ~isempty(i)
+            
+            if exist('i','var') && ~isempty(i) && i
                 out=s.indexPulses(i);
             else
                 out=s.indexPulses;

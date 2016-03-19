@@ -33,10 +33,10 @@ constantRewards=constantReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,r
 
 allowRepeats=false;
 freeDrinkLikelihood=0.003;
-fd = freeDrinks(sm,freeDrinkLikelihood,allowRepeats,constantRewards);
+fd = freeDrinks(sm,freeDrinkLikelihood,allowRepeats,constantRewards, [], [], [], [], 'center', [], [], [], []);
 
 freeDrinkLikelihood=0;
-fd2 = freeDrinks(sm,freeDrinkLikelihood,allowRepeats,constantRewards);
+fd2 = freeDrinks(sm,freeDrinkLikelihood,allowRepeats,constantRewards, [], [], [], [], 'center', [], [], [], []);
 
 percentCorrectionTrials=.5;
 
@@ -66,7 +66,7 @@ end
 
 % {'flickerRamp',[0 .5]}
 dropFrames=false;
-vh=nAFC(sm,percentCorrectionTrials,constantRewards,eyeController,{'off'},dropFrames,'ptb','center');
+vh=nAFC(sm,percentCorrectionTrials,constantRewards,eyeController,{'off'},dropFrames,'ptb','center', [], [], [], []);
 
 pixPerCycs              =[20];
 targetOrientations      =[pi/2];
@@ -79,20 +79,23 @@ yPosPct                 =.65;
 %screen('resolutions') returns values too high for our NEC MultiSync FE992's -- it must just consult graphics card
 scaleFactor            = 0; %[1 1];
 interTrialLuminance     =.5;
-freeStim = orientedGabors(pixPerCycs,targetOrientations,distractorOrientations,mean,radius,contrast,thresh,yPosPct,maxWidth,maxHeight,scaleFactor,interTrialLuminance);
+freeStim = orientedGabors(pixPerCycs,targetOrientations,distractorOrientations,mean,radius,contrast,thresh,...
+    yPosPct,maxWidth,maxHeight,scaleFactor,interTrialLuminance,'square','normalizeDiagonal');
 
 pixPerCycs=[20 10];
 distractorOrientations=[0];
-discrimStim = orientedGabors(pixPerCycs,targetOrientations,distractorOrientations,mean,radius,contrast,thresh,yPosPct,maxWidth,maxHeight,scaleFactor,interTrialLuminance);
+discrimStim = orientedGabors(pixPerCycs,targetOrientations,distractorOrientations,mean,radius,contrast,thresh,...
+    yPosPct,maxWidth,maxHeight,scaleFactor,interTrialLuminance,'square','normalizeDiagonal');
 
 
 svnRev={'svn://132.239.158.177/projects/bsriram/Ratrix/branches/multiTrodeStable'};
 svnCheckMode='session';
 
-ts1 = trainingStep(fd, freeStim, repeatIndefinitely(), noTimeOff(), svnRev,svnCheckMode);   %stochastic free drinks
-ts2 = trainingStep(fd2, freeStim, repeatIndefinitely(), noTimeOff(), svnRev,svnCheckMode);  %free drinks
-ts3 = trainingStep(vh, freeStim, repeatIndefinitely(), noTimeOff(), svnRev,svnCheckMode);   %go to stim
-ts4 = trainingStep(vh, discrimStim, repeatIndefinitely(), noTimeOff(), svnRev,svnCheckMode);%orientation discrim
+ts1 = createEasyAFCCoherentDots(vh, repeatIndefinitely(), noTimeOff(), svnRev, svnCheckMode,'');
+%ts1 = trainingStep(fd, freeStim, repeatIndefinitely(), noTimeOff(), svnRev,svnCheckMode,'');   %stochastic free drinks
+ts2 = trainingStep(fd2, freeStim, repeatIndefinitely(), noTimeOff(), svnRev,svnCheckMode,'');  %free drinks
+ts3 = trainingStep(vh, freeStim, repeatIndefinitely(), noTimeOff(), svnRev,svnCheckMode,'');   %go to stim
+ts4 = trainingStep(vh, discrimStim, repeatIndefinitely(), noTimeOff(), svnRev,svnCheckMode,'');%orientation discrim
 
 p=protocol('gabor test',{ts1, ts2, ts3, ts4});
 stepNum=uint8(4);

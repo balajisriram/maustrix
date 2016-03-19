@@ -5,28 +5,15 @@ classdef constantReinforcement<reinforcementManager
     end
     
     methods
-        function r=constantReinforcement(varargin)
+        function r=constantReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,requestMode,...
+               msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
             % ||constantReinforcement||  class constructor.
             % r=constantReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,requestMode,...
             %   msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-
-
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'constantReinforcement'))
-                        r = varargin{1};
-                    else
-                        error('Input argument is not a constantReinforcement object')
-                    end
-                case 8
-                    r = setRewardSizeULorMS(r,varargin{1});
-                otherwise
-                    error('Wrong number of input arguments')
-            end
+            r=r@reinforcementManager(msPenalty,msPuff,scalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestRewardSizeULorMS,requestMode);
+  
+            r = setRewardSizeULorMS(r,rewardSizeULorMS);
+          
         end
         
         function [r, rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM] = ...

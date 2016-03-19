@@ -27,7 +27,8 @@ classdef images<stimManager
     end
     
     methods
-        function s=images(varargin)
+        function s=images(directory,yPositionPercent,background,maxWidth,maxHeight,scaleFactor,interTrialLuminance,...
+               trialDistribution,imageSelectionMode,size,sizeyoked,rotation,rotationyoked,pctCorrectionTrials,drawingMode, LEDParams)
             % IMAGES  class constructor.
             % s = images(directory,yPositionPercent,background,maxWidth,maxHeight,scaleFactor,interTrialLuminance,...
             %   trialDistribution,imageSelectionMode,size,sizeyoked,rotation,rotationyoked,pctCorrectionTrials[,drawingMode])
@@ -46,173 +47,151 @@ classdef images<stimManager
             % rotation is a [2x1] vector that specifies ar range from which to randomly select a rotation value for the images (in degrees!)
             % rotationyoked is a flag that indicates if all images have same rotation, or if to randomly draw a rotation for each image
             % drawingMode is an optional argument that specifies drawing in 'expert' versus 'static' mode (default is 'expert')
+            s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);            
+        
             s.LEDParams.active = false;
             s.LEDParams.numLEDs = 0;
             s.LEDParams.IlluminationModes = {};
 
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-
-                    
-
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'images'))
-                        s = varargin{1};
-                    else
-                        error('Input argument is not an images object')
-                    end
-                case {14 15 16}
-                    % create object using specified values
-
-                    if ischar(varargin{1})
-                        s.directory=varargin{1};
-                        try
-                            d=isdir(s.directory); % may fail due to windows networking/filesharing bug, but unlikely at construction time
-                        catch ex
-                            disp(['CAUGHT ERROR: ' getReport(ex,'extended')])
-                            error('can''t load that directory')
-                        end
-                    else
-                        error('directory must be fully resolved string')
-                    end
-
-                    if isreal(varargin{2}) && isscalar(varargin{2}) && varargin{2}>=0 && varargin{2}<=1
-                        s.yPositionPercent=varargin{2};
-                    else
-                        error('yPositionPercent must be real scalar 0<=yPositionPercent<=1')
-                    end
-
-                    if isreal(varargin{3}) && isscalar(varargin{3}) && varargin{3}>=0 && varargin{3}<=1
-                        s.background=varargin{3};
-                    else
-                        error('background must be real scalar 0<=background<=1')
-                    end
-
-                    if iscell(varargin{8}) && isvector(varargin{8}) && ~isempty(varargin{8})
-                        valid=true;
-                        for i=1:length(varargin{8})
-                            entry=varargin{8}{i};
-                            if ~all(size(entry)==[1 2]) || ~iscell(entry) || ~iscell(entry{1}) || ~isvector(entry{1}) ...
-                                    || ~all(cellfun(@ischar,entry{1})) ||~all(cellfun(@isvector,entry{1})) ...
-                                    || ~isscalar(entry{2}) || ~isreal(entry{2}) || ~(entry{2}>=0)
-
-                                entry
-                                entry{1}
-                                entry{2}
-
-                                valid=false;
-                                break
-                            end
-                        end
-
-                        if valid
-                            s.trialDistribution=varargin{8};
-                        else
-                            error('cell entries in trialDistribution must be 1x2 cells of format {imagePrefixN imagePrefixP} prob}')
-                        end
-                    else
-                        varargin{8}
-                        size(varargin{8})
-                        error('trialDistribution must be nonempty vector cell array')
-                    end
-
-                    %imageSelectionMode
-                    if ischar(varargin{9}) && (strcmp(varargin{9},'normal') || strcmp(varargin{9},'deck'))
-                        s.imageSelectionMode=varargin{9};
-                    else
-                        error('imageSelectionMode must be either ''normal'' or ''deck''');
-                    end
-
-                    %size
-                    if isvector(varargin{10}) && length(varargin{10})==2 && isnumeric(varargin{10}) && ...
-                            all(varargin{10}>0) && all(varargin{10}<=1) && varargin{10}(2)>=varargin{10}(1)
-                        s.size=varargin{10};
-                    else
-                        error('size must be a 2-element vector between 0 and 1');
-                    end
-
-                    %sizeyoked
-                    if islogical(varargin{11})
-                        s.sizeyoked=varargin{11};
-                    else
-                        error('sizeyoked must be a logical');
-                    end
-
-                    %rotation
-                    if isvector(varargin{12}) && length(varargin{12})==2 && isnumeric(varargin{12})
-                        s.rotation=varargin{12};
-                    else
-                        error('rotation must be a 2-element vector');
-                    end
-
-                    %rotationyoked
-                    if islogical(varargin{13})
-                        s.rotationyoked=varargin{13};
-                    else
-                        error('rotationyoked must be a logical');
-                    end
-
-                    %pctCorrectionTrials
-                    if ~isempty(varargin{14}) && isnumeric(varargin{14}) && varargin{14}>=0 && varargin{14}<=1
-                        s.pctCorrectionTrials=varargin{14};
-                    else
-                        error('pctCorrectionTrials must be >=0 and <=1');
-                    end
-
-                    %mode
-                    if nargin==15
-                        if ischar(varargin{15}) && (strcmp(varargin{15},'expert') || strcmp(varargin{15},'cache'))
-                            s.drawingMode=varargin{15};
-                        else
-                            error('drawingMode must be ''expert'' or ''cache''');
-                        end
-                    end
-
-                    if nargin>15
-                        % LED state
-                        if isstruct(varargin{16})
-                            s.LEDParams = varargin{16};
-                        else
-                            error('LED state should be a structure');
-                        end
-                        if s.LEDParams.numLEDs>0
-                            % go through the Illumination Modes and check if they seem
-                            % reasonable
-                            cumulativeFraction = 0;
-                            if s.LEDParams.active && isempty(s.LEDParams.IlluminationModes)
-                                error('need to provide atleast one illumination mode if LEDs is to be active');
-                            end
-                            for i = 1:length(s.LEDParams.IlluminationModes)
-                                if any(s.LEDParams.IlluminationModes{i}.whichLED)>s.LEDParams.numLEDs
-                                    error('asking for an LED that is greater than numLEDs')
-                                else
-                                    if length(s.LEDParams.IlluminationModes{i}.whichLED)~= length(s.LEDParams.IlluminationModes{i}.intensity) || ...
-                                            any(s.LEDParams.IlluminationModes{i}.intensity>1) || any(s.LEDParams.IlluminationModes{i}.intensity<0)
-                                        error('specify a single intensity for each of the LEDs and these intensities hould lie between 0 and 1');
-                                    else
-                                        cumulativeFraction = [cumulativeFraction cumulativeFraction(end)+s.LEDParams.IlluminationModes{i}.fraction];
-                                    end
-                                end
-                            end
-
-                            if abs(cumulativeFraction(end)-1)>eps
-                                error('the cumulative fraction should sum to 1');
-                            else
-                                s.LEDParams.cumulativeFraction = cumulativeFraction;
-                            end
-                        end
-                    end
-
-
-                    
-
-                    validateImages(s); %error if can't load images or bad format
-
-                otherwise
-                    error('Wrong number of input arguments')
+            if ischar(directory)
+                s.directory=directory;
+                try
+                    d=isdir(s.directory); % may fail due to windows networking/filesharing bug, but unlikely at construction time
+                catch ex
+                    disp(['CAUGHT ERROR: ' getReport(ex,'extended')])
+                    error('can''t load that directory')
+                end
+            else
+                error('directory must be fully resolved string')
             end
+
+            if isreal(yPositionPercent) && isscalar(yPositionPercent) && yPositionPercent>=0 && yPositionPercent<=1
+                s.yPositionPercent=yPositionPercent;
+            else
+                error('yPositionPercent must be real scalar 0<=yPositionPercent<=1')
+            end
+
+            if isreal(background) && isscalar(background) && background>=0 && background<=1
+                s.background=background;
+            else
+                error('background must be real scalar 0<=background<=1')
+            end
+
+            if iscell(trialDistribution) && isvector(trialDistribution) && ~isempty(trialDistribution)
+                valid=true;
+                for i=1:length(trialDistribution)
+                    entry=trialDistribution{i};
+                    if ~all(size(entry)==[1 2]) || ~iscell(entry) || ~iscell(entry{1}) || ~isvector(entry{1}) ...
+                            || ~all(cellfun(@ischar,entry{1})) ||~all(cellfun(@isvector,entry{1})) ...
+                            || ~isscalar(entry{2}) || ~isreal(entry{2}) || ~(entry{2}>=0)
+
+                        entry
+                        entry{1}
+                        entry{2}
+
+                        valid=false;
+                        break
+                    end
+                end
+
+                if valid
+                    s.trialDistribution=trialDistribution;
+                else
+                    error('cell entries in trialDistribution must be 1x2 cells of format {imagePrefixN imagePrefixP} prob}')
+                end
+            else
+                trialDistribution
+                size(trialDistribution)
+                error('trialDistribution must be nonempty vector cell array')
+            end
+
+            %imageSelectionMode
+            if ischar(imageSelectionMode) && (strcmp(imageSelectionMode,'normal') || strcmp(imageSelectionMode,'deck'))
+                s.imageSelectionMode=imageSelectionMode;
+            else
+                error('imageSelectionMode must be either ''normal'' or ''deck''');
+            end
+
+            %size
+            if isvector(size) && length(size)==2 && isnumeric(size) && ...
+                    all(size>0) && all(size<=1) && size(2)>=size(1)
+                s.size=size;
+            else
+                error('size must be a 2-element vector between 0 and 1');
+            end
+
+            %sizeyoked
+            if islogical(sizeyoked)
+                s.sizeyoked=sizeyoked;
+            else
+                error('sizeyoked must be a logical');
+            end
+
+            %rotation
+            if isvector(rotation) && length(rotation)==2 && isnumeric(rotation)
+                s.rotation=rotation;
+            else
+                error('rotation must be a 2-element vector');
+            end
+
+            %rotationyoked
+            if islogical(rotationyoked)
+                s.rotationyoked=rotationyoked;
+            else
+                error('rotationyoked must be a logical');
+            end
+
+            %pctCorrectionTrials
+            if ~isempty(pctCorrectionTrials) && isnumeric(pctCorrectionTrials) && pctCorrectionTrials>=0 && pctCorrectionTrials<=1
+                s.pctCorrectionTrials=pctCorrectionTrials;
+            else
+                error('pctCorrectionTrials must be >=0 and <=1');
+            end
+
+            %mode
+            if nargin==15
+                if ischar(drawingMode) && (strcmp(drawingMode,'expert') || strcmp(drawingMode,'cache'))
+                    s.drawingMode=drawingMode;
+                else
+                    error('drawingMode must be ''expert'' or ''cache''');
+                end
+            end
+
+          
+            if isstruct(LEDParams)
+                s.LEDParams = LEDParams;
+            else
+                error('LED state should be a structure');
+            end
+            if s.LEDParams.numLEDs>0
+                % go through the Illumination Modes and check if they seem
+                % reasonable
+                cumulativeFraction = 0;
+                if s.LEDParams.active && isempty(s.LEDParams.IlluminationModes)
+                    error('need to provide atleast one illumination mode if LEDs is to be active');
+                end
+                for i = 1:length(s.LEDParams.IlluminationModes)
+                    if any(s.LEDParams.IlluminationModes{i}.whichLED)>s.LEDParams.numLEDs
+                        error('asking for an LED that is greater than numLEDs')
+                    else
+                        if length(s.LEDParams.IlluminationModes{i}.whichLED)~= length(s.LEDParams.IlluminationModes{i}.intensity) || ...
+                                any(s.LEDParams.IlluminationModes{i}.intensity>1) || any(s.LEDParams.IlluminationModes{i}.intensity<0)
+                            error('specify a single intensity for each of the LEDs and these intensities hould lie between 0 and 1');
+                        else
+                            cumulativeFraction = [cumulativeFraction cumulativeFraction(end)+s.LEDParams.IlluminationModes{i}.fraction];
+                        end
+                    end
+                end
+
+                if abs(cumulativeFraction(end)-1)>eps
+                    error('the cumulative fraction should sum to 1');
+                else
+                    s.LEDParams.cumulativeFraction = cumulativeFraction;
+                end
+            end
+           
+            validateImages(s); %error if can't load images or bad format
+
         end
         
         function analysis(sm,detailRecords,subjectID)

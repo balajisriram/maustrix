@@ -303,7 +303,7 @@ classdef ratrix
                     end
                     for staN=1:size(r.assignments{i}{1},1)
                         %d=[d '\t\t\tstation: ' display(r.assignments{i}{1}{staN,1}) '\trunning: ' num2str(r.assignments{i}{1}{staN,2})];
-                        d=[d '\t\t\tstation ' num2str(getID(r.assignments{i}{1}{staN,1})) ':\trunning: ' num2str(r.assignments{i}{1}{staN,2})];
+                        d=[d '\t\t\tstation ' num2str(r.assignments{i}{1}{staN,1}.id) ':\trunning: ' num2str(r.assignments{i}{1}{staN,2})];
                     end
                 else
                     error('something is wrong with this ratrix''s assignments')

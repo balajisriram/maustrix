@@ -1,4 +1,4 @@
-classdef orientedCenterSurround<stimManager
+classdef orientedCenterSurround<gratings
     
     properties
         pixPerCycs = {};
@@ -57,30 +57,13 @@ classdef orientedCenterSurround<stimManager
             %   - in future, handle a cell array for this flag that customizes the
             %   combo selection process.. if so, update analysis too
             % Mar 3 2011 - include blank trials.
+            s=s@gratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,durations,radii,location,...
+    waveform,normalizationMethod,mean,thresh,numRepeats,maxWidth,maxHeight,scaleFactor,interTrialLuminance,doCombos);
+
+            
             s.ordering.method = 'ordered';
             s.ordering.seed = [];
             s.ordering.includeBlank = false;
-
-
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'orientedCenterSurround'))
-                        s = varargin{1};
-                    else
-                        error('Input argument is not a gratings object')
-                    end
-                case {18 19 20 21}
-
-                    
-
-                otherwise
-                    nargin
-                    error('Wrong number of input arguments')
-            end
         end
         
         

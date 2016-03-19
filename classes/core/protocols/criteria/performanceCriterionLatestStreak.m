@@ -8,7 +8,7 @@ classdef performanceCriterionLatestStreak<criterion
     end
     
     methods
-        function s=performanceCriterionLatestStreak(varargin)
+        function s=performanceCriterionLatestStreak(pctCorrect,consecutiveTrials)
             % PERFORMANCECRITERIONLATESTSTREAK  class constructor.  
             % s=performanceCriterionLatestStreak(pctCorrect,consecutiveTrials)
             %percent correct is a vector of possible graduation points, the first one
@@ -16,32 +16,18 @@ classdef performanceCriterionLatestStreak<criterion
             %performanceCriterion([.95, .85], [20,200]);
             %will graduate a subject if he is 95% correct after 20 consecutive trials
             %or if he is at least 85% correct after 200 consecutive trials
+            s=s@criterion();
 
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'performanceCriterionLatestStreak'))
-                        s = varargin{1};
-                    else
-                        error('Input argument is not a performanceCriterionLatestStreak object')
-                    end  
-                case 2
-                    if length(varargin{1})~=length(varargin{2}) || ~isvector(varargin{1}) || ~isvector(varargin{2})
-                        error('size of percent correct must be the same as the size of consecutive trials and both must be vectors')
-                    end    
-                    if all(varargin{1}>=0 & varargin{1}<=1) && isinteger(varargin{2}) && all(varargin{2}>=1)
-                        s.pctCorrect=varargin{1};
-                        s.consecutiveTrials=varargin{2};
-                    else
-                        error('0<=pctCorrect<=1 and consecutiveTrials must be an integer >= 1')
-                    end
-                    
-                otherwise
-                    error('Wrong number of input arguments')
+            if length(pctCorrect)~=length(consecutiveTrials) || ~isvector(pctCorrect) || ~isvector(consecutiveTrials)
+                error('size of percent correct must be the same as the size of consecutive trials and both must be vectors')
+            end    
+            if all(pctCorrect>=0 & pctCorrect<=1) && isinteger(consecutiveTrials) && all(consecutiveTrials>=1)
+                s.pctCorrect=pctCorrect;
+                s.consecutiveTrials=consecutiveTrials;
+            else
+                error('0<=pctCorrect<=1 and consecutiveTrials must be an integer >= 1')
             end
+
         end
         
         function [graduate details] = checkCriterion(c,subject,trainingStep,trialRecords, compiledRecords)

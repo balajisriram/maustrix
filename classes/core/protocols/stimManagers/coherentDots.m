@@ -19,7 +19,8 @@ classdef coherentDots<stimManager
     end
     
     methods
-        function s=coherentDots(varargin)
+        function s=coherentDots(screen_width,screen_height,num_dots,coherence,speed,contrast, ...
+               dot_size,movie_duration,scaleFactor,maxWidth,maxHeight,pctCorrectionTrials,replayMode,interTrialLuminance)
             % COHERENTDOTS  class constructor.
             % s=coherentDots(screen_width,screen_height,num_dots,coherence,speed,contrast,
             %   dot_size,movie_duration,screen_zoom,maxWidth,maxHeight,pctCorrectionTrials,[replayMode,interTrialLuminance])
@@ -43,6 +44,7 @@ classdef coherentDots<stimManager
             %   interTrialLuminance - (optional) defaults to 0
             %   
 
+            s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
             eps = 0.0000001;
 
             screen_zoom = [6 6];
@@ -52,231 +54,203 @@ classdef coherentDots<stimManager
             s.LEDParams.IlluminationModes = {};
 
 
-            switch nargin
-            case 0 
-            % if no input arguments, create a default object
-
-            
-
-            case 1
-            % if single argument of this class type, return it
-                if (isa(varargin{1},'coherentDots'))
-                    s = varargin{1}; 
-                else
-                    error('Input argument is not an coherentDots object')
-                end
-            case {12 13 14 15}
-                % screen_width
-                if (floor(varargin{1}) - varargin{1} < eps)
-                    s.screen_width = varargin{1};
-                else
-                    varargin{1}
-                    error('screen_width must be an integer')
-                end
-
-                % screen_height
-                if (floor(varargin{2}) - varargin{2} < eps)
-                    s.screen_height = varargin{2};
-                else
-                    error('screen_height must be an integer')
-                end
-
-                % num_dots
-                if (floor(varargin{3}) - varargin{3} < eps)
-                    s.num_dots = varargin{3};
-                else
-                    error('num_dots must be an integer')
-                end
-
-                % coherence
-                if (isfloat(varargin{4}))
-                    s.coherence = 1;
-                    if (length(varargin{4}) == 1)
-                        if (varargin{4} >= 0 && varargin{4} <= 1)
-                            s.coherence = varargin{4};
-                        else
-                            error('Coherence must be between 0 and 1')
-                        end
-                    elseif (length(varargin{4}) == 2)
-                        if (varargin{4}(1) >= 0 && varargin{4}(1) <= 1 && varargin{4}(2) >= 0 && varargin{4}(2) <= 1 && (varargin{4}(2) - varargin{4}(1) > 0))
-                            s.coherence=varargin{4};
-                        else
-                            error('Coherence must be between 0 and 1, with max > min')
-                        end
-                    else
-                        error ('Coherence must be either a 1x2 or 1x1 set of floats')
-                    end
-                elseif iscell(varargin{4})
-                    if strcmp(varargin{4}{2},'selectWithin') && (length(varargin{4}{1})==2) && (all(varargin{4}{1}>=0)) && (all(varargin{4}{1}<=1))
-                        s.coherence = varargin{4};
-                    elseif strcmp(varargin{4}{2},'selectFrom') && all(isnumeric(varargin{4}{1})) && (all(varargin{4}{1}>=0)) && (all(varargin{4}{1}<=1))
-                        s.coherence = varargin{4};
-                    else
-                        error('if you pass a cell, it should be of the type selectWithin or selectFrom');
-                    end
-                else
-                    error('Coherence level must be a 1x1 or 1x2 array between 0 and 1 or a cell of the appropriate type')
-                end
-
-                % speed
-                if (isfloat(varargin{5})) && (isscalar(varargin{5}) || length(varargin{5})==2)
-                    if (length(varargin{5})==2) && ~(varargin{5}(1)<=varargin{5}(2))
-                        error('range of speed must be [min max]');
-                    end
-                    s.speed = varargin{5};
-                elseif iscell(varargin{5})
-                    if strcmp(varargin{5}{2},'selectWithin') && (length(varargin{5}{1})==2) && (all(varargin{5}{1}>=0))
-                        s.speed = varargin{5};
-                    elseif strcmp(varargin{5}{2},'selectFrom') && all(isnumeric(varargin{5}{1})) && (all(varargin{5}{1}>=0))
-                        s.speed = varargin{5};
-                    else
-                        error('if you pass a cell, it should be of the type selectWithin or selectFrom');
-                    end
-                else
-                    error('speed (pixels/frame) must be a double or a 2-element array specifying a range or a cell of the appropriate type')
-                end
-
-                % contrast
-                if (length(varargin{6})==1 || length(varargin{6})==2) && all(isnumeric(varargin{6})) && ...
-                        all(varargin{6} >=0) && all(varargin{6} <=1)
-                    if length(varargin{6})==2 && ~(varargin{6}(1)<=varargin{6}(2))
-                        error('range of contrast must be [min max]');
-                    end
-                    s.contrast = varargin{6};
-                elseif iscell(varargin{6})
-                    if strcmp(varargin{6}{2},'selectWithin') && (length(varargin{6}{1})==2) && (all(varargin{6}{1}>=0)) && (all(varargin{6}{1}<=1))
-                        s.contrast = varargin{6};
-                    elseif strcmp(varargin{6}{2},'selectFrom') && all(isnumeric(varargin{6}{1})) && (all(varargin{6}{1}>=0)) && (all(varargin{6}{1}<=1))
-                        s.contrast = varargin{6};
-                    else
-                        error('if you pass a cell, it should be of the type selectWithin or selectFrom');
-                    end
-                else
-                    error('contrast must be >=0 and <=1 and be a single number or a 2-element array specifying a range or a cell of the appropriate type');
-                end
-
-                % dot_size
-                if length(varargin{7})==1 && (floor(varargin{7}) - varargin{7} < eps)
-                    s.dot_size = varargin{7};
-                elseif length(varargin{7})==2 && all(floor(varargin{7}) - varargin{7} < eps) && varargin{7}(1)<=varargin{7}(2)
-                    s.dot_size = varargin{7};
-                elseif iscell(varargin{7})
-                    if strcmp(varargin{7}{2},'selectWithin') && (length(varargin{7}{1})==2) && (all(varargin{7}{1}>=0))
-                        s.dot_size = varargin{7};
-                    elseif strcmp(varargin{7}{2},'selectFrom') && all(isnumeric(varargin{7}{1})) && (all(varargin{7}{1}>=0))
-                        s.dot_size = varargin{7};
-                    else
-                        error('if you pass a cell, it should be of the type selectWithin or selectFrom');
-                    end
-                else
-                    error('dot_size must be an integer or a 2-element array specifying a valid range')
-                end
-
-                % movie_duration
-                if (floor(varargin{8}) - varargin{8} < eps)
-                    s.movie_duration = varargin{8};
-                elseif length(varargin{8})==2 && all(floor(varargin{8}) - varargin{8} < eps) && varargin{8}(1)<=varargin{8}(2)
-                    s.movie_duration = varargin{8};
-                elseif iscell(varargin{8})
-                    if strcmp(varargin{8}{2},'selectWithin') && (length(varargin{8}{1})==2) && (all(varargin{8}{1}>=0))
-                        s.movie_duration = varargin{8};
-                    elseif strcmp(varargin{8}{2},'selectFrom') && all(isnumeric(varargin{8}{1})) && (all(varargin{8}{1}>=0))
-                        s.movie_duration = varargin{8};
-                    else
-                        error('if you pass a cell, it should be of the type selectWithin or selectFrom');
-                    end
-                else
-                    error('movie_duration must be an integer or a 2-element array specifying a valid range or a cell of the appropriate type')
-                end
-
-                % screen_zoom
-                if (length(varargin{9}) == 2 && isnumeric(varargin{9}))
-                    screen_zoom = varargin{9};
-                else
-                    error('screen_zoom must be a 1x2 array with integer values')
-                end
-
-                % pctCorrectionTrials
-                if isscalar(varargin{12}) && varargin{12}<=1 && varargin{12}>=0
-                    s.pctCorrectionTrials=varargin{12};
-                else
-                    error('pctCorrectionTrials must be a scalar between 0 and 1');
-                end
-
-                for i=13:15
-                    if i <= nargin
-                        args{i}=varargin{i};
-                    else
-                        args{i}=[];
-                    end
-                end
-
-                % replayMode
-                if ~isempty(args{13})
-                    if ischar(args{13}) && (strcmp(args{13},'loop') || strcmp(args{13},'once'))
-                        s.replayMode=args{13};
-                    else
-                        error('replay mode must be ''loop'' or ''once''');
-                    end
-                else
-                    s.replayMode='loop';
-                end
-
-
-                if nargin>14
-                    % LED state
-                        if isstruct(varargin{15})
-                            s.LEDParams = varargin{15};
-                        else
-                            error('LED state should be a structure');
-                        end
-                        if s.LEDParams.numLEDs>0
-                            % go through the Illumination Modes and check if they seem
-                            % reasonable
-                            cumulativeFraction = 0;
-                            if s.LEDParams.active && isempty(s.LEDParams.IlluminationModes)
-                                error('need to provide atleast one illumination mode if LEDs is to be active');
-                            end
-                            for i = 1:length(s.LEDParams.IlluminationModes)
-                                if any(s.LEDParams.IlluminationModes{i}.whichLED)>s.LEDParams.numLEDs
-                                    error('asking for an LED that is greater than numLEDs')
-                                else
-                                    if length(s.LEDParams.IlluminationModes{i}.whichLED)~= length(s.LEDParams.IlluminationModes{i}.intensity) || ...
-                                            any(s.LEDParams.IlluminationModes{i}.intensity>1) || any(s.LEDParams.IlluminationModes{i}.intensity<0)
-                                        error('specify a single intensity for each of the LEDs and these intensities hould lie between 0 and 1');
-                                    else
-                                        cumulativeFraction = [cumulativeFraction cumulativeFraction(end)+s.LEDParams.IlluminationModes{i}.fraction];
-                                    end
-                                end
-                            end
-
-                            if abs(cumulativeFraction(end)-1)>eps
-                                error('the cumulative fraction should sum to 1');
-                            else
-                                s.LEDParams.cumulativeFraction = cumulativeFraction;
-                            end
-                        end
-                end
-
-
-                % maxWidth, maxHeight, scale factor, intertrial luminance
-                if isempty(args{14})
-                    
-                else
-                    % check intertrial luminance
-                    if args{14} >=0 && args{14} <= 1
-                        
-                    else
-                        error('interTrialLuminance must be <=1 and >=0 - will be converted to a uint8 0-255');
-                    end
-                end
-
-
-
-            otherwise
-                nargin
-                error('Wrong number of input arguments')
+          
+            % screen_width
+            if (floor(screen_width) - screen_width < eps)
+                s.screen_width = screen_width;
+            else
+                disp(screen_width);
+                error('screen_width must be an integer')
             end
+
+            % screen_height
+            if (floor(screen_height) - screen_height < eps)
+                s.screen_height = screen_height;
+            else
+                error('screen_height must be an integer')
+            end
+
+            % num_dots
+            if (floor(num_dots) - num_dots < eps)
+                s.num_dots = num_dots;
+            else
+                error('num_dots must be an integer')
+            end
+
+            % coherence
+            if (isfloat(coherence))
+                s.coherence = 1;
+                if (length(coherence) == 1)
+                    if (coherence >= 0 && coherence <= 1)
+                        s.coherence = coherence;
+                    else
+                        error('Coherence must be between 0 and 1')
+                    end
+                elseif (length(coherence) == 2)
+                    if (coherence(1) >= 0 && coherence(1) <= 1 && coherence(2) >= 0 && coherence(2) <= 1 && (coherence(2) - coherence(1) > 0))
+                        s.coherence=coherence;
+                    else
+                        error('Coherence must be between 0 and 1, with max > min')
+                    end
+                else
+                    error ('Coherence must be either a 1x2 or 1x1 set of floats')
+                end
+            elseif iscell(coherence)
+                if strcmp(coherence{2},'selectWithin') && (length(coherence{1})==2) && (all(coherence{1}>=0)) && (all(coherence{1}<=1))
+                    s.coherence = coherence;
+                elseif strcmp(coherence{2},'selectFrom') && all(isnumeric(coherence{1})) && (all(coherence{1}>=0)) && (all(coherence{1}<=1))
+                    s.coherence = coherence;
+                else
+                    error('if you pass a cell, it should be of the type selectWithin or selectFrom');
+                end
+            else
+                error('Coherence level must be a 1x1 or 1x2 array between 0 and 1 or a cell of the appropriate type')
+            end
+
+            % speed
+            if (isfloat(speed)) && (isscalar(speed) || length(speed)==2)
+                if (length(speed)==2) && ~(speed(1)<=speed(2))
+                    error('range of speed must be [min max]');
+                end
+                s.speed = speed;
+            elseif iscell(speed)
+                if strcmp(speed{2},'selectWithin') && (length(speed{1})==2) && (all(speed{1}>=0))
+                    s.speed = speed;
+                elseif strcmp(speed{2},'selectFrom') && all(isnumeric(speed{1})) && (all(speed{1}>=0))
+                    s.speed = speed;
+                else
+                    error('if you pass a cell, it should be of the type selectWithin or selectFrom');
+                end
+            else
+                error('speed (pixels/frame) must be a double or a 2-element array specifying a range or a cell of the appropriate type')
+            end
+
+            % contrast
+            if (length(contrast)==1 || length(contrast)==2) && all(isnumeric(contrast)) && ...
+                    all(contrast >=0) && all(contrast <=1)
+                if length(contrast)==2 && ~(contrast(1)<=contrast(2))
+                    error('range of contrast must be [min max]');
+                end
+                s.contrast = contrast;
+            elseif iscell(contrast)
+                if strcmp(contrast{2},'selectWithin') && (length(contrast{1})==2) && (all(contrast{1}>=0)) && (all(contrast{1}<=1))
+                    s.contrast = contrast;
+                elseif strcmp(contrast{2},'selectFrom') && all(isnumeric(contrast{1})) && (all(contrast{1}>=0)) && (all(contrast{1}<=1))
+                    s.contrast = contrast;
+                else
+                    error('if you pass a cell, it should be of the type selectWithin or selectFrom');
+                end
+            else
+                error('contrast must be >=0 and <=1 and be a single number or a 2-element array specifying a range or a cell of the appropriate type');
+            end
+
+            % dot_size
+            if length(dot_size)==1 && (floor(dot_size) - dot_size < eps)
+                s.dot_size = dot_size;
+            elseif length(dot_size)==2 && all(floor(dot_size) - dot_size < eps) && dot_size(1)<=dot_size(2)
+                s.dot_size = dot_size;
+            elseif iscell(dot_size)
+                if strcmp(dot_size{2},'selectWithin') && (length(dot_size{1})==2) && (all(dot_size{1}>=0))
+                    s.dot_size = dot_size;
+                elseif strcmp(dot_size{2},'selectFrom') && all(isnumeric(dot_size{1})) && (all(dot_size{1}>=0))
+                    s.dot_size = dot_size;
+                else
+                    error('if you pass a cell, it should be of the type selectWithin or selectFrom');
+                end
+            else
+                error('dot_size must be an integer or a 2-element array specifying a valid range')
+            end
+
+            % movie_duration
+            if (floor(movie_duration) - movie_duration < eps)
+                s.movie_duration = movie_duration;
+            elseif length(movie_duration)==2 && all(floor(movie_duration) - movie_duration < eps) && movie_duration(1)<=movie_duration(2)
+                s.movie_duration = movie_duration;
+            elseif iscell(movie_duration)
+                if strcmp(movie_duration{2},'selectWithin') && (length(movie_duration{1})==2) && (all(movie_duration{1}>=0))
+                    s.movie_duration = movie_duration;
+                elseif strcmp(movie_duration{2},'selectFrom') && all(isnumeric(movie_duration{1})) && (all(movie_duration{1}>=0))
+                    s.movie_duration = movie_duration;
+                else
+                    error('if you pass a cell, it should be of the type selectWithin or selectFrom');
+                end
+            else
+                error('movie_duration must be an integer or a 2-element array specifying a valid range or a cell of the appropriate type')
+            end
+
+            % screen_zoom
+            if (length(screen_zoom) == 2 && isnumeric(screen_zoom))
+                screen_zoom = screen_zoom;
+            else
+                error('screen_zoom must be a 1x2 array with integer values')
+            end
+
+            % pctCorrectionTrials
+            if isscalar(pctCorrectionTrials) && pctCorrectionTrials<=1 && pctCorrectionTrials>=0
+                s.pctCorrectionTrials=pctCorrectionTrials;
+            else
+                error('pctCorrectionTrials must be a scalar between 0 and 1');
+            end
+
+            % replayMode
+            if ~isempty(replayMode)
+                if ischar(replayMode) && (strcmp(replayMode,'loop') || strcmp(replayMode,'once'))
+                    s.replayMode=replayMode;
+                else
+                    error('replay mode must be ''loop'' or ''once''');
+                end
+            else
+                s.replayMode='loop';
+            end
+
+
+           
+            % LED state
+            if isstruct(LEDParams)
+                s.LEDParams = LEDParams;
+            else
+                error('LED state should be a structure');
+            end
+            if s.LEDParams.numLEDs>0
+                % go through the Illumination Modes and check if they seem
+                % reasonable
+                cumulativeFraction = 0;
+                if s.LEDParams.active && isempty(s.LEDParams.IlluminationModes)
+                    error('need to provide atleast one illumination mode if LEDs is to be active');
+                end
+                for i = 1:length(s.LEDParams.IlluminationModes)
+                    if any(s.LEDParams.IlluminationModes{i}.whichLED)>s.LEDParams.numLEDs
+                        error('asking for an LED that is greater than numLEDs')
+                    else
+                        if length(s.LEDParams.IlluminationModes{i}.whichLED)~= length(s.LEDParams.IlluminationModes{i}.intensity) || ...
+                                any(s.LEDParams.IlluminationModes{i}.intensity>1) || any(s.LEDParams.IlluminationModes{i}.intensity<0)
+                            error('specify a single intensity for each of the LEDs and these intensities hould lie between 0 and 1');
+                        else
+                            cumulativeFraction = [cumulativeFraction cumulativeFraction(end)+s.LEDParams.IlluminationModes{i}.fraction];
+                        end
+                    end
+                end
+
+                if abs(cumulativeFraction(end)-1)>eps
+                    error('the cumulative fraction should sum to 1');
+                else
+                    s.LEDParams.cumulativeFraction = cumulativeFraction;
+                end
+            end
+
+
+            % maxWidth, maxHeight, scale factor, intertrial luminance
+            if isempty(interTrialLuminance)
+
+            else
+                % check intertrial luminance
+                if interTrialLuminance >=0 && interTrialLuminance <= 1
+
+                else
+                    error('interTrialLuminance must be <=1 and >=0 - will be converted to a uint8 0-255');
+                end
+            end
+
         end
         
         function [stimulus,updateSM,resolutionIndex,preRequestStim,preResponseStim,discrimStim,postDiscrimStim,interTrialStim,LUT,targetPorts,distractorPorts,...

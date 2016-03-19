@@ -9,46 +9,31 @@ classdef parameterThresholdCriterion<criterion
     end
     
     methods
-        function s=parameterThresholdCriterion(varargin)
+        function s=parameterThresholdCriterion(parameterLocation,operator,threshold)
             % RATECRITERION  class constructor.  
             % s=parameterThresholdCriterion(parameterLocation,operator,threshold)
             % s=parameterThresholdCriterion('.stimDetails.targetContrast','<',0.1)
             % s=parameterThresholdCriterion('.stimDetails.flankerContrast','==',1)
+            s=s@criterion();
 
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'parameterThresholdCriterion'))
-                        s = varargin{1};
-                    else
-                        error('Input argument is not a parameterThresholdCriterion object')
-                    end
-                case 3
-                    if strcmp(class(varargin{1}),'char')
-                        s.parameterLocation=varargin{1};
-                    else
-                        error('parameterLocation must be a char that is the path to the parameter in the trialrecords')
-                    end
-
-                    if any(strcmp(varargin{2},{'<','>','>=','<=','=='}))
-                        s.operator=varargin{2};
-                    else
-                        error('threshold must be ''<'' ''>'' ''>='' ''<='' or ''=='' ')
-                    end
-
-                    if isnumeric(varargin{3}) & all(size(varargin{3}==1))
-                        s.threshold=varargin{3};
-                    else
-                        error('threshold must a single number')
-                    end
-
-                    
-                otherwise
-                    error('Wrong number of input arguments')
+            if strcmp(class(parameterLocation),'char')
+                s.parameterLocation=parameterLocation;
+            else
+                error('parameterLocation must be a char that is the path to the parameter in the trialrecords')
             end
+
+            if any(strcmp(operator,{'<','>','>=','<=','=='}))
+                s.operator=operator;
+            else
+                error('threshold must be ''<'' ''>'' ''>='' ''<='' or ''=='' ')
+            end
+
+            if isnumeric(threshold) & all(size(threshold==1))
+                s.threshold=threshold;
+            else
+                error('threshold must a single number')
+            end
+
         end
         
         function [graduate, details] = checkCriterion(c,subject,trainingStep,trialRecords, compiledRecords)
@@ -148,15 +133,15 @@ classdef parameterThresholdCriterion<criterion
                     
                 case 1
                     % if single argument of this class type, return it
-                    if (isa(varargin{1},'rateCriterion'))
-                        s = varargin{1};
+                    if (isa(parameterLocation,'rateCriterion'))
+                        s = parameterLocation;
                     else
                         error('Input argument is not a rateCriterion object')
                     end
                 case 2
-                    if varargin{1}>=0 && varargin{2}>=0
-                        s.trialsPerMin=varargin{1};
-                        s.consecutiveMins=varargin{2};
+                    if parameterLocation>=0 && operator>=0
+                        s.trialsPerMin=parameterLocation;
+                        s.consecutiveMins=operator;
                     else
                         error('trialsPerMin and consecutiveMins must be >= 0')
                     end

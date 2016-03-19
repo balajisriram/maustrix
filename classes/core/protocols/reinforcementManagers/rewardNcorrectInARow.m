@@ -1,42 +1,23 @@
 classdef rewardNcorrectInARow<reinforcementManager
     
     properties
+        rewardNthCorrect=0;
     end
     
     methods
-        function r=rewardNcorrectInARow(varargin)
+        function r=rewardNcorrectInARow(rewardNthCorrect,requestRewardSizeULorMS,requestMode,msPenalty,...
+               fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
             % ||rewardNcorrectInARow||  class constructor.
             % r=rewardNcorrectInARow(rewardNthCorrect,requestRewardSizeULorMS,requestMode,msPenalty,...
             %   fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
+            r=r@reinforcementManager(msPenalty,msPuff,scalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestRewardSizeULorMS,requestMode);
 
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-                    r.rewardNthCorrect=[0]; %this is a vector of the rewardSizeULorMSs for the Nth trial correct in a row
-
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'rewardNcorrectInARow'))
-                        r = varargin{1};
-                    else
-                        error('Input argument is not a rewardNcorrectInARow object')
-                    end
-
-                case 8
-
-                    if all(varargin{1})>=0
-                        r.rewardNthCorrect=varargin{1};
-                    else
-                        error('all the rewardSizeULorMSs must be >=0')
-                    end
-
-                  
-
-                otherwise
-                    nargin
-                    error('Wrong number of input arguments')
+            if all(rewardNthCorrect)>=0
+                r.rewardNthCorrect=rewardNthCorrect;
+            else
+                error('all the rewardSizeULorMSs must be >=0')
             end
+
         end
         
         function [r, rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM] = ...

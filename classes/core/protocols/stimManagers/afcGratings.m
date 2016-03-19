@@ -27,7 +27,8 @@ classdef afcGratings<stimManager
     end
     
     methods
-        function s=afcGratings(varargin)
+        function s=afcGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType, annuli,location,...
+                   waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doPostDiscrim, LEDParams)
             % AFCGRATINGS  class constructor.
             % this class is specifically designed for behavior. It does not incorporate
             % many of the features usually present in GRATINGS like the ability to
@@ -52,6 +53,9 @@ classdef afcGratings<stimManager
             % mean - 0<=m<=1
             % thresh - >0
             % doCombos
+            
+            s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
+            
             s.LEDParams.active = false;
             s.LEDParams.numLEDs = 0;
             s.LEDParams.IlluminationModes = {};
@@ -64,40 +68,40 @@ classdef afcGratings<stimManager
                     
                 case 1
                     % if single argument of this class type, return it
-                    if (isa(varargin{1},'afcGratings'))
-                        s = varargin{1};
+                    if (isa(pixPerCycs,'afcGratings'))
+                        s = pixPerCycs;
                     else
                         error('Input argument is not a gratings object')
                     end
                 case {18 19 20 21}
                     % create object using specified values
-                    pixPerCycs = varargin{1};
-                    driftfrequencies = varargin{2};
-                    orientations = varargin{3};
-                    phases = varargin{4};
-                    contrasts = varargin{5};
-                    maxDuration = varargin{6};
-                    radii = varargin{7};
-                    radiusType = varargin{8};
-                    annuli = varargin{9};
-                    location = varargin{10};
-                    waveform = varargin{11};
-                    normalizationMethod = varargin{12};
-                    mean = varargin{13};
-                    thresh = varargin{14};
-                    maxWidth = varargin{15};
-                    maxHeight = varargin{16};
-                    scaleFactor = varargin{17};
-                    interTrialLuminance = varargin{18};
-                    doCombos = varargin{19};
+                    s.pixPerCycs = pixPerCycs;
+                    s.driftfrequencies = driftfrequencies;
+                    s.orientations = orientations;
+                    s.phases = phases;
+                    s.contrasts = contrasts;
+                    s.maxDuration = maxDuration;
+                    s.radii = radii;
+                    s.radiusType = radiusType;
+                    s.annuli = annuli;
+                    s.location = location;
+                    s.waveform = waveform;
+                    s.normalizationMethod = normalizationMethod;
+                    s.mean = mean;
+                    s.thresh = thresh;
+                    s.maxWidth = maxWidth;
+                    s.maxHeight = maxHeight;
+                    s.scaleFactor = scaleFactor;
+                    s.interTrialLuminance = interTrialLuminance;
+                    s.doCombos = doCombos;
 
-                    if(nargin>=20)
-                        doPostDiscrim=varargin{20};
-                    end
+                   
+                    s.doPostDiscrim=doPostDiscrim;
+                   
 
-                    if (nargin>=21)
-                        LEDParams = varargin{21};
-                    end
+                    
+                    s.LEDParams = LEDParams;
+          
 
                     % pixPerCycs
                     if islogical(doCombos)

@@ -16,42 +16,21 @@ classdef adaptiveReinforcement<reinforcementManager
     end
     
     methods
-        function r=adaptiveReinforcement(varargin)
+        function r=adaptiveReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,requestMode,...
+               msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff,minReward,minPenalty,maxPenalty,adaptationMethod,targetTrialRate,targetPerformance)
             % ||adaptiveReinforcement||  class constructor.
             % r=adaptiveReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,requestMode,...
             %   msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff, minReward, minPenalty, maxPenalty, adaptationMethod)
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
+            r=r@reinforcementManager(msPenalty,msPuff,scalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestRewardSizeULorMS,requestMode);
+ 
+            r = setRewardSizeULorMS(r,rewardSizeULorMS);
+            r.minReward = minReward;
+            r.minPenalty = minPenalty;
+            r.maxPenalty = maxPenalty;
+            r.adaptationMethod = adaptationMethod;
+            r.targetTrialRate = targetTrialRate;
+            r.targetPerformance = targetPerformance;
 
-
-                    r = class(r,'adaptiveReinforcement',reinforcementManager());
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'adaptiveReinforcement'))
-                        r = varargin{1};
-                    else
-                        error('Input argument is not a adaptiveReinforcement object')
-                    end
-                case 14
-                    r = setRewardSizeULorMS(r,varargin{1});
-                    r.minReward = varargin{9};
-                    r.minPenalty = varargin{10};
-                    r.maxPenalty = varargin{11};
-                    r.adaptationMethod = varargin{12};
-                    r.targetTrialRate = varargin{13};
-                    r.targetPerformance = varargin{14};
-
-                    if getMsPenalty(r) < r.minPenalty
-                        error('Penalty too low, please set penalty lower than r.minPenalty');
-                    elseif getMsPenalty(r) > r.maxPenalty
-                        error('Penalty too high, please set penalty higher than r.maxPenalty');
-                    end
-
-
-                otherwise
-                    error('Wrong number of input arguments')
-            end
         end
         
         

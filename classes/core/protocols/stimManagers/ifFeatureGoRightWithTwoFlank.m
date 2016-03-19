@@ -1,4 +1,7 @@
 classdef ifFeatureGoRightWithTwoFlank<stimManager
+    % GRATINGS  class constructor.
+    % NOTE: This class is deprecated, was not updated when all the classes
+    % were refactored
     
     properties
         pixPerCycs = [];

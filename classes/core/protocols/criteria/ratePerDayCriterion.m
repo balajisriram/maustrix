@@ -6,32 +6,18 @@ classdef ratePerDayCriterion<criterion
     end
     
     methods
-        function s=ratePerDayCriterion(varargin)
+        function s=ratePerDayCriterion(trialsPerDay,consecutiveDays)
             % RATEPERDAYCRITERION  class constructor.  
             % s=ratePerDayCriterion(trialsPerDay,consecutiveDays)
+            s=s@criterion();
 
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'ratePerDayCriterion'))
-                        s = varargin{1};
-                    else
-                        error('Input argument is not a ratePerDayCriterion object')
-                    end
-                case 2
-                    if varargin{1}>=0 && varargin{2}>=0
-                        s.trialsPerDay=varargin{1};
-                        s.consecutiveDays=varargin{2};
-                    else
-                        error('trialsPerDay and consecutiveDays must be >= 0')
-                    end
-                    
-                otherwise
-                    error('Wrong number of input arguments')
+            if trialsPerDay>=0 && consecutiveDays>=0
+                s.trialsPerDay=trialsPerDay;
+                s.consecutiveDays=consecutiveDays;
+            else
+                error('trialsPerDay and consecutiveDays must be >= 0')
             end
+
         end
         
         function [graduate, details] = checkCriterion(c,subject,trainingStep,trialRecords, compiledRecords)

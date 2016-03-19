@@ -12,7 +12,7 @@ classdef changeDetectorSM<stimManager
     end
     
     methods
-        function s=changeDetectorSM(varargin)
+        function s=changeDetectorSM(stim1,stim2,durationToFlip,durationAfterFlip,maxWidth,maxHeight,scaleFactor,interTrialLuminance)
             % CHANGEDETECTORSM  class constructor.
             % s = changeDetectorSM(stim1,stim2,durationToFlip,durationAfterFlip,maxWidth,maxHeight,scaleFactor,interTrialLuminance)
             % changeDetectorSM stim is a combo stim that makes use of 2 separate stimuli.
@@ -21,69 +21,46 @@ classdef changeDetectorSM<stimManager
             %
             % Responses during the first stim epoch is punished
             % 
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'changeDetectorSM'))
-                        s = varargin{1};
-                    else
-                        error('Input argument is not a changeDetectorSM object')
-                    end
-                case {8}
-                    stim1 = varargin{1};
-                    stim2 = varargin{2};
-                    durationToFlip = varargin{3};
-                    durationAfterFlip = varargin{4};
-                    maxWidth = varargin{5};
-                    maxHeight = varargin{6};
-                    scaleFactor = varargin{7};
-                    interTrialLuminance = varargin{8};
+            s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
+            
 
-                    % error check
-                    if isa(stim1,'stimManager')
-                        s.stim1 = stim1;
-                    else
-                        class(stim1)
-                        error('changeDetectorSM:wrongStimType','stim1 is of the wrong type');
-                    end
-
-                    if isa(stim2,'stimManager')
-                        s.stim2 = stim2;
-                    else
-                        class(stim2)
-                        error('changeDetectorSM:wrongStimType','stim2 is of the wrong type');
-                    end
-
-                    if isnumeric(durationToFlip)&&length(durationToFlip)==1
-                        s.durationToFlip.type = 'delta';
-                        s.durationToFlip.params = durationToFlip;
-                    elseif isstruct(durationToFlip)
-                        durationToFlip = validateDuration(durationToFlip);
-                        s.durationToFlip = durationToFlip;
-                    else
-                        error('changeDetectorSM:wrongDurationType','durationToFlip should be a scalar or should a struct of appropriate type');
-                    end
-
-                    if isnumeric(durationAfterFlip)&&length(durationAfterFlip)==1
-                        s.durationAfterFlip.type = 'delta';
-                        s.durationAfterFlip.params = durationAfterFlip;
-                    elseif isstruct(durationAfterFlip)
-                        durationAfterFlip = validateDuration(durationAfterFlip);
-                        s.durationAfterFlip = durationAfterFlip;
-                    else
-                        error('changeDetectorSM:wrongDurationType','durationAfterFlip should be a scalar or should a struct of appropriate type');
-                    end
-
-                    
-
-                otherwise
-                    nargin
-                    error('Wrong number of input arguments')
+            % error check
+            if isa(stim1,'stimManager')
+                s.stim1 = stim1;
+            else
+                class(stim1)
+                error('changeDetectorSM:wrongStimType','stim1 is of the wrong type');
             end
+
+            if isa(stim2,'stimManager')
+                s.stim2 = stim2;
+            else
+                class(stim2)
+                error('changeDetectorSM:wrongStimType','stim2 is of the wrong type');
             end
+
+            if isnumeric(durationToFlip)&&length(durationToFlip)==1
+                s.durationToFlip.type = 'delta';
+                s.durationToFlip.params = durationToFlip;
+            elseif isstruct(durationToFlip)
+                durationToFlip = validateDuration(durationToFlip);
+                s.durationToFlip = durationToFlip;
+            else
+                error('changeDetectorSM:wrongDurationType','durationToFlip should be a scalar or should a struct of appropriate type');
+            end
+
+            if isnumeric(durationAfterFlip)&&length(durationAfterFlip)==1
+                s.durationAfterFlip.type = 'delta';
+                s.durationAfterFlip.params = durationAfterFlip;
+            elseif isstruct(durationAfterFlip)
+                durationAfterFlip = validateDuration(durationAfterFlip);
+                s.durationAfterFlip = durationAfterFlip;
+            else
+                error('changeDetectorSM:wrongDurationType','durationAfterFlip should be a scalar or should a struct of appropriate type');
+            end
+
+
+        end
 
             function out = validateDuration(in)
                 if ~isstruct(in)

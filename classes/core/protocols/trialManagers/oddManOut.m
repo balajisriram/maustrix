@@ -5,58 +5,24 @@ classdef oddManOut<trialManager
     end
     
     methods
-        function t=oddManOut(varargin)
+        function t=oddManOut(soundManager, percentCorrectionTrials, rewardManager, eyeController, frameDropCorner, dropFrames, ...
+                displayMethod, requestPort, saveDetailedFrameDrops, delayManager, responseWindowMs, showText)
             % oddManOut  class constructor.
             % t=oddManOut(soundManager,percentCorrectionTrials,rewardManager,
             %         [eyeController],[frameDropCorner],[dropFrames],[displayMethod],[requestPorts],[saveDetailedFramedrops],
             %		  [delayManager],[responseWindowMs],[showText])
 
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-                    a=trialManager();
-                    
-
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'oddManOut'))
-                        t = varargin{1};
-                    else
-                        error('Input argument is not a oddManOut object')
-                    end
-                case {3 4 5 6 7 8 9 10 11 12}
-
-                    % percentCorrectionTrials
-                    if varargin{2}>=0 && varargin{2}<=1
-                        t.percentCorrectionTrials=varargin{2};
-                    else
-                        error('1 >= percentCorrectionTrials >= 0')
-                    end
-
-                    d=sprintf(['n alternative forced choice' ...
+            d=sprintf(['n alternative forced choice' ...
                         '\n\t\t\tpercentCorrectionTrials:\t%g'], ...
-                        t.percentCorrectionTrials);
-
-                    for i=4:12
-                        if i <= nargin
-                            args{i}=varargin{i};
-                        else
-                            args{i}=[];
-                        end
-                    end
-
-                    % requestPorts
-                    if isempty(args{8})
-                        args{8}='center'; % default nAFC requestPorts should be 'center'
-                    end
-
-                    a=trialManager(varargin{1},varargin{3},args{4},d,args{5},args{6},args{7},args{8},args{9},args{10},args{11},args{12});
-
+                        percentCorrectionTrials);
+            t=t@trialManager(soundManager,rewardManager,eyeController,d,frameDropCorner,dropFrames,displayMethod,requestPort,saveDetailedFrameDrops,delayManager,responseWindowMs,showText);
                     
-
-                otherwise
-                    nargin
-                    error('Wrong number of input arguments')
+            
+            % percentCorrectionTrials
+            if percentCorrectionTrials>=0 && percentCorrectionTrials<=1
+                t.percentCorrectionTrials=varargin{2};
+            else
+                error('1 >= percentCorrectionTrials >= 0')
             end
         end
         

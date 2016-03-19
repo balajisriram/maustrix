@@ -5,30 +5,17 @@ classdef cuedReinforcement<reinforcementManager
     end
     
     methods
-        function r=cuedReinforcement(varargin)
+        function r=cuedReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,requestMode,...
+              msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
             % ||constantReinforcement||  class constructor.
             % r=constantReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,requestMode,...
             %   msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
-
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
+            r=r@reinforcementManager(msPenalty,msPuff,scalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestRewardSizeULorMS,requestMode);
 
 
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'cuedReinforcement'))
-                        r = varargin{1};
-                    else
-                        error('Input argument is not a cuedReinforcement object')
-                    end
-                case 8
                     
             %         r = setRewardSizeULorMS(r,varargin{1}); % not needed b/c we never look at this value! - stim manager cuedCoherentDots
-                otherwise
-                    error('Wrong number of input arguments')
-            end
+              
         end
         
         function [r rewardSizeULorMS requestRewardSizeULorMS msPenalty msPuff msRewardSound msPenaltySound updateRM] = ...

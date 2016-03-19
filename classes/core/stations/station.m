@@ -205,6 +205,61 @@ classdef station
             assignedSoFar=[dontMatch pins];
         end
 
+        function [endValveState, valveErrorDetails]=setAndCheckValves(station, requestedValves,expectedValveState,valveErrorDetails,startTime,description,barebones)
+
+            if ~exist('barebones','var') || isempty(barebones)
+                barebones=true;%false;
+            end
+
+            %[endValveState valveErrorDetails]=setAndCheckValves(station, requestedValves,expectedValveState,valveErrorDetails,startTime,description)
+            %
+            %set the valves to the requested value
+            %first check to make sure the valves are in the expected state
+            %if not, it logs an error
+            if strcmp(station.responseMethod,'parallelPort')
+                if ~barebones
+                    %CHECK to see if the valves are as we expect
+                    beforeValveState=getValves(station);
+                    if ~all(beforeValveState==expectedValveState)
+                        disp('VALVE ERROR: LOGGING IT')
+                        errNum=size(valveErrorDetails,2)+1;
+                        valveErrorDetails(errNum).timeSinceTrial=GetSecs()-startTime;
+                        valveErrorDetails(errNum).expected=expectedValveState;
+                        valveErrorDetails(errNum).found=beforeValveState;
+                        valveErrorDetails(errNum).description=description;
+                    else
+                        %don't update
+                        %valveErrorDetails=valveErrorDetails;
+                    end
+                end
+
+                % DO IT
+                setValves(station, requestedValves);
+
+                if ~barebones
+                    %return the end state of the valves
+                    %If getValves is slow we could assume they are as requested
+                    endValveState=getValves(station);
+                    if any(endValveState~=requestedValves)
+                        endValveState=endValveState
+                        requestedValves=requestedValves
+                        error('valve setting failed')
+                        %it might be porttalk isn't installed
+                        %follw instructions: http://tech.groups.yahoo.com/group/psychtoolbox/message/4825
+                        %download from here: http://www.beyondlogic.org/porttalk/porttalk.htm
+                    end
+                else
+                    endValveState=requestedValves;
+                end
+
+
+            else
+                if ~ismac
+                    warning('can''t check and set valves without parallel port')
+                end
+                endValveState=false(1,station.numPorts);
+            end
+        end
         
           function out=display(boxes)
             out='';
@@ -580,7 +635,7 @@ classdef station
                     % do not do this even if you "know" what you are doing
             %         PsychImaging('PrepareConfiguration');
             %         PsychImaging('AddTask', 'AllViews', 'GeometryCorrection', 'C:\Documents and Settings\Owner\Application Data\Psychtoolbox\GeometryCalibration\SphereCalibdata_0_1600_1200.mat');
-            %         [windowPtr,rect]=Screen('OpenWindow',windowPtrOrScreenNumber [,color] [,rect][,pixelSize][,numberOfBuffers][,stereomode][,multisample][,imagingmode][,specialFlags][,clientRect]);
+            %         [window,rect]=Screen('OpenWindow',windowOrScreenNumber [,color] [,rect][,pixelSize][,numberOfBuffers][,stereomode][,multisample][,imagingmode][,specialFlags][,clientRect]);
             %         s.window = PsychImaging('OpenWindow',s.screenNum,0);%,[],32,2);  %%color, rect, depth, buffers (none can be changed in basic version)
                     [s.window,~] = Screen('OpenWindow',s.screenNum,0);%,[],32,2);  %%color, rect, depth, buffers (none can be changed in basic version)
 
@@ -614,6 +669,7 @@ classdef station
 
                
                 res=Screen('Resolution', s.screenNum);
+
 
                 s.ifi = Screen('GetFlipInterval',s.window);%,200); %numSamples
 
@@ -701,5 +757,52 @@ classdef station
             s.soundOn = val;
         end
         
+    end
+    
+    methods (Static)
+        function out = allImagingTasksSame(oldTasks,newTasks)
+            % compare the two lists of imaging tasks and return if they are the same or not
+            out=true;
+            % do they have same # of tasks?
+            if ~all(size(oldTasks)==size(newTasks))
+                out=false;
+                return
+            end
+            % check that each task is the same...what about if they are in diff order?
+            % for now, enforce that the tasks must be in same order as well
+            % ie [4 5 6] is not equal to [5 4 6]
+            for i=1:length(oldTasks)
+                a=oldTasks{i};
+                b=newTasks{i};
+                if length(a)~=length(b)
+                    out=false;
+                    return
+                end
+                for j=1:length(a)
+                    if strcmp(class(a{j}),class(b{j})) % same class, now check that they are equal
+                        if ischar(a{j})
+                            if strcmp(a{j},b{j})
+                                %pass
+                            else
+                                out=false;
+                                return
+                            end
+                        elseif isnumeric(a{j}) 
+                            if a{j}==b{j}
+                                %pass
+                            else
+                                out=false;
+                                return
+                            end
+                        else
+                            error('found an argument that was neither char nor numeric');
+                        end
+                    else
+                        out=false; % args have diff class
+                        return
+                    end
+                end
+            end
+        end % end function
     end
 end

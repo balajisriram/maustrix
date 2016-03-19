@@ -72,7 +72,7 @@ classdef ifFeatureGoRightWithTwoFlankTrialManager<trialManager
     end
     
     methods
-        function tm=ifFeatureGoRightWithTwoFlankTrialManager(varargin)
+        function tm=ifFeatureGoRightWithTwoFlankTrialManager(parameterStructure)
             % ||ifFeatureGoRightWithTwoFlankTrialManager||  class constructor.
             % This is the first merging of the stimulus manager and the trial manager
             % PMM TVN 8/22/2007 first merge, quick for calibration
@@ -80,143 +80,52 @@ classdef ifFeatureGoRightWithTwoFlankTrialManager<trialManager
 
             %t=ifFeatureGoRightWithTwoFlankTrialManager()
 
-            switch nargin
-                case 0
-                    %
-                    % orientations in radians , these a distributions of possible orientations
-                    % mean, cueLum, cueSize, contrast, yPositionPercent, xPositionPercent normalized (0 <= value <= 1)
-                    % stdGaussMask is the std dev of the enveloping gaussian, in normalized  units of the vertical height of the stimulus image
-                    % thresh is in normalized luminance units, the value below which the stim should not appear
-                    % cuePercentTargetEcc is an vestigal variable not used
-                    t=s;
+            eyeController=[];
+            customDescription=''; %'old funky hybrid but works for cal';
+            frameDropCorner={'off'};
+            dropFrames=false;
+            displayMethod='ptb';
+            requestPorts='center';
+            saveDetailedFramedrops=false;
+            delayManager=[];
+            responseWindowMs=[];
+            showText=true;
 
-                    super.msFlushDuration=0;
-                    super.rewardSizeULorMS=0;
-                    super.msMinimumPokeDuration=0;
-                    super.msMinimumClearDuration=0;
-                    super.soundMgr=soundManager();
-                    super.msPenalty=0;
-                    super.msRewardSoundDuration=0;
-                    super.reinforcementManager=reinforcementManager();
-                    super.description='';
-
-                    % These are the old nAFC fields
-                    super.requestRewardSizeULorMS=0;
-                    %         t.percentCorrectionTrials=0;
-                    super.msResponseTimeLimit=0;
-                    super.pokeToRequestStim=0;
-                    super.maintainPokeToMaintainStim=0;
-                    super.msMaximumStimPresentationDuration=0;
-                    super.maximumNumberStimPresentations=0;
-                    super.doMask=0;
-
-                    % a=trialManager();
-                    %    t = class(t,'nAFC',a);
-
-                    % trialManager data members that this method depends on:
-                    super.station  = 0;    %the station where this trial is running
-                    super.window   = 1 ;   %pointer to target PTB window (should already be open)
-                    super.ifi      = 0;    %inter-frame-interval for PTB window in seconds (measured when window was opened)
-                    super.manualOn = 1;    %allow keyboard responses, quitting, pausing, rewarding, and manual poke indications
-                    super.timingCheckPct = 0;      %percent of allowable frametime error before apparently dropped frame is reported
-                    super.numFrameDropReports =1000;   %number of frame drops to keep detailed records of for this trial
-                    super.percentCorrectionTrials  =0;    %probability that if this trial is incorrect that it will be repeated until correct
-                    %note this needs to be moved here from wherever it currently is
-
-
-                    t.cache.goRightStim=[];
-                    t.cache.goLeftStim = [];
-                    t.cache.flankerStim=[];
-                    t.cache.distractorStim = [];
-                    t.cache.distractorFlankerStim=[];
-
-                    t.calib.frame=0;
-                    %         t.calib.framesPerCycleRequested=0;
-                    %         t.calib.framesPerCycleUsed=0;
-                    %         t.calib.contrastNormalizationPerOrientation=[];
-                    t.calib.method='sweepAllPhasesPerFlankTargetContext';
-                    t.calib.data=[];
-
-                    t.stimDetails=[];%per trial info will go here
-
-                    size(fields(t))
-
-                    
-                    %ToDo: t = class(t,'ifFeatureGoRightWithTwoFlankTrialManager',nAFC(super.xxx,super.xxx));
-
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'ifFeatureGoRightWithTwoFlankTrialManager'))
-                        t = varargin{1};
-                    else
-                        error('Input argument is not a ifFeatureGoRightWithTwoFlankTrialManager object')
-                    end
-                case 2
-                    if isa(varargin{1}, 'struct')
-                        parameterStructure = varargin{1};
-                    else
-                        error('expecting first argument to be a parameterStructure that will be checked after blessing')
-                    end
-
-                    if isa(varargin{2}, 'struct')
-                        super = varargin{2};
-                    else
-                        error('expecting second argument to be a structure that will be passed to the appropriate super class')
-                    end
-
-                    %ToDo: reflect new trialManager super class which probably owns old nAFC terms
-
-                    t = errorCheck(ifFeatureGoRightWithTwoFlankTrialManager,parameterStructure);
-
-                    rm=parameterStructure.rm;
-                    parameterStructure = rmfield(parameterStructure, 'rm')
-                    switch rm.type
-                        case 'rewardNcorrectInARow'
-                            requestRewardSizeULorMS=0;
-                            requestMode='first';
-                            msPuff=0;
-                            %rewardNthCorrect,requestRewardSizeULorMS,requestMode,msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff
-                            reinforcementMgr=rewardNcorrectInARow(rm.rewardNthCorrect,requestRewardSizeULorMS,requestMode,rm.msPenalty,rm.fractionOpenTimeSoundIsOn,rm.fractionPenaltySoundIsOn,rm.scalar,msPuff)
-                            %reinforcementMgr=rewardNcorrectInARow(rm.rewardNthCorrect, rm.msPenalty,rm.fractionOpenTimeSoundIsOn,rm.fractionPenaltySoundIsOn, rm.scalar);
-                        otherwise
-                            error ('Not an allowed reinforment manager type')
-                    end
-
-
-
-                    parameterStructure
-                    default=ifFeatureGoRightWithTwoFlankTrialManager;
-
-                    paramField=fields(parameterStructure);
-                    paramField{end+1}='trialManager' %add in the super class field which does not exist yet for the parameters
-                    defaultField=fields(default)
-
-                    hasAllFieldsInThatOrder(paramField,defaultField);
-
-                    disp(sprintf('parameterStructure has %d fields and the default constructor has %d fields', size(paramField,1), size(defaultField,1)))
-
-                    eyeController=[];
-                    customDescription=super.description; %'old funky hybrid but works for cal';
-                    frameDropCorner={'off'};
-                    dropFrames=false;
-                    displayMethod='ptb';
-                    requestPorts='center';
-                    saveDetailedFramedrops=false;
-                    delayManager=[];
-                    responseWindowMs=[];
-                    showText=true;
-                    
-                       
-
-                    %%Note: calcStim of this class requires some util functions:
-                    %     function
-                    %     out=getFeaturePatchStim(patchX,patchY,type,variableParams,staticParams,extraParams)
-                    % As well as some inflate functions...maybe they should all be
-                    % methods...PMM
-
+            tm=tm@trialManager(soundManager,rewardManager,eyeController,d,frameDropCorner,dropFrames,displayMethod,requestPort,saveDetailedFrameDrops,delayManager,responseWindowMs,showText);
+            
+            rm=parameterStructure.rm;
+            parameterStructure = rmfield(parameterStructure, 'rm')
+            switch rm.type
+                case 'rewardNcorrectInARow'
+                    requestRewardSizeULorMS=0;
+                    requestMode='first';
+                    msPuff=0;
+                    %rewardNthCorrect,requestRewardSizeULorMS,requestMode,msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff
+                    reinforcementMgr=rewardNcorrectInARow(rm.rewardNthCorrect,requestRewardSizeULorMS,requestMode,rm.msPenalty,rm.fractionOpenTimeSoundIsOn,rm.fractionPenaltySoundIsOn,rm.scalar,msPuff)
+                    %reinforcementMgr=rewardNcorrectInARow(rm.rewardNthCorrect, rm.msPenalty,rm.fractionOpenTimeSoundIsOn,rm.fractionPenaltySoundIsOn, rm.scalar);
                 otherwise
-                    error('Wrong number of input arguments')
+                    error ('Not an allowed reinforment manager type')
             end
+
+
+
+            
+            default=ifFeatureGoRightWithTwoFlankTrialManager;
+
+            paramField=fields(parameterStructure);
+            paramField{end+1}='trialManager' %add in the super class field which does not exist yet for the parameters
+            defaultField=fields(default)
+
+            hasAllFieldsInThatOrder(paramField,defaultField);
+
+            disp(sprintf('parameterStructure has %d fields and the default constructor has %d fields', size(paramField,1), size(defaultField,1)))
+
+            %%Note: calcStim of this class requires some util functions:
+            %     function
+            %     out=getFeaturePatchStim(patchX,patchY,type,variableParams,staticParams,extraParams)
+            % As well as some inflate functions...maybe they should all be
+            % methods...PMM
+
 
 
             %t = errorCheck(t);  %maybe get rid of this

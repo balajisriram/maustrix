@@ -14,7 +14,8 @@ classdef hemifieldFlicker<stimManager
     end
     
     methods
-        function s=hemifieldFlicker(varargin)
+        function s=hemifieldFlicker(pixPerCycs,targetContrasts,distractorContrasts,fieldWidthPct,fieldHeightPct,mean,...
+                stddev,thresh,flickerType,yPositionPercent,maxWidth,maxHeight,scaleFactor,interTrialLuminance)
             % Hemifield Flicker  class constructor.
             % s =
             % hemifieldFlicker([pixPerCycs],[targetContrasts],[distractorContrasts],fieldWidthPct,fieldHeightPct,mean,stddev,thresh,flickerType,yPositionPercent,maxWidth,maxHeight,scaleFactor,interTrialLuminance) 
@@ -30,79 +31,63 @@ classdef hemifieldFlicker<stimManager
             % thresh - in normalized luminance units, the value below which the stim should not appear 
             % flickerType - 0 for binary flicker; 1 for Gaussian flicker
             % yPosPct - Position in Y axis (vertical) of screen to present the fields
+            s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
 
-            switch nargin
-            case 0 
-            % if no input arguments, create a default object
-                
-            case 1
-            % if single argument of this class type, return it
-                if (isa(varargin{1},'hemifieldFlicker'))
-                    s = varargin{1}; 
-                else
-                    error('Input argument is not a hemifieldFlicker object')
-                end
-            case 14
+  
             % create object using specified values        
-                if all(varargin{1})>0
-                    s.numCalcIndices=varargin{1};
-                else
-                    error('numCalcIndices must be > 0')
-                end
+            if all(pixPerCycs)>0
+                s.numCalcIndices=pixPerCycs;
+            else
+                error('numCalcIndices must be > 0')
+            end
 
-                if all(isnumeric(varargin{2})) && all(isnumeric(varargin{3}))
-                    s.targetContrasts=varargin{2};
-                    s.distractorContrasts=varargin{3};
-                else
-                    error('target and distractor contrasts must be numbers')
-                end
+            if all(isnumeric(targetContrasts)) && all(isnumeric(distractorContrasts))
+                s.targetContrasts=targetContrasts;
+                s.distractorContrasts=distractorContrasts;
+            else
+                error('target and distractor contrasts must be numbers')
+            end
 
-                if varargin{4} >= 0 && varargin{4}<=1
-                    s.fieldWidthPct=varargin{4};
-                else
-                    error('fieldWidthPct must be >= 0')
-                end
+            if fieldWidthPct >= 0 && fieldWidthPct<=1
+                s.fieldWidthPct=fieldWidthPct;
+            else
+                error('fieldWidthPct must be >= 0')
+            end
 
-                if varargin{5} >= 0 && varargin{5}<=1
-                    s.fieldHeightPct=varargin{5};
-                else
-                    error('fieldHeightPct must be >= 0')
-                end    
+            if fieldHeightPct >= 0 && fieldHeightPct<=1
+                s.fieldHeightPct=fieldHeightPct;
+            else
+                error('fieldHeightPct must be >= 0')
+            end    
 
-                if varargin{6} >=0
-                    s.mean=varargin{6};
-                else
-                    error('0 <= mean <= 1')
-                end
+            if mean >=0
+                s.mean=mean;
+            else
+                error('0 <= mean <= 1')
+            end
 
-                if varargin{7} >= 0
-                    s.stddev=varargin{7};
-                else
-                    error('stddev must be >= 0')
-                end
+            if stddev >= 0
+                s.stddev=stddev;
+            else
+                error('stddev must be >= 0')
+            end
 
-                if varargin{8} >= 0
-                    s.thresh=varargin{8};
-                else
-                    error('thresh must be >= 0')
-                end
+            if thresh >= 0
+                s.thresh=thresh;
+            else
+                error('thresh must be >= 0')
+            end
 
-                if isnumeric(varargin{9})
-                    s.flickerType=varargin{9};
-                else
-                    error('flickerType must be 0 at this time (only binary flicker supported)')
-                end
+            if isnumeric(flickerType)
+                s.flickerType=flickerType;
+            else
+                error('flickerType must be 0 at this time (only binary flicker supported)')
+            end
 
-                if isnumeric(varargin{10})
-                    s.yPosPct=varargin{10};
-                else
-                    error('yPositionPercent must be numeric')
-                end
-
-                
-
-            otherwise
-                error('Wrong number of input arguments')
+            if isnumeric(yPositionPercent)
+                s.yPosPct=yPositionPercent;
+            else
+                error('yPositionPercent must be numeric')
             end
         end
         

@@ -1,8 +1,8 @@
 classdef trialManager
     
     properties
-        soundMgr=soundManager();
-        reinforcementManager=reinforcementManager();
+        soundMgr
+        reinforcementManager
         description='';
         eyeController=[];
         frameDropCorner={};
@@ -16,7 +16,8 @@ classdef trialManager
     end
     
     methods
-        function t=trialManager(varargin)
+        function t=trialManager(soundManager,reinforcementManager,eyeController,customDescription, ...
+            frameDropCorner, dropFrames, displayMethod, requestPorts,saveDetailedFramedrops,delayManager,responseWindowMs,showText)
             % TRIALMANAGER  class constructor.  ABSTRACT CLASS-- DO NOT INSTANTIATE
             % t=trialManager(soundManager,reinforcementManager,eyeController,customDescription,
             %   frameDropCorner, dropFrames, displayMethod, requestPorts,saveDetailedFramedrops,delayManager,responseWindowMs[,showText])
@@ -37,173 +38,155 @@ classdef trialManager
             % responseWindowMs - the timeout length of the 'discrim' phase in milliseconds (should be used by phaseify)
             requiredSoundNames = {'correctSound','keepGoingSound','trySomethingElseSound','wrongSound','trialStartSound'};
 
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
 
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'trialManager'))
-                        t = varargin{1};
-                    else
-                        error('Input argument is not a trialManager object')
-                    end
-                case {11 12}
+                % soundManager
+                if isa(soundManager,'soundManager') && all(ismember(requiredSoundNames, getSoundNames(soundManager)))
+                    t.soundMgr=soundManager;
+                else
+                    error(['not a soundManager object, or doesn''t contain required sounds ' printAsList(requiredSoundNames)])
+                end
 
-                    % soundManager
-                    if isa(varargin{1},'soundManager') && all(ismember(requiredSoundNames, getSoundNames(varargin{1})))
-                        t.soundMgr=varargin{1};
-                    else
-                        error(['not a soundManager object, or doesn''t contain required sounds ' printAsList(requiredSoundNames)])
-                    end
+                % reinforcementManager
+                if isa(reinforcementManager,'reinforcementManager')
+                    t.reinforcementManager=reinforcementManager;
+                else
+                    error('must be a reinforcementManager')
+                end
 
-                    % reinforcementManager
-                    if isa(varargin{2},'reinforcementManager')
-                        t.reinforcementManager=varargin{2};
-                    else
-                        error('must be a reinforcementManager')
-                    end
+                % eyeController
+                t.eyeController=eyeController;
 
-                    % eyeController
-                    t.eyeController=varargin{3};
+                % customDescription
+                customDescription=customDescription;
 
-                    % customDescription
-                    customDescription=varargin{4};
+                if isempty(t.eyeController)
+                    %pass
+                else
+                    ec=t.eyeController
+                    error('must be a empty -- until we actually have controllers...then maybe its an controller object or a parameter pair list;  example:  {''driftCorrect'',{param1, param2}}')
+                end
 
-                    if isempty(t.eyeController)
-                        %pass
-                    else
-                        ec=t.eyeController
-                        error('must be a empty -- until we actually have controllers...then maybe its an controller object or a parameter pair list;  example:  {''driftCorrect'',{param1, param2}}')
-                    end
+                if ischar(customDescription)
+                    t.description = customDescription;
+                    % do nothing
+                else
+                    error('not a string')
+                end
 
-                    if ischar(customDescription)
-                        t.description = customDescription;
-                        % do nothing
-                    else
-                        error('not a string')
-                    end
+                % frameDropCOrner
+                t.frameDropCorner=frameDropCorner;
 
-                    % frameDropCOrner
-                    t.frameDropCorner=varargin{5};
+                % dropFrames
+                t.dropFrames=dropFrames;
 
-                    % dropFrames
-                    t.dropFrames=varargin{6};
+                % displayMethod
+                t.displayMethod=displayMethod;
 
-                    % displayMethod
-                    t.displayMethod=varargin{7};
+                if isempty(t.dropFrames)
+                    t.dropFrames=false;
+                elseif islogical(t.dropFrames) && isscalar(t.dropFrames)
+                    %pass
+                else
+                    error('dropFrames must be scalar logical')
+                end
 
-                    if isempty(t.dropFrames)
-                        t.dropFrames=false;
-                    elseif islogical(t.dropFrames) && isscalar(t.dropFrames)
-                        %pass
-                    else
-                        error('dropFrames must be scalar logical')
-                    end
-
-                    if isempty(t.displayMethod)
-                        t.displayMethod='ptb';
-                    elseif ismember(t.displayMethod,{'LED','ptb'})
-                        if strcmp(t.displayMethod,'LED')
-
-                            [a b]=getMACaddress;
-                            x=daqhwinfo('nidaq');
-
-
-                            if a && ismember(b,{'0014225E4685','0018F35DF141'}) && length(x.InstalledBoardIds)>0
-                                %pass
-                            else
-                                b
-                                length(x.InstalledBoardIds)>0
-                                error('can''t make an LED trialManager cuz this machine doesn''t have a nidaq -- currently only known nidaq is in left rig machine')
-                            end
-                        end
-                    else
-                        error('displayMethod must be one of {''LED'',''ptb''}')
-                    end
-
-                    if isempty(t.frameDropCorner)
-                        t.frameDropCorner={'off'};
-                    elseif iscell(t.frameDropCorner) && (strcmp(t.frameDropCorner{1},'off') || ...
-                            (isvector(t.frameDropCorner{2}) && all(t.frameDropCorner{2}>=0) && all(t.frameDropCorner{2}<=1) && ...
-                            (strcmp(t.frameDropCorner{1},'sequence') || (strcmp(t.frameDropCorner{1},'flickerRamp') && all(size(t.frameDropCorner{2})==[1 2])))))
-                        %pass
-                    else
-                        error('frameDropCorner must be {''off''}, {''sequence'',[vector of normalized luminance values]}, or {''flickerRamp'',[rampBottomNormalizedLuminanceValue flickerNormalizedLuminanceValue]}')
-                    end
-
+                if isempty(t.displayMethod)
+                    t.displayMethod='ptb';
+                elseif ismember(t.displayMethod,{'LED','ptb'})
                     if strcmp(t.displayMethod,'LED')
-                        if strcmp(t.frameDropCorner{1},'off') && ~t.dropFrames
+
+                        [a b]=getMACaddress;
+                        x=daqhwinfo('nidaq');
+
+
+                        if a && ismember(b,{'0014225E4685','0018F35DF141'}) && length(x.InstalledBoardIds)>0
                             %pass
                         else
-                            error('must have dropFrames=false and frameDropCorner={''off''} for LED')
+                            b
+                            length(x.InstalledBoardIds)>0
+                            error('can''t make an LED trialManager cuz this machine doesn''t have a nidaq -- currently only known nidaq is in left rig machine')
                         end
                     end
+                else
+                    error('displayMethod must be one of {''LED'',''ptb''}')
+                end
 
-                    % requestPorts
-                    t.requestPorts=varargin{8};
-                    if ischar(t.requestPorts) && (strcmp(t.requestPorts,'none') || strcmp(t.requestPorts,'all') || strcmp(t.requestPorts,'center'))
+                if isempty(t.frameDropCorner)
+                    t.frameDropCorner={'off'};
+                elseif iscell(t.frameDropCorner) && (strcmp(t.frameDropCorner{1},'off') || ...
+                        (isvector(t.frameDropCorner{2}) && all(t.frameDropCorner{2}>=0) && all(t.frameDropCorner{2}<=1) && ...
+                        (strcmp(t.frameDropCorner{1},'sequence') || (strcmp(t.frameDropCorner{1},'flickerRamp') && all(size(t.frameDropCorner{2})==[1 2])))))
+                    %pass
+                else
+                    error('frameDropCorner must be {''off''}, {''sequence'',[vector of normalized luminance values]}, or {''flickerRamp'',[rampBottomNormalizedLuminanceValue flickerNormalizedLuminanceValue]}')
+                end
+
+                if strcmp(t.displayMethod,'LED')
+                    if strcmp(t.frameDropCorner{1},'off') && ~t.dropFrames
                         %pass
                     else
-                        t.requestPorts
-                        error('requestPorts must be ''none'', ''all'', or ''center''');
+                        error('must have dropFrames=false and frameDropCorner={''off''} for LED')
                     end
+                end
 
-                    % saveDetailedFramedrops
-                    if islogical(varargin{9})
-                        t.saveDetailedFramedrops=varargin{9};
-                    elseif isempty(varargin{9})
-                        % pass - ignore empty args
-                    else
-                        error('saveDetailedFramedrops must be a logical');
-                    end
+                % requestPorts
+                t.requestPorts=requestPorts;
+                if ischar(t.requestPorts) && (strcmp(t.requestPorts,'none') || strcmp(t.requestPorts,'all') || strcmp(t.requestPorts,'center'))
+                    %pass
+                else
+                    t.requestPorts
+                    error('requestPorts must be ''none'', ''all'', or ''center''');
+                end
 
-                    % delayManager
-                    if ~isempty(varargin{10}) && isa(varargin{10},'delayManager')
-                        t.delayManager=varargin{10};
-                    elseif isempty(varargin{10})
-                        t.delayManager=[];
-                    else
-                        error('delayManager must be empty or a valid delayManager object');
-                    end
+                % saveDetailedFramedrops
+                if islogical(saveDetailedFramedrops)
+                    t.saveDetailedFramedrops=saveDetailedFramedrops;
+                elseif isempty(saveDetailedFramedrops)
+                    % pass - ignore empty args
+                else
+                    error('saveDetailedFramedrops must be a logical');
+                end
 
-                    % responseWindowMs
-                    if ~isempty(varargin{11})
-                        if isvector(varargin{11}) && isnumeric(varargin{11}) && length(varargin{11})==2
-                            if varargin{11}(1)>varargin{11}(2) || varargin{11}(1)<0 || isinf(varargin{11}(1))
-                                error('responseWindowMs must be [min max] within the range [0 Inf] where min cannot be infinite');
-                            else
-                                t.responseWindowMs=varargin{11};
-                            end
+                % delayManager
+                if ~isempty(delayManager) && isa(delayManager,'delayManager')
+                    t.delayManager=delayManager;
+                elseif isempty(delayManager)
+                    t.delayManager=[];
+                else
+                    error('delayManager must be empty or a valid delayManager object');
+                end
+
+                % responseWindowMs
+                if ~isempty(responseWindowMs)
+                    if isvector(responseWindowMs) && isnumeric(responseWindowMs) && length(responseWindowMs)==2
+                        if responseWindowMs(1)>responseWindowMs(2) || responseWindowMs(1)<0 || isinf(responseWindowMs(1))
+                            error('responseWindowMs must be [min max] within the range [0 Inf] where min cannot be infinite');
                         else
-                            error('responseWindowMs must be a 2-element array');
+                            t.responseWindowMs=responseWindowMs;
                         end
                     else
-                        t.responseWindowMs=[0 Inf];
+                        error('responseWindowMs must be a 2-element array');
                     end
+                else
+                    t.responseWindowMs=[0 Inf];
+                end
 
-                    % showText
-                    if nargin==12
-                        if islogical(varargin{12})
-                            if varargin{12}
-                                t.showText='full';  % good for development, may cause frame drops if eye tracker and other things are on
-                            else
-                                t.showText='off';
-                            end
-                        elseif isempty(varargin{12})
-                            %pass - ignore empty args
-                        elseif ismember(varargin{12},{'full','light','off'})  % list of acceptable modes.  "light" is faster and drops fewer frames
-                             t.showText=varargin{12};
+
+                if islogical(showText)
+                        if showText
+                            t.showText='full';  % good for development, may cause frame drops if eye tracker and other things are on
                         else
-                            error('showText must be logical or aproved string, or empty');
+                            t.showText='off';
                         end
-                    end
+                    elseif isempty(showText)
+                        %pass - ignore empty args
+                    elseif ismember(showText,{'full','light','off'})  % list of acceptable modes.  "light" is faster and drops fewer frames
+                         t.showText=showText;
+                    else
+                        error('showText must be logical or aproved string, or empty');
+                end
 
-
-                otherwise
-                    nargin
-                    error('Wrong number of input arguments')
-            end
+    
         end
 
         function out=boxOKForTrialManager(t,b,r)
@@ -834,15 +817,15 @@ classdef trialManager
                             stopEarly = 1;
                         end
 
-                        if ~isempty(getDatanet(station)) %&& ~stopEarly
-                            [garbage, garbage] = handleCommands(getDatanet(station),[]);
-                            datanet_constants = getConstants(getDatanet(station));
+                        if ~isempty(station.datanet) %&& ~stopEarly
+                            [garbage, garbage] = handleCommands(station.datanet,[]);
+                            datanet_constants = getConstants(station.datanet);
                             commands=[];
                             commands.cmd = datanet_constants.stimToDataCommands.S_TRIAL_END_EVENT_CMD;
                             cparams=[];
                             cparams.time = now;
                             commands.arg=cparams;
-                            [gotAck] = sendCommandAndWaitForAck(getDatanet(station), commands);
+                            [gotAck] = sendCommandAndWaitForAck(station.datanet, commands);
                         end
 
                         trialRecords(trialInd).reinforcementManager = structize(trialManager.reinforcementManager);
@@ -937,7 +920,7 @@ classdef trialManager
                     error('no rnet %s', station.rewardMethod)
                 end
                 if ~isa(rn, 'rnet')
-                    error('non-empty rnet %s', getRewardMethod(station))
+                    error('non-empty rnet %s', station.rewardMethod)
                 end
 
                 error('need station, stimManager, subject, ratrix, and rnet objects')
@@ -1264,7 +1247,9 @@ classdef trialManager
                         addedPostDiscrimPhase=addedPostDiscrimPhase+length(postDiscrimStim); % changed 4/26/15 to include multiple postDiscrims
                     end
 
-
+                    if (~isfield(preRequestStim, 'ledON'))
+                        preRequestStim.ledON=false;
+                    end
                     % optional preOnset phase
                     if ~isempty(preRequestStim) &&  ismember(class(trialManager),{'nAFC','biasedNAFC','goNoGo','cuedGoNoGo'}) % only some classes have the pre-request phase if no delayManager in 'nAFC' class
                         if preRequestStim.punishResponses
@@ -1307,6 +1292,11 @@ classdef trialManager
                         else
                             framesUntilTimeout=discrimStim.framesUntilTimeout;
                         end
+                    end
+
+
+                    if (~isfield(discrimStim, 'ledON'))
+                        discrimStim.ledON=false;
                     end
 
                     stimSpecs{i} = stimSpec(discrimStim.stimulus,criterion,discrimStim.stimType,discrimStim.startFrame,...
@@ -1959,7 +1949,7 @@ classdef trialManager
                     end
                 elseif any(keyCode(KbConstants.aKey))
                     doPuff=true;
-                elseif any(keyCode(KbConstants.rKey)) && strcmp(getRewardMethod(station),'localPump')
+                elseif any(keyCode(KbConstants.rKey)) && strcmp(station.rewardMethod,'localPump')
                     doPrime(station);
                 end
             end
@@ -2812,7 +2802,7 @@ classdef trialManager
             timestamps.prevPostFlipPulse    = timestamps.lastFrameTime;
 
             %show stim -- be careful in this realtime loop!
-            while ~done && ~Quit; % ##### SEGFAULT OCCURING IN HERE
+            while ~done && ~Quit; 
                 timestamps.loopStart=GetSecs;
 
                 xOrigTextPos = 10;
@@ -2858,7 +2848,7 @@ classdef trialManager
                         [phaseRecords(nextPhaseRecordNum:nextPhaseRecordNum+phaseRecordAllocChunkSize).didStochasticResponse]= deal([]);
                     end
 
-                    i=0;
+                    i=0; 
                     frameIndex=0;
                     frameNum=1;
                     phaseStartTime=GetSecs;
@@ -3250,7 +3240,7 @@ classdef trialManager
                 if ~isempty(lastRewardTime) && rewardCurrentlyOn
                     rewardCheckTime = GetSecs();
                     elapsedTime = rewardCheckTime - lastRewardTime;
-                    if strcmp(getRewardMethod(station),'localTimed')
+                    if strcmp(station.rewardMethod,'localTimed')
                         if ~doRequestReward % this was a normal reward, log it
                             msRewardOwed = msRewardOwed - elapsedTime*1000.0;
                             phaseRecords(thisRewardPhaseNum).actualRewardDurationMSorUL = phaseRecords(thisRewardPhaseNum).actualRewardDurationMSorUL + elapsedTime*1000.0;
@@ -3258,7 +3248,7 @@ classdef trialManager
                             msRequestRewardOwed = msRequestRewardOwed - elapsedTime*1000.0;
                             phaseRecords(thisRewardPhaseNum).responseDetails.requestRewardDurationActual{end}=phaseRecords(thisRewardPhaseNum).responseDetails.requestRewardDurationActual{end}+elapsedTime*1000.0;
                         end
-                    elseif strcmp(getRewardMethod(station),'localPump')
+                    elseif strcmp(station.rewardMethod,'localPump')
                         % in localPump mode, msRewardOwed gets zeroed out after the call to station/doReward
                     end
                 end
@@ -3283,7 +3273,7 @@ classdef trialManager
                 % if any doValves, override this stuff
                 % newValveState will be used to keep track of doValves stuff - figure out server-based use later
                 if any(doValves~=newValveState)
-                    switch getRewardMethod(station)
+                    switch station.rewardMethod
                         case 'localTimed'
                             [newValveState, phaseRecords(phaseNum).valveErrorDetails]=...
                                 setAndCheckValves(station,doValves,currentValveStates,phaseRecords(phaseNum).valveErrorDetails,GetSecs,'doValves');
@@ -3327,7 +3317,7 @@ classdef trialManager
                             error('rewardValves has %d and currentValveStates has %d with port = %d', length(rewardValves), length(currentValveStates), port);
                         end
 
-                        switch getRewardMethod(station)
+                        switch station.rewardMethod
                             case 'localTimed'
                                 if rStart
                                     rewardValves = forceRewards(tm,rewardValves); % used in the reinforced autopilot state
@@ -3474,7 +3464,6 @@ classdef trialManager
                 timestamps.loopEnd=GetSecs;
             end
 
-            keyboard
             securePins(station);
 
             trialRecords(trialInd).phaseRecords=phaseRecords;
@@ -3617,7 +3606,7 @@ classdef trialManager
             end
 
             if requestRewardStarted && ~requestRewardStartLogged
-                if strcmp(getRewardMethod(station),'serverPump')
+                if strcmp(station.rewardMethod,'serverPump')
                     quit=sendToServer(rn,getClientId(rn),constants.priorities.IMMEDIATE_PRIORITY,constants.stationToServerCommands.C_REWARD_CMD,{getRequestRewardSizeULorMS(tm),logical(requestRewardPorts)});
                 end
                 responseDetails.requestRewardStartTime=GetSecs();
@@ -3711,14 +3700,14 @@ classdef trialManager
         function frameDropCorner = setCLUTandFrameDropCorner(tm, window, station, LUT, frameDropCorner)
 
             if window>=0
-                [scrWidth scrHeight]=Screen('WindowSize', window);
+                [scrWidth scrHeight]=Screen('WindowSize', 0);
             else
                 scrWidth=getWidth(station);
                 scrHeight=getHeight(station);
             end
 
             if window>=0
-                scrRect = Screen('Rect', window);
+                scrRect = Screen('Rect', 0);
                 scrLeft = scrRect(1); %am i retarted?  why isn't [scrLeft scrTop scrRight scrBottom]=Screen('Rect', window); working?  deal doesn't work
                 scrTop = scrRect(2);
                 scrRight = scrRect(3);
@@ -3736,21 +3725,21 @@ classdef trialManager
             frameDropCorner.bottom=frameDropCorner.top   + scrHeight*frameDropCorner.size(1);
             frameDropCorner.rect=[frameDropCorner.left frameDropCorner.top frameDropCorner.right frameDropCorner.bottom];
 
-            [oldCLUT, dacbits, reallutsize] = Screen('ReadNormalizedGammaTable', window);
+            [oldCLUT, dacbits, reallutsize] = Screen('ReadNormalizedGammaTable', 0);
 
             if isreal(LUT) && all(size(LUT)==[256 3])
                 if any(LUT(:)>1) || any(LUT(:)<0)
                     error('LUT values must be normalized values between 0 and 1')
                 end
                 try
-                    oldCLUT = Screen('LoadNormalizedGammaTable', window, LUT,0); %apparently it's ok to use a window ptr instead of a screen ptr, despite the docs
+                    oldCLUT = Screen('LoadNormalizedGammaTable', 0, LUT,0); %apparently it's ok to use a window ptr instead of a screen ptr, despite the docs
                 catch ex
                     %if the above fails, we lose our window
 
                     ex.message
                     error('couldnt set clut')
                 end
-                currentCLUT = Screen('ReadNormalizedGammaTable', window);
+                currentCLUT = Screen('ReadNormalizedGammaTable', 0);
 
                 if all(all(abs(currentCLUT-LUT)<0.00001))
                     %pass
@@ -4152,7 +4141,6 @@ end
                 end
                 didPulse=1;
             end
-
 
          end % end function
     

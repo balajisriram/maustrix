@@ -28,7 +28,8 @@ classdef phaseReverseGratings<stimManager
     end
     
     methods
-        function s=phaseReverseGratings(varargin)
+        function s=phaseReverseGratings(pixPerCycs,frequencies,orientations,startPhases,waveform,...
+                   contrasts,durations,radii,annuli,numRepeats,location,phaseform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance,doCombos)
             % PHASEREVERSEGRATINGS  class constructor.
             % s = phaseReverseGratings(pixPerCycs,frequencies,orientations,startPhases,doCombos
             %       contrasts,durations,radii,annuli,location,waveform,normalizationMethod,mean,thresh,numRepeats,maxWidth,maxHeight,scaleFactor,interTrialLuminance)
@@ -55,174 +56,140 @@ classdef phaseReverseGratings<stimManager
             %   - if false, then takes unique selection of these parameters (they all have to be same length)
             %   - in future, handle a cell array for this flag that customizes the
             %   combo selection process.. if so, update analysis too
+            s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
 
             % special only to phaseReverseGratings
             s.ordering.method = 'ordered';
             s.ordering.seed = [];
 
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'phaseReverseGratings'))
-                        s = varargin{1};
-                    else
-                        error('Input argument is not a phaseReverseGratings object')
-                    end
-                case {19 20 21}
-                    % create object using specified values
-                    % special to phaseReverseGratings
-                    % pixPerCycs
 
-                    if isvector(varargin{1}) && isnumeric(varargin{1})
-                        s.pixPerCycs=varargin{1};
-                    else
-                        error('pixPerCycs must be numbers');
-                    end
-                    % frequencies
-                    if isvector(varargin{2}) && isnumeric(varargin{2}) && all(varargin{2})>0
-                        s.frequencies=varargin{2};
-                    else
-                        error('frequencies must all be > 0')
-                    end
-                    % orientations
-                    if isvector(varargin{3}) && isnumeric(varargin{3})
-                        s.orientations=varargin{3};
-                    else
-                        error('orientations must be numbers')
-                    end
-                    % phases
-                    if isvector(varargin{4}) && isnumeric(varargin{4})
-                        s.startPhases=varargin{4};
-                    else
-                        error('startPhases must be numbers');
-                    end
-                    % waveform
-                    if ischar(varargin{5})
-                        if ismember(varargin{5},{'sine', 'square', 'none','catcam530a','haterenImage1000'})
-                            s.waveform=varargin{5};
-                        else
-                            error('waveform must be ''sine'', ''square'', ''catcam530a'', or ''none''')
-                        end
-                    end
+            % create object using specified values
+            % special to phaseReverseGratings
+            % pixPerCycs
 
-                    % general to phaseReverse
-                    % contrasts
-                    if isvector(varargin{6}) && isnumeric(varargin{6})
-                        s.contrasts=varargin{6};
-                    else
-                        error('contrasts must be numbers');
-                    end
-                    % durations
-                    if isnumeric(varargin{7}) && all(all(varargin{7}>0))
-                        s.durations=varargin{7};
-                    else
-                        error('all durations must be >0');
-                    end
-                    % radii
-                    if isnumeric(varargin{8}) && all(varargin{8}>0)
-                        s.radii=varargin{8};
-                    else
-                        error('radii must be >= 0');
-                    end
-                    % annuli
-                    if isnumeric(varargin{9}) && all(varargin{9}>=0)
-                        s.annuli=varargin{9};
-                    else
-                        error('all annuli must be >= 0');
-                    end
-                    % numRepeats
-                    if isinteger(varargin{15}) || isinf(varargin{15}) || isNearInteger(varargin{15})
-                        s.numRepeats=varargin{15};
-                    end
+            if isvector(pixPerCycs) && isnumeric(pixPerCycs)
+                s.pixPerCycs=pixPerCycs;
+            else
+                error('pixPerCycs must be numbers');
+            end
+            % frequencies
+            if isvector(frequencies) && isnumeric(frequencies) && all(frequencies)>0
+                s.frequencies=frequencies;
+            else
+                error('frequencies must all be > 0')
+            end
+            % orientations
+            if isvector(orientations) && isnumeric(orientations)
+                s.orientations=orientations;
+            else
+                error('orientations must be numbers')
+            end
+            % phases
+            if isvector(startPhases) && isnumeric(startPhases)
+                s.startPhases=startPhases;
+            else
+                error('startPhases must be numbers');
+            end
+            % waveform
+            if ischar(waveform)
+                if ismember(waveform,{'sine', 'square', 'none','catcam530a','haterenImage1000'})
+                    s.waveform=waveform;
+                else
+                    error('waveform must be ''sine'', ''square'', ''catcam530a'', or ''none''')
+                end
+            end
 
-                    % location
-                    if isnumeric(varargin{10}) && all(varargin{10}>=0) && all(varargin{10}<=1)
-                        s.location=varargin{10};
-                    elseif isa(varargin{10},'RFestimator')
-                        s.location=varargin{10};
-                    else
-                        error('all location must be >= 0 and <= 1, or location must be an RFestimator object');
-                    end
+            % general to phaseReverse
+            % contrasts
+            if isvector(contrasts) && isnumeric(contrasts)
+                s.contrasts=contrasts;
+            else
+                error('contrasts must be numbers');
+            end
+            % durations
+            if isnumeric(durations) && all(all(durations>0))
+                s.durations=durations;
+            else
+                error('all durations must be >0');
+            end
+            % radii
+            if isnumeric(radii) && all(radii>0)
+                s.radii=radii;
+            else
+                error('radii must be >= 0');
+            end
+            % annuli
+            if isnumeric(annuli) && all(annuli>=0)
+                s.annuli=annuli;
+            else
+                error('all annuli must be >= 0');
+            end
+            % numRepeats
+            if isinteger(thresh) || isinf(thresh) || isNearInteger(thresh)
+                s.numRepeats=thresh;
+            end
 
-                    % phaseform
-                    if ischar(varargin{11})
-                        if ismember(varargin{11},{'sine', 'square'})
-                            s.phaseform=varargin{11};
-                        else
-                            error('phaseform must be ''sine'' or ''square''')
-                        end
-                    end
-                    % normalizationMethod
-                    if ischar(varargin{12})
-                        if ismember(varargin{12},{'normalizeVertical', 'normalizeHorizontal', 'normalizeDiagonal' , 'none'})
-                            s.normalizationMethod=varargin{12};
-                        else
-                            error('normalizationMethod must be ''normalizeVertical'', ''normalizeHorizontal'', or ''normalizeDiagonal'', or ''none''')
-                        end
-                    end
-                    % mean
-                    if varargin{13} >= 0 && varargin{13}<=1
-                        s.mean=varargin{13};
-                    else
-                        error('0 <= mean <= 1')
-                    end
-                    % thres
-                    if varargin{14} >= 0
-                        s.thresh=varargin{14};
-                    else
-                        error('thresh must be >= 0')
-                    end
+            % location
+            if isnumeric(numRepeats) && all(numRepeats>=0) && all(numRepeats<=1)
+                s.location=numRepeats;
+            elseif isa(numRepeats,'RFestimator')
+                s.location=numRepeats;
+            else
+                error('all location must be >= 0 and <= 1, or location must be an RFestimator object');
+            end
 
-
-                    if nargin==19
-                        
-                    elseif nargin==20
-                        
-                    elseif nargin==21
-                        % check for doCombos argument first (it decides other error checking)
-                        if islogical(varargin{21})
-                            s.doCombos=varargin{21};
-                            s.ordering.method = 'ordered';
-                            s.ordering.seed = [];
-                        elseif iscell(varargin{21})&&(length(varargin{21})==3)
-                            s.doCombos = varargin{21}{1}; if ~islogical(s.doCombos), error('doCombos has to be a logical'),end;
-                            s.ordering.method = varargin{21}{2}; if ~ismember(s.ordering.method,{'twister','state','seed'}), error('unknown ordering method'), end;
-                            s.ordering.seed = varargin{21}{3};
-                        else
-                            error('unknown way to specify doCombos. its either just a logical or a cell length 3.');                    
-                        end
-                        
-                    end
-                    if ~s.doCombos
-                        paramLength = length(s.pixPerCycs);
-                        if paramLength~=length(s.frequencies) || paramLength~=length(s.orientations) || paramLength~=length(s.contrasts) ...
-                                || paramLength~=length(s.phases) || paramLength~=length(s.durations) || paramLength~=length(s.radii) ...
-                                || paramLength~=length(s.annuli)
-                            error('if doCombos is false, then all parameters (pixPerCycs, frequencies, orientations, contrasts, phases, durations, radii, annuli) must be same length');
-                        end
-                    end
-
-                otherwise
-                    nargin
-                    error('Wrong number of input arguments')
+            % phaseform
+            if ischar(location)
+                if ismember(location,{'sine', 'square'})
+                    s.phaseform=location;
+                else
+                    error('phaseform must be ''sine'' or ''square''')
+                end
+            end
+            % normalizationMethod
+            if ischar(phaseform)
+                if ismember(phaseform,{'normalizeVertical', 'normalizeHorizontal', 'normalizeDiagonal' , 'none'})
+                    s.normalizationMethod=phaseform;
+                else
+                    error('normalizationMethod must be ''normalizeVertical'', ''normalizeHorizontal'', or ''normalizeDiagonal'', or ''none''')
+                end
+            end
+            % mean
+            if normalizationMethod >= 0 && normalizationMethod<=1
+                s.mean=normalizationMethod;
+            else
+                error('0 <= mean <= 1')
+            end
+            % thres
+            if mean >= 0
+                s.thresh=mean;
+            else
+                error('thresh must be >= 0')
             end
 
 
 
-                    % check that if doCombos is false, then all parameters must be same length
+            % check for doCombos argument first (it decides other error checking)
+            if islogical(doCombos)
+                s.doCombos=doCombos;
+                s.ordering.method = 'ordered';
+                s.ordering.seed = [];
+            elseif iscell(doCombos)&&(length(doCombos)==3)
+                s.doCombos = doCombos{1}; if ~islogical(s.doCombos), error('doCombos has to be a logical'),end;
+                s.ordering.method = doCombos{2}; if ~ismember(s.ordering.method,{'twister','state','seed'}), error('unknown ordering method'), end;
+                s.ordering.seed = doCombos{3};
+            else
+                error('unknown way to specify doCombos. its either just a logical or a cell length 3.');                    
+            end
 
-            %         
-
-            %         if nargin>18
-            %             if ismember(varargin{19},[0 1])
-            %                 s.changeableAnnulusCenter=logical(varargin{19});
-            %             else
-            %                 error('gratingWithChangeableAnnulusCenter must be true / false')
-            %             end
-            %         end
+            if ~s.doCombos
+                paramLength = length(s.pixPerCycs);
+                if paramLength~=length(s.frequencies) || paramLength~=length(s.orientations) || paramLength~=length(s.contrasts) ...
+                        || paramLength~=length(s.phases) || paramLength~=length(s.durations) || paramLength~=length(s.radii) ...
+                        || paramLength~=length(s.annuli)
+                    error('if doCombos is false, then all parameters (pixPerCycs, frequencies, orientations, contrasts, phases, durations, radii, annuli) must be same length');
+                end
+            end
 
         end
         

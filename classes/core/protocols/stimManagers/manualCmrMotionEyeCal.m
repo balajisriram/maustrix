@@ -14,44 +14,28 @@ classdef manualCmrMotionEyeCal<stimManager
     end
     
     methods
-        function s=manualCmrMotionEyeCal(varargin)
+        function s=manualCmrMotionEyeCal(background,numSweeps,maxWidth,maxHeight,scaleFactor,interTrialLuminance)
             % MANUALCMRMOTIONEYECAL  class constructor.
 
             % s = manualCmrMotionEyeCal(background,numSweeps,
             %       maxWidth,maxHeight,scaleFactor,interTrialLuminance)
+            s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
 
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-
-                    
-                case 1
-                    % if input is of this class type
-                    if (isa(varargin{1},'manualCmrMotionEyeCal'))
-                        s = varargin{1};
-                    else
-                        error('Input argument is not a manualCmrMotionEyeCal object')
-                    end
-                case 6
-                    % create object using specified values
-
-                    % background
-                    if isscalar(varargin{1})
-                        s.background = varargin{1};
-                    else
-                        error('background must be a scalar');
-                    end
-                    % numSweeps
-                    if isscalar(varargin{2}) && isinteger(varargin{2}) && varargin{2}>0
-                        s.numSweeps=varargin{2};
-                    else
-                        error('numSweeps must be a positive integer');
-                    end
-
-                    
-                otherwise
-                    error('invalid number of input arguments');
+            % background
+            if isscalar(background)
+                s.background = background;
+            else
+                error('background must be a scalar');
             end
+            % numSweeps
+            if isscalar(numSweeps) && isinteger(numSweeps) && numSweeps>0
+                s.numSweeps=numSweeps;
+            else
+                error('numSweeps must be a positive integer');
+            end
+
+                    
+             
 
         end % end function
 

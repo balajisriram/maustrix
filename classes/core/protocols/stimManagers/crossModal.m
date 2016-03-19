@@ -24,7 +24,8 @@ classdef crossModal<stimManager
     end
     
     methods
-        function s=crossModal(varargin)
+        function s=crossModal(switchType,switchParameter,switchMethod,blockingLength,currentModality,pixPerCycs,targetContrasts,distractorContrasts,fieldWidthPct,fieldHeightPct,mean,stddev,...
+                thresh,flickerType,yPositionPercent,soundFreq,soundChannelAmplitudes,maxWidth,maxHeight,scaleFactor,interTrialLuminance)
             % Cross Modal class constructor.
             % s =
             % crossModal(switchType,switchParameter,switchMethod,blockingLength,currentModality,[pixPerCycs],[targetContrasts],[distractorContrasts],fieldWidthPct,fieldHeightPct,mean,stddev,thresh,flickerType,yPositionPercent,soundFreq,[soundChannelAmplitudes],maxWidth,maxHeight,scaleFactor,interTrialLuminance)
@@ -58,38 +59,24 @@ classdef crossModal<stimManager
             % s=crossModal(switchType,switchParameter,switchMethod,blockingLength,currentModality,pixPerCycs,targetContrasts,distractorContrasts,fieldWidthPct,fieldHeightPct,mean,stddev,thresh,flickerType,yPosPct,soundFreq,soundAmp,maxWidth,maxHeight,scaleFactor,interTrialLuminance);
             %
 
-            switch nargin
-            case 0 
-            % if no input arguments, create a default object
-                s.hemifieldFlicker = hemifieldFlicker();
-                s.stereoDiscrim = stereoDiscrim();
-                
-            case 1
-            % if single argument of this class type, return it
-                if (isa(varargin{1},'crossModal'))
-                    s = varargin{1}; 
-                else
-                    error('Input argument is not a crossModal object')
-                end
-            case 21
-                % number of blocking trials initially .... might be stochastic?
-                % 
-                % create object using specified values
-                s.modalitySwitchType = varargin{1}; % How often the modality switches
-                s.modalitySwitchParameter = varargin{2}; % Parameter for the Switch Type
-                s.modalitySwitchMethod = varargin{3}; % Whether the switch should be random, or if it should alternate
-                s.blockingLength = varargin{4}; % How many trials to block initially
-                s.currentModality = varargin{5}; % What modality should be relevant when initialized (empty if randomly assigned)
+            % number of blocking trials initially .... might be stochastic?
+            % 
+            % create object using specified values
+            s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
 
-                i = 6; % Index where arguments for the component stim managers start
-                s.hemifieldFlicker = hemifieldFlicker(varargin{i},varargin{i+1},varargin{i+2},varargin{i+3},varargin{i+4},varargin{i+5},varargin{i+6},...
-                    varargin{i+7},varargin{i+8},varargin{i+9},varargin{i+12},varargin{i+13},varargin{i+14},varargin{i+15});
-                s.stereoDiscrim = stereoDiscrim(varargin{i+5},varargin{i+10},varargin{i+11},varargin{i+12},varargin{i+13},varargin{i+14},varargin{i+15});
-                
+            
+            s.modalitySwitchType = switchType; % How often the modality switches
+            s.modalitySwitchParameter = switchParameter; % Parameter for the Switch Type
+            s.modalitySwitchMethod = switchMethod; % Whether the switch should be random, or if it should alternate
+            s.blockingLength = blockingLength; % How many trials to block initially
+            s.currentModality = currentModality; % What modality should be relevant when initialized (empty if randomly assigned)
 
-            otherwise
-                error('Wrong number of input arguments')
-            end
+           
+            s.hemifieldFlicker = hemifieldFlicker(pixPerCycs,targetContrasts,distractorContrasts,fieldWidthPct,fieldHeightPct,mean,stddev,...
+                thresh,flickerType,yPositionPercent,maxWidth,maxHeight,scaleFactor,interTrialLuminance);
+            s.stereoDiscrim = stereoDiscrim(mean,soundFreq,soundChannelAmplitudes,maxWidth,maxHeight,scaleFactor,interTrialLuminance);
+
+
         end
         
         function analysis(sm,detailRecords,subjectID)

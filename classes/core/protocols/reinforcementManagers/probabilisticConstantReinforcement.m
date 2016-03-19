@@ -6,29 +6,15 @@ classdef probabilisticConstantReinforcement<reinforcementManager
     end
     
     methods
-        function r=probabilisticConstantReinforcement(varargin)
+        function r=probabilisticConstantReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,requestMode,...
+               msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
             % ||constantReinforcement||  class constructor.
             % r=constantReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,requestMode,...
             %   msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-
-
+            r=r@reinforcementManager(msPenalty,msPuff,scalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestRewardSizeULorMS,requestMode);
                     
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'probabilisticConstantReinforcement'))
-                        r = varargin{1};
-                    else
-                        error('Input argument is not a probabilisticConstantReinforcement object')
-                    end
-                case 9
-                    
-                    r = setRewardSizeULorMSAndRewardProbability(r,varargin{1},varargin{2});
-                otherwise
-                    error('Wrong number of input arguments')
-            end
+            r = setRewardSizeULorMSAndRewardProbability(r,rewardSizeULorMS,requestRewardSizeULorMS);
+                
         end
         
         function [r, rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM] = ...

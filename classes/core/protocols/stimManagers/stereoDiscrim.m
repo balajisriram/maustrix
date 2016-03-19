@@ -10,7 +10,7 @@ classdef stereoDiscrim<stimManager
     end
     
     methods
-        function s=stereoDiscrim(varargin)
+        function s=stereoDiscrim(mean,freq,amplitudes,maxWidth,maxHeight,scaleFactor,interTrialLuminance)
             % Stereo Discrim class constructor.
             % s =
             % stereoDiscrim(mean,freq,[amplitudes],maxWidth,maxHeight,scaleFactor,interTrialLuminance) 
@@ -20,43 +20,27 @@ classdef stereoDiscrim<stimManager
             % mean - Mean brightness
             % freq - (Fundamental) frequency of sound to play
             % [amplitudes] - [low high] sound amplitudes from 0<=x<=1
+            s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
 
-            switch nargin
-            case 0 
-            % if no input arguments, create a default object
-                
-            case 1
-            % if single argument of this class type, return it
-                if (isa(varargin{1},'stereoDiscrim'))
-                    s = varargin{1}; 
-                else
-                    error('Input argument is not a stereoDiscrim object')
-                end
-            case 7
-            % create object using specified values        
-                if varargin{1} >=0
-                    s.mean=varargin{1};
-                else
-                    error('0 <= mean <= 1')
-                end
-
-                if varargin{2} > 0
-                    s.freq=varargin{2};
-                else
-                    error('freq must be > 0')
-                end
-
-                if length(varargin{3}) == 2 && all(varargin{3}>=0) 
-                    s.amplitudes=varargin{3};
-                else
-                    error('require two stereo amplitudes and they must be >= 0')
-                end
-
-                
-
-            otherwise
-                error('Wrong number of input arguments')
+            if mean >=0
+                s.mean=mean;
+            else
+                error('0 <= mean <= 1')
             end
+
+            if freq > 0
+                s.freq=freq;
+            else
+                error('freq must be > 0')
+            end
+
+            if length(amplitudes) == 2 && all(amplitudes>=0) 
+                s.amplitudes=amplitudes;
+            else
+                error('require two stereo amplitudes and they must be >= 0')
+            end
+
+
         end
         
         function analysis(sm,detailRecords,subjectID)

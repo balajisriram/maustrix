@@ -526,14 +526,9 @@ classdef station
             end
         end
         
-        function [s newRes imagingTasksApplied]=setResolutionAndPipeline(s,res,imagingTasks)
-            if res.pixelSize~=32
-                res.pixelSize
-                sca
-                keyboard
-                error('station:setResolutionAndPipeline:improperValue','color depth must be 32')
-            end
-            
+        function [s, newRes, imagingTasksApplied]=setResolutionAndPipeline(s,res,imagingTasks)
+
+            assert(res.pixelSize == 32,'station:setResolutionAndPipeline:improperValue','color depth must be 32')
             
             oldRes=Screen('Resolution', s.screenNum); 
             

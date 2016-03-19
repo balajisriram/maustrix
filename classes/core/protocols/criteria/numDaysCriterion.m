@@ -3,31 +3,18 @@ classdef numDaysCriterion<criterion
     %   Detailed explanation goes here
     
     properties
+        numDays=0;
     end
     
     methods
-        function s=numDaysCriterion(varargin)
+        function s=numDaysCriterion(numDays)
             % NUMDAYSCRITERION  class constructor.  
             % s=numDaysCriterion(numDays)
-
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-                    s.numDays=0;
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'numDaysCriterion'))
-                        s = varargin{1};
-                    elseif varargin{1}>=0
-                        s.numDays = varargin{1};
+            s=s@criterion();
+            
+            s.numDays = numDays;
                         
-                    else
-                        error('Input argument is not a numDays object or a numeric data type')
-                    end
-                otherwise
-                    error('Wrong number of input arguments')
-            end
+          
         end
         
         function [graduate, details] = checkCriterion(c,subject,trainingStep,trialRecords, compiledRecords)

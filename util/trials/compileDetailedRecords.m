@@ -80,7 +80,7 @@ if ~exist('destination','var') || isempty(destination)
     conn=dbConn();
 end
 
-sm=stimManager;
+
 for i=1:length(ids)
     try
         fprintf('\ndoing %s\n',ids{i});
@@ -334,7 +334,7 @@ for i=1:length(ids)
                 
                 % it is very important that this function keep the same fieldNames in newBasicRecs as they were in trialRecords
                 % because otherwise we don't know which fields are using the sessionLUT
-                [newBasicRecs, compiledLUT]=extractBasicFields(sm,tr(thisTsInds),compiledLUT);
+                [newBasicRecs, compiledLUT]=stimManager.extractBasicFields(tr(thisTsInds),compiledLUT);
                 verifyAllFieldsNCols(newBasicRecs,length(tr(thisTsInds)));
                 
                 % 12/18/08 - now update newBasicRecs as appropriate (shift LUT indices by the length of compiledLUT)

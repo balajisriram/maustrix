@@ -11,7 +11,7 @@ classdef reinforcementManager
     end
     
     methods
-        function r=reinforcementManager(varargin)
+        function r=reinforcementManager(msPenalty, msPuff, scalar, fractionOpenTimeSoundIsOn, fractionPenaltySoundIsOn, requestRewardSizeULorMS, requestMode)
             % REINFORCEMENTMANAGER  class constructor.  ABSTRACT CLASS-- DO NOT INSTANTIATE
             % r=rewardManager(msPenalty, msPuff, scalar, fractionOpenTimeSoundIsOn, fractionPenaltySoundIsOn, requestRewardSizeULorMS, requestMode)
             %
@@ -24,68 +24,55 @@ classdef reinforcementManager
             % requestMode - one of the strings {'first', 'nonrepeats', 'all'} that specifies which requests should be rewarded within a trial
             %       'first' means only the first request is rewarded; 'nonrepeats' means all requests that are not same as previous request are rewarded
             %       'all' means all requests are rewarded
-            switch nargin
-                case 0
-                    % if no input arguments, create a default obj
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'reinforcementManager'))
-                        r = varargin{1};
-                    else
-                        error('Input argument is not a reinforcementManager object')
-                    end
-                case 7
-                    r.msPenalty=varargin{1};
-                    r.msPuff=varargin{2};
-                    r.scalar=varargin{3};
-                    r.fractionOpenTimeSoundIsOn=varargin{4};
-                    r.fractionPenaltySoundIsOn=varargin{5};
-                    r.requestRewardSizeULorMS=varargin{6};
-                    r.requestMode=varargin{7};
+            
+            r.msPenalty=msPenalty;
+            r.msPuff=msPuff;
+            r.scalar=scalar;
+            r.fractionOpenTimeSoundIsOn=fractionOpenTimeSoundIsOn;
+            r.fractionPenaltySoundIsOn=fractionPenaltySoundIsOn;
+            r.requestRewardSizeULorMS=requestRewardSizeULorMS;
+            r.requestMode=requestMode;
 
-                    if r.msPenalty>=0 && isreal(r.msPenalty) && isscalar(r.msPenalty)
-                        %pass
-                    else
-                        error('msPenalty must a single real number be >=0')
-                    end
-
-                    if isreal(r.msPuff) && isscalar(r.msPuff) && r.msPuff>=0 && r.msPuff<=r.msPenalty
-                        %pass
-                    else
-                        error('msPuff must be scalar real 0<= val <=msPenalty')
-                    end
-
-                    if isreal(r.scalar) && isscalar(r.scalar) && r.scalar>=0 && r.scalar<=100 
-                        %pass
-                    else
-                        error('scalar must be >=0 and <=100')
-                    end
-
-                    if isreal(r.fractionOpenTimeSoundIsOn) && isscalar(r.fractionOpenTimeSoundIsOn) &&  r.fractionOpenTimeSoundIsOn>=0 && r.fractionOpenTimeSoundIsOn<=1
-                        %pass
-                    else
-                        error('fractionOpenTimeSoundIsOn must be >=0 and <=1')
-                    end
-
-                    if isreal(r.fractionPenaltySoundIsOn) && isscalar(r.fractionPenaltySoundIsOn) && r.fractionPenaltySoundIsOn>=0 && r.fractionPenaltySoundIsOn<=1
-                        %pass
-                    else
-                        error('fractionPenaltySoundIsOn must be >=0 and <=1')
-                    end
-                    if r.requestRewardSizeULorMS>=0 && isreal(r.requestRewardSizeULorMS) && isscalar(r.requestRewardSizeULorMS)
-                        %pass
-                    else
-                        error('requestRewardSizeULorMS must a single real number be >=0')
-                    end
-                    if ischar(r.requestMode) && (strcmp(r.requestMode,'first') || strcmp(r.requestMode,'nonrepeats') || strcmp(r.requestMode,'all'))
-                        %pass
-                    else
-                        error('requestMode must be ''first'',''nonrepeats'',or ''all''');
-                    end
-
-                otherwise
-                    error('Wrong number of input arguments')
+            if r.msPenalty>=0 && isreal(r.msPenalty) && isscalar(r.msPenalty)
+                %pass
+            else
+                error('msPenalty must a single real number be >=0')
             end
+
+            if isreal(r.msPuff) && isscalar(r.msPuff) && r.msPuff>=0 && r.msPuff<=r.msPenalty
+                %pass
+            else
+                error('msPuff must be scalar real 0<= val <=msPenalty')
+            end
+
+            if isreal(r.scalar) && isscalar(r.scalar) && r.scalar>=0 && r.scalar<=100 
+                %pass
+            else
+                error('scalar must be >=0 and <=100')
+            end
+
+            if isreal(r.fractionOpenTimeSoundIsOn) && isscalar(r.fractionOpenTimeSoundIsOn) &&  r.fractionOpenTimeSoundIsOn>=0 && r.fractionOpenTimeSoundIsOn<=1
+                %pass
+            else
+                error('fractionOpenTimeSoundIsOn must be >=0 and <=1')
+            end
+
+            if isreal(r.fractionPenaltySoundIsOn) && isscalar(r.fractionPenaltySoundIsOn) && r.fractionPenaltySoundIsOn>=0 && r.fractionPenaltySoundIsOn<=1
+                %pass
+            else
+                error('fractionPenaltySoundIsOn must be >=0 and <=1')
+            end
+            if r.requestRewardSizeULorMS>=0 && isreal(r.requestRewardSizeULorMS) && isscalar(r.requestRewardSizeULorMS)
+                %pass
+            else
+                error('requestRewardSizeULorMS must a single real number be >=0')
+            end
+            if ischar(r.requestMode) && (strcmp(r.requestMode,'first') || strcmp(r.requestMode,'nonrepeats') || strcmp(r.requestMode,'all'))
+                %pass
+            else
+                error('requestMode must be ''first'',''nonrepeats'',or ''all''');
+            end
+
         end
         
         function [rm updateRM] =cache(rm,trialRecords, subject)

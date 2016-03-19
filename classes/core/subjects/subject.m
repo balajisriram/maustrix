@@ -220,7 +220,7 @@ classdef subject
                 stepNum=subject.trainingStepNum;
             end
             
-            if ~isempty(subject.protocol) && isscalar(stepNum) && isinteger(stepNum) && stepNum>0 && stepNum<=subject.protocol.numTrainingSteps
+            if ~isempty(subject.protocol) && isscalar(stepNum) && isinteger(stepNum) && stepNum>0 && stepNum<=length(subject.protocol.trainingSteps)
                 if authorCheck(r,auth)
                     newProtocol = changeStep(subject.protocol, ts, stepNum);
                     

@@ -1,31 +1,29 @@
 classdef minutesPerSession<scheduler
 
     properties
-        numTrialsNeeded = 1;
+        minutes = 1;
+        hoursBetweenSessions =0;
     end
     
     methods
-        function s=numTrialsDoneCriterion(varargin)
-            % NUMTRIALSDONECRITERION  class constructor.  
-            % s=numTrialsDoneCriterion([numTrialsNeeded])
+        function s=minutesPerSession(minutes,hoursBetweenSessions)
+            % HOURRANGE  class constructor.
+            % s=minutesPerSession(minutes)
+            s=s@scheduler();
+       
 
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'numTrialsDoneCriterion'))
-                        s = varargin{1};
-                    elseif isscalar(varargin{1})
-                        s.numTrialsNeeded = varargin{1};
-                        
-                    else
-                        error('Input argument is not a numTrialsDoneCriterion object')
-                    end
-                otherwise
-                    error('Wrong number of input arguments')
+            if minutes>0
+                s.minutes=minutes;
+            else
+                error('must be more than 1 minute');
             end
+
+            if hoursBetweenSessions>0
+                s.hoursBetweenSessions=hoursBetweenSessions;
+            else
+                error('must be positive');
+            end            
+
         end
         
         function [keepWorking secsRemainingTilStateFlip updateScheduler scheduler] = checkSchedule (scheduler, subject, trainingStep, trialRecords, sessionNumber)

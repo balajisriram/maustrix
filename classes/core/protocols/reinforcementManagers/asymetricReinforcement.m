@@ -8,60 +8,44 @@ classdef asymetricReinforcement<reinforcementManager
     end
     
     methods
-        function r=asymetricReinforcement(varargin)
+        function r=asymetricReinforcement(hitRewardSizeULorMS,correctRejectRewardSizeULorMS,missMsPenalty,falseAlarmMsPenalty,requestRewardSizeULorMS,requestMode,msPenalty,...
+               fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
             % ||asymetricReinforcement||  class constructor.
             % r=asymetricReinforcement(hitRewardSizeULorMS,correctRejectRewardSizeULorMS,missMsPenalty,falseAlarmMsPenalty,requestRewardSizeULorMS,requestMode,msPenalty,...
             %   fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
+            r=r@reinforcementManager(msPenalty,msPuff,scalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestRewardSizeULorMS,requestMode);
 
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'asymetricReinforcement'))
-                        r = varargin{1};
-                    else
-                        error('Input argument is not a asymetricReinforcement object')
-                    end
-
-                case 11
-
-                    if varargin{1}>=0 && isreal(varargin{1}) && isscalar(varargin{1})
-                        r.hitRewardSizeULorMS=varargin{1};
-                    else
-                        error('the hitRewardSizeULorMS must a single scalar be >=0')
-                    end
-
-                    if varargin{2}>=0 && isreal(varargin{2}) && isscalar(varargin{2})
-                        r.correctRejectRewardSizeULorMS=varargin{2};
-                    else
-                        error('the correctRejectRewardSizeULorMS must a single scalar be >=0')
-                    end
-
-
-                    if varargin{3}>=0 && isreal(varargin{3}) && isscalar(varargin{3})
-                        r.missMsPenalty=varargin{3};
-                    else
-                        error('the missMsPenalty must a single scalar be >=0')
-                    end
-
-                    if varargin{4}>=0 && isreal(varargin{4}) && isscalar(varargin{4})
-                        r.falseAlarmMsPenalty=varargin{4};
-                    else
-                        error('the falseAlarmMsPenalty must a single scalar be >=0')
-                    end
-
-
-                    msPenalty=max([r.missMsPenalty r.falseAlarmMsPenalty]);  % these unfortunately are also set in the super class, because they will vary in this sub-class
-                    %the super class stores the larger which is what setReinforcementParam will change... typically the only non-zero value. 
-                    %msPuff=NaN; % should add asymetric puffs  (to support air in face on fa, not on miss), in which case pass in NAN to super class
-                    msPuff=varargin{11};
-                       %(msPenalty, msPuff, scalar, fractionOpenTimeSoundIsOn, fractionPenaltySoundIsOn, requestRewardSizeULorMS, requestMode)
-                otherwise
-                    nargin
-                    error('Wrong number of input arguments')
+            if hitRewardSizeULorMS>=0 && isreal(hitRewardSizeULorMS) && isscalar(hitRewardSizeULorMS)
+                r.hitRewardSizeULorMS=hitRewardSizeULorMS;
+            else
+                error('the hitRewardSizeULorMS must a single scalar be >=0')
             end
+
+            if correctRejectRewardSizeULorMS>=0 && isreal(correctRejectRewardSizeULorMS) && isscalar(correctRejectRewardSizeULorMS)
+                r.correctRejectRewardSizeULorMS=correctRejectRewardSizeULorMS;
+            else
+                error('the correctRejectRewardSizeULorMS must a single scalar be >=0')
+            end
+
+
+            if missMsPenalty>=0 && isreal(missMsPenalty) && isscalar(missMsPenalty)
+                r.missMsPenalty=missMsPenalty;
+            else
+                error('the missMsPenalty must a single scalar be >=0')
+            end
+
+            if falseAlarmMsPenalty>=0 && isreal(falseAlarmMsPenalty) && isscalar(falseAlarmMsPenalty)
+                r.falseAlarmMsPenalty=falseAlarmMsPenalty;
+            else
+                error('the falseAlarmMsPenalty must a single scalar be >=0')
+            end
+
+
+            r.msPenalty=max([r.missMsPenalty r.falseAlarmMsPenalty]);  % these unfortunately are also set in the super class, because they will vary in this sub-class
+            %the super class stores the larger which is what setReinforcementParam will change... typically the only non-zero value. 
+            %msPuff=NaN; % should add asymetric puffs  (to support air in face on fa, not on miss), in which case pass in NAN to super class
+            r.msPuff=msPuff;
+
         end
         
         function [r rewardSizeULorMS requestRewardSizeULorMS msPenalty msPuff msRewardSound msPenaltySound updateRM] = ...

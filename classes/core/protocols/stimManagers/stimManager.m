@@ -9,61 +9,43 @@ classdef stimManager
     end
     
     methods
-        function s=stimManager(varargin)
+        function s=stimManager(maxWidth,maxHeight,scaleFactor,interTrialLuminance)
             % STIMMANAGER  class constructor. ABSTRACT CLASS -- DO NOT INSTANTIATE
             % s = stimManager(maxWidth,maxHeight,scaleFactor,interTrialLuminance)
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-                    
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'stimManager'))
-                        s = varargin{1};
-                    else
-                        error('Input argument is not a stimManager object')
-                    end
-                case 4
-                    if varargin{1}>0 && varargin{2}>0
-                        s.maxWidth=varargin{1};
-                        s.maxHeight=varargin{2};
+            if maxWidth>0 && maxHeight>0
+                s.maxWidth=maxWidth;
+                s.maxHeight=maxHeight;
+            else
+                error('maxWidth and maxHeight must be positive')
+            end
 
-                    else
-                        error('maxWidth and maxHeight must be positive')
-                    end
+            if (length(scaleFactor)==2 && all(scaleFactor>0)) || (length(scaleFactor)==1 && scaleFactor==0)
+                s.scaleFactor=scaleFactor;
+            else
+                error('scale factor is either 0 (for scaling to full screen) or [width height] positive values')
+            end
 
-                    if (length(varargin{3})==2 && all(varargin{3}>0)) || (length(varargin{3})==1 && varargin{3}==0)
-                        s.scaleFactor=varargin{3};
-                    else
-                        error('scale factor is either 0 (for scaling to full screen) or [width height] positive values')
-                    end
+            if isnumeric(interTrialLuminance)
+                if interTrialLuminance>=0 && interTrialLuminance<=1
+                    s.interTrialLuminance=interTrialLuminance;
+                    s.interTrialDuration=1;
+                else
+                    error('interTrailLuminance must be >=0 and <=1')
+                end
+            elseif iscell(interTrialLuminance) && length(interTrialLuminance)==2
+                if interTrialLuminance{1}>=0 && interTrialLuminance{1}<=1
+                    s.interTrialLuminance=interTrialLuminance{1};
+                else
+                    error('interTrailLuminance must be >=0 and <=1')
+                end
 
-                    if isnumeric(varargin{4})
-                        if varargin{4}>=0 && varargin{4}<=1
-                            s.interTrialLuminance=varargin{4};
-                            s.interTrialDuration=1;
-                        else
-                            error('interTrailLuminance must be >=0 and <=1')
-                        end
-                    elseif iscell(varargin{4}) && length(varargin{4})==2
-                        if varargin{4}{1}>=0 && varargin{4}{1}<=1
-                            s.interTrialLuminance=varargin{4}{1};
-                        else
-                            error('interTrailLuminance must be >=0 and <=1')
-                        end
-
-                        if varargin{4}{2}>0
-                            s.interTrialDuration=varargin{4}{2};
-                        else
-                            error('interTrialDuration must be >=0')
-                        end
-
-                    else
-                        error('either numeric background only or cell with background and duration')
-                    end
-                otherwise
-                    error('Wrong number of input arguments')
+                if interTrialLuminance{2}>0
+                    s.interTrialDuration=interTrialLuminance{2};
+                else
+                    error('interTrialDuration must be >=0')
+                end
+            else
+                error('either numeric background only or cell with background and duration')
             end
         end
         
@@ -213,163 +195,6 @@ classdef stimManager
             % default behavior is to call Screen('Close') to clear all textures and close offscreen windows (but leave onscreen window!)
 
             Screen('Close')
-        end
-        
-        function [out compiledLUT]=extractBasicFields(sm,trialRecords,compiledLUT)
-            %note many of these are actually restricted by the trialManager -- ie
-            %nAFC has scalar targetPorts, but freeDrinks doesn't.
-
-            bloat=false;
-            % fields to extract from trialRecords:
-            %   trialNumber
-            %   sessionNumber
-            %   date
-            %   station.soundOn
-            %   station.physicalLocation
-            %   station.numPorts
-            %   trainingStepNum
-            %   trainingStepName
-            %   protocolName
-            %   numStepsInProtocol
-            %   protocolVersion.manualVersion
-            %   protocolVersion.autoVersion
-            %   protocolVersion.protocolDate
-            %   correct
-            %   trialManagerClass
-            %   stimManagerClass
-            %   schedulerClass
-            %   criterionClass
-            %   reinforcementManagerClass
-            %   scaleFactor
-            %   type
-            %   targetPorts
-            %   distractorPorts
-            %   response
-            %   containedManualPokes
-            %   didHumanResponse
-            %   containedForcedRewards
-            %   didStochasticResponse
-
-            % ==============================================================================================
-            % start extracting fields
-            [out.trialNumber, compiledLUT]                                =extractFieldAndEnsure(trialRecords,{'trialNumber'},'scalar',compiledLUT);
-            [out.sessionNumber, compiledLUT]                              =extractFieldAndEnsure(trialRecords,{'sessionNumber'},'scalar',compiledLUT);
-            [out.date, compiledLUT]                                       =extractFieldAndEnsure(trialRecords,{'date'},'datenum',compiledLUT);
-            [out.soundOn, compiledLUT]                                    =extractFieldAndEnsure(trialRecords,{'station','soundOn'},'scalar',compiledLUT);
-            [out.physicalLocation, compiledLUT]                           =extractFieldAndEnsure(trialRecords,{'station','physicalLocation'},'equalLengthVects',compiledLUT);
-            [out.numPorts, compiledLUT]                                   =extractFieldAndEnsure(trialRecords,{'station','numPorts'},'scalar',compiledLUT);
-            [out.step, compiledLUT]                                       =extractFieldAndEnsure(trialRecords,{'trainingStepNum'},'scalar',compiledLUT);
-            [out.trainingStepName, compiledLUT]                           =extractFieldAndEnsure(trialRecords,{'trainingStepName'},'scalarLUT',compiledLUT);
-            [out.protocolName, compiledLUT]                               =extractFieldAndEnsure(trialRecords,{'protocolName'},'scalarLUT',compiledLUT);
-            [out.numStepsInProtocol, compiledLUT]                         =extractFieldAndEnsure(trialRecords,{'numStepsInProtocol'},'scalar',compiledLUT);
-            [out.manualVersion, compiledLUT]                              =extractFieldAndEnsure(trialRecords,{'protocolVersion','manualVersion'},'scalar',compiledLUT);
-            [out.autoVersion, compiledLUT]                                =extractFieldAndEnsure(trialRecords,{'protocolVersion','autoVersion'},'scalar',compiledLUT);
-            [out.protocolDate, compiledLUT]                               =extractFieldAndEnsure(trialRecords,{'protocolVersion','date'},'datenum',compiledLUT);
-            % change correct to be something that needs to be computed if trialManagerClass=nAFC
-            [out.correct, compiledLUT]                                    =extractFieldAndEnsure(trialRecords,{},'correct',compiledLUT);
-
-            [out.trialManagerClass, compiledLUT]                          =extractFieldAndEnsure(trialRecords,{'trialManagerClass'},'scalarLUT',compiledLUT);
-            [out.stimManagerClass, compiledLUT]                           =extractFieldAndEnsure(trialRecords,{'stimManagerClass'},'scalarLUT',compiledLUT);
-            [out.schedulerClass, compiledLUT]                             =extractFieldAndEnsure(trialRecords,{'schedulerClass'},'scalarLUT',compiledLUT);
-            [out.criterionClass, compiledLUT]                             =extractFieldAndEnsure(trialRecords,{'criterionClass'},'scalarLUT',compiledLUT);
-            [out.reinforcementManagerClass, compiledLUT]                  =extractFieldAndEnsure(trialRecords,{'reinforcementManagerClass'},'scalarLUT',compiledLUT);
-            % [out.scaleFactor compiledLUT]                                =extractFieldAndEnsure(trialRecords,{'scaleFactor'},'equalLengthVects',compiledLUT);
-            % [out.type compiledLUT]                                       =extractFieldAndEnsure(trialRecords,{'type'},'mixed',compiledLUT);
-            [out.targetPorts, compiledLUT]                                =extractFieldAndEnsure(trialRecords,{'targetPorts'},{'bin2dec',num2cell(out.numPorts)},compiledLUT);
-            [out.distractorPorts, compiledLUT]                            =extractFieldAndEnsure(trialRecords,{'distractorPorts'},{'bin2dec',num2cell(out.numPorts)},compiledLUT);
-            try
-                out.result                                                   =ensureScalar(cellfun(@encodeResult,{trialRecords.result},num2cell(out.targetPorts),num2cell(out.distractorPorts),num2cell(out.correct),'UniformOutput',false));
-            catch
-                ple
-                out.result=ones(1,length(trialRecords))*nan;
-            end
-            [out.containedAPause, compiledLUT]                            =extractFieldAndEnsure(trialRecords,{'containedAPause'},'scalar',compiledLUT);
-            [out.containedManualPokes, compiledLUT]                       =extractFieldAndEnsure(trialRecords,{'containedManualPokes'},'scalar',compiledLUT);
-            [out.didHumanResponse, compiledLUT]                           =extractFieldAndEnsure(trialRecords,{'didHumanResponse'},'scalar',compiledLUT);
-            [out.containedForcedRewards, compiledLUT]                     =extractFieldAndEnsure(trialRecords,{'containedForcedRewards'},'scalar',compiledLUT);
-            [out.didStochasticResponse, compiledLUT]                      =extractFieldAndEnsure(trialRecords,{'didStochasticResponse'},'scalar',compiledLUT);
-            % 1/13/09 - need to peek into stimDetails to get correctionTrial (otherwise analysis defaults correctionTrial=0)
-            % need a try-catch here because this is potentially dangerous (stimDetails may not be the same for all trials, in which case this will error
-            % from the vector indexing
-            try
-            %     if strcmp(LUTlookup(compiledLUT,unique(out.trialManagerClass)),'nAFC')
-                    [out.correctionTrial, compiledLUT]                            =extractFieldAndEnsure(trialRecords,{'stimDetails','correctionTrial'},'scalar',compiledLUT);
-            %     else
-            %         out.correctionTrial=ones(1,length(trialRecords))*nan;
-            %     end
-            catch
-                out.correctionTrial=ones(1,length(trialRecords))*nan;
-            end    
-            % 1/14/09 - added numRequestLicks and firstILI
-            [out.numRequests, compiledLUT]                                =extractFieldAndEnsure(trialRecords,{},'numRequests',compiledLUT);
-            [out.firstIRI, compiledLUT]                                   =extractFieldAndEnsure(trialRecords,{},'firstIRI',compiledLUT);
-            [out.responseTime, compiledLUT]                               =extractFieldAndEnsure(trialRecords,{},'responseTime',compiledLUT);
-            [out.actualRewardDuration, compiledLUT]                       =extractFieldAndEnsure(trialRecords,{},'actualRewardDuration',compiledLUT);
-            [out.proposedRewardDuration, compiledLUT]                       =extractFieldAndEnsure(trialRecords,{},'proposedRewardDuration',compiledLUT);
-            [out.proposedPenaltyDuration, compiledLUT]                       =extractFieldAndEnsure(trialRecords,{},'proposedPenaltyDuration',compiledLUT);
-
-            % adding code to get details about reinforcement
-            [out.potentialRewardMS,compiledLUT]                             = extractFieldAndEnsure(trialRecords, {'reinforcementManager','rewardSizeULorMS'},'scalar',compiledLUT);
-            [out.potentialRequestRewardMS,compiledLUT]                             = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','requestRewardSizeULorMS'},'scalar',compiledLUT);
-            [out.potentialRewardScalar,compiledLUT]                         = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','scalar'},'scalar',compiledLUT);
-            [out.potentialPenalty,compiledLUT]                              = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','msPenalty'},'scalar',compiledLUT);
-
-
-            % 3/5/09 - we need to calculate a 'response' field for analysis based either on trialRecords.response (old-style)
-            % or trialRecords.phaseRecords.responseDetails.tries (new-style) for the phase labeled 'discrim'
-            [out.response]                                               =getResponseFromTrialRecords(trialRecords);
-            [out.responseTime]                                           =getResponseTimeFromTrialRecords(trialRecords);
-
-            %12/10/09 - access to more lick info... only do it for goNoGos to prevent bloat
-            % this would be reasonable: any(strcmp(trialRecords(1).trialManagerClass,{'cuedGoNoGo','goNoGo'}))
-            % but only have the ID of the trialManger=26 without the LUT, thus using the
-            % presense of the responseWindowMs instead
-            try
-                x=trialRecords(1).trialManager.trialManager;
-                if isfield(x,'responseWindowMs') && ~isempty(x.responseWindowMs) && ~isinf(x.responseWindowMs(2))
-                    %OLD
-                    %[out.lickTimes compiledLUT] = extractFieldAndEnsure(trialRecords,{},'lickTimesInCell',compiledLUT); % wrt discrimStart
-                    %[out.discrimStart compiledLUT] = extractFieldAndEnsure(trialRecords,{},'discrimStart',compiledLUT); % wrt trial start
-
-                    %NEW
-                    [out.lickTimes compiledLUT]= extractFieldAndEnsure(trialRecords,{},'lickTimesInMatrix',compiledLUT);
-                    [out.preResponseStartRaw compiledLUT]= extractFieldAndEnsure(trialRecords,{},'preResponseStartRaw',compiledLUT);
-                    [out.discrimStartRaw compiledLUT]= extractFieldAndEnsure(trialRecords,{},'discrimStartRaw',compiledLUT);
-                    [out.trialStartRaw compiledLUT]= extractFieldAndEnsure(trialRecords,{},'trialStartRaw',compiledLUT);
-
-                    [out.expectedPreRequestDurSec compiledLUT]= extractFieldAndEnsure(trialRecords,{},'expectedPreRequestDurSec',compiledLUT);
-                    [out.responseWindowStartSec compiledLUT]= extractFieldAndEnsure(trialRecords,{},'responseWindowStartSec',compiledLUT);
-                    [out.responseWindowStopSec compiledLUT]= extractFieldAndEnsure(trialRecords,{},'responseWindowStopSec',compiledLUT);
-                    [out.discrimStart compiledLUT] = extractFieldAndEnsure(trialRecords,{},'discrimStart',compiledLUT); % prob want this too
-
-                else
-                    % this may error if rats run on something else after a goNoGo task... leaving the
-                    %field undefined... might have to define cells of nan's for all rats,
-                    %but trying to avoid that
-                    %[out.lickTimes]=nans
-                    %[out.discrimStart]=nans
-                end
-            end
-
-            % out.numRequests=ones(1,length(trialRecords))*nan;
-            % for i=1:length(trialRecords)
-            %     if isfield(trialRecords(i),'responseDetails') && isfield(trialRecords(i).responseDetails,'tries') && ...
-            %             ~isempty(trialRecords(i).responseDetails.tries) % if this field exists, overwrite the nan
-            %         out.numRequests(i)=size(trialRecords(i).responseDetails.tries,2)-1;
-            %     end
-            % end
-            % out.firstIRI=ones(1,length(trialRecords))*nan;
-            % for i=1:length(trialRecords)
-            %     if isfield(trialRecords(i),'responseDetails') && isfield(trialRecords(i).responseDetails,'times') && ...
-            %             ~isempty(trialRecords(i).responseDetails.times) && size(trialRecords(i).responseDetails.times,2)-1>=2
-            %         out.firstIRI(i)=diff(cell2mat(trialRecords(i).responseDetails.times(1:2)));
-            %     end
-            % end
-            try
-            verifyAllFieldsNCols(out,length(trialRecords));
-            catch
-                keyboard
-            end
         end
 
 
@@ -840,5 +665,163 @@ classdef stimManager
         
     end
     
+    methods (Static)
+       function [out compiledLUT]=extractBasicFields(trialRecords,compiledLUT)
+            %note many of these are actually restricted by the trialManager -- ie
+            %nAFC has scalar targetPorts, but freeDrinks doesn't.
+
+            bloat=false;
+            % fields to extract from trialRecords:
+            %   trialNumber
+            %   sessionNumber
+            %   date
+            %   station.soundOn
+            %   station.physicalLocation
+            %   station.numPorts
+            %   trainingStepNum
+            %   trainingStepName
+            %   protocolName
+            %   numStepsInProtocol
+            %   protocolVersion.manualVersion
+            %   protocolVersion.autoVersion
+            %   protocolVersion.protocolDate
+            %   correct
+            %   trialManagerClass
+            %   stimManagerClass
+            %   schedulerClass
+            %   criterionClass
+            %   reinforcementManagerClass
+            %   scaleFactor
+            %   type
+            %   targetPorts
+            %   distractorPorts
+            %   response
+            %   containedManualPokes
+            %   didHumanResponse
+            %   containedForcedRewards
+            %   didStochasticResponse
+
+            % ==============================================================================================
+            % start extracting fields
+            [out.trialNumber, compiledLUT]                                =extractFieldAndEnsure(trialRecords,{'trialNumber'},'scalar',compiledLUT);
+            [out.sessionNumber, compiledLUT]                              =extractFieldAndEnsure(trialRecords,{'sessionNumber'},'scalar',compiledLUT);
+            [out.date, compiledLUT]                                       =extractFieldAndEnsure(trialRecords,{'date'},'datenum',compiledLUT);
+            [out.soundOn, compiledLUT]                                    =extractFieldAndEnsure(trialRecords,{'station','soundOn'},'scalar',compiledLUT);
+            [out.physicalLocation, compiledLUT]                           =extractFieldAndEnsure(trialRecords,{'station','physicalLocation'},'equalLengthVects',compiledLUT);
+            [out.numPorts, compiledLUT]                                   =extractFieldAndEnsure(trialRecords,{'station','numPorts'},'scalar',compiledLUT);
+            [out.step, compiledLUT]                                       =extractFieldAndEnsure(trialRecords,{'trainingStepNum'},'scalar',compiledLUT);
+            [out.trainingStepName, compiledLUT]                           =extractFieldAndEnsure(trialRecords,{'trainingStepName'},'scalarLUT',compiledLUT);
+            [out.protocolName, compiledLUT]                               =extractFieldAndEnsure(trialRecords,{'protocolName'},'scalarLUT',compiledLUT);
+            [out.numStepsInProtocol, compiledLUT]                         =extractFieldAndEnsure(trialRecords,{'numStepsInProtocol'},'scalar',compiledLUT);
+            [out.manualVersion, compiledLUT]                              =extractFieldAndEnsure(trialRecords,{'protocolVersion','manualVersion'},'scalar',compiledLUT);
+            [out.autoVersion, compiledLUT]                                =extractFieldAndEnsure(trialRecords,{'protocolVersion','autoVersion'},'scalar',compiledLUT);
+            [out.protocolDate, compiledLUT]                               =extractFieldAndEnsure(trialRecords,{'protocolVersion','date'},'datenum',compiledLUT);
+            % change correct to be something that needs to be computed if trialManagerClass=nAFC
+            [out.correct, compiledLUT]                                    =extractFieldAndEnsure(trialRecords,{},'correct',compiledLUT);
+
+            [out.trialManagerClass, compiledLUT]                          =extractFieldAndEnsure(trialRecords,{'trialManagerClass'},'scalarLUT',compiledLUT);
+            [out.stimManagerClass, compiledLUT]                           =extractFieldAndEnsure(trialRecords,{'stimManagerClass'},'scalarLUT',compiledLUT);
+            [out.schedulerClass, compiledLUT]                             =extractFieldAndEnsure(trialRecords,{'schedulerClass'},'scalarLUT',compiledLUT);
+            [out.criterionClass, compiledLUT]                             =extractFieldAndEnsure(trialRecords,{'criterionClass'},'scalarLUT',compiledLUT);
+            [out.reinforcementManagerClass, compiledLUT]                  =extractFieldAndEnsure(trialRecords,{'reinforcementManagerClass'},'scalarLUT',compiledLUT);
+            % [out.scaleFactor compiledLUT]                                =extractFieldAndEnsure(trialRecords,{'scaleFactor'},'equalLengthVects',compiledLUT);
+            % [out.type compiledLUT]                                       =extractFieldAndEnsure(trialRecords,{'type'},'mixed',compiledLUT);
+            [out.targetPorts, compiledLUT]                                =extractFieldAndEnsure(trialRecords,{'targetPorts'},{'bin2dec',num2cell(out.numPorts)},compiledLUT);
+            [out.distractorPorts, compiledLUT]                            =extractFieldAndEnsure(trialRecords,{'distractorPorts'},{'bin2dec',num2cell(out.numPorts)},compiledLUT);
+            try
+                out.result                                                   =ensureScalar(cellfun(@encodeResult,{trialRecords.result},num2cell(out.targetPorts),num2cell(out.distractorPorts),num2cell(out.correct),'UniformOutput',false));
+            catch
+                ple
+                out.result=ones(1,length(trialRecords))*nan;
+            end
+            [out.containedAPause, compiledLUT]                            =extractFieldAndEnsure(trialRecords,{'containedAPause'},'scalar',compiledLUT);
+            [out.containedManualPokes, compiledLUT]                       =extractFieldAndEnsure(trialRecords,{'containedManualPokes'},'scalar',compiledLUT);
+            [out.didHumanResponse, compiledLUT]                           =extractFieldAndEnsure(trialRecords,{'didHumanResponse'},'scalar',compiledLUT);
+            [out.containedForcedRewards, compiledLUT]                     =extractFieldAndEnsure(trialRecords,{'containedForcedRewards'},'scalar',compiledLUT);
+            [out.didStochasticResponse, compiledLUT]                      =extractFieldAndEnsure(trialRecords,{'didStochasticResponse'},'scalar',compiledLUT);
+            % 1/13/09 - need to peek into stimDetails to get correctionTrial (otherwise analysis defaults correctionTrial=0)
+            % need a try-catch here because this is potentially dangerous (stimDetails may not be the same for all trials, in which case this will error
+            % from the vector indexing
+            try
+            %     if strcmp(LUTlookup(compiledLUT,unique(out.trialManagerClass)),'nAFC')
+                    [out.correctionTrial, compiledLUT]                            =extractFieldAndEnsure(trialRecords,{'stimDetails','correctionTrial'},'scalar',compiledLUT);
+            %     else
+            %         out.correctionTrial=ones(1,length(trialRecords))*nan;
+            %     end
+            catch
+                out.correctionTrial=ones(1,length(trialRecords))*nan;
+            end    
+            % 1/14/09 - added numRequestLicks and firstILI
+            [out.numRequests, compiledLUT]                                =extractFieldAndEnsure(trialRecords,{},'numRequests',compiledLUT);
+            [out.firstIRI, compiledLUT]                                   =extractFieldAndEnsure(trialRecords,{},'firstIRI',compiledLUT);
+            [out.responseTime, compiledLUT]                               =extractFieldAndEnsure(trialRecords,{},'responseTime',compiledLUT);
+            [out.actualRewardDuration, compiledLUT]                       =extractFieldAndEnsure(trialRecords,{},'actualRewardDuration',compiledLUT);
+            [out.proposedRewardDuration, compiledLUT]                       =extractFieldAndEnsure(trialRecords,{},'proposedRewardDuration',compiledLUT);
+            [out.proposedPenaltyDuration, compiledLUT]                       =extractFieldAndEnsure(trialRecords,{},'proposedPenaltyDuration',compiledLUT);
+
+            % adding code to get details about reinforcement
+            [out.potentialRewardMS,compiledLUT]                             = extractFieldAndEnsure(trialRecords, {'reinforcementManager','rewardSizeULorMS'},'scalar',compiledLUT);
+            [out.potentialRequestRewardMS,compiledLUT]                             = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','requestRewardSizeULorMS'},'scalar',compiledLUT);
+            [out.potentialRewardScalar,compiledLUT]                         = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','scalar'},'scalar',compiledLUT);
+            [out.potentialPenalty,compiledLUT]                              = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','msPenalty'},'scalar',compiledLUT);
+
+
+            % 3/5/09 - we need to calculate a 'response' field for analysis based either on trialRecords.response (old-style)
+            % or trialRecords.phaseRecords.responseDetails.tries (new-style) for the phase labeled 'discrim'
+            [out.response]                                               =getResponseFromTrialRecords(trialRecords);
+            [out.responseTime]                                           =getResponseTimeFromTrialRecords(trialRecords);
+
+            %12/10/09 - access to more lick info... only do it for goNoGos to prevent bloat
+            % this would be reasonable: any(strcmp(trialRecords(1).trialManagerClass,{'cuedGoNoGo','goNoGo'}))
+            % but only have the ID of the trialManger=26 without the LUT, thus using the
+            % presense of the responseWindowMs instead
+            try
+                x=trialRecords(1).trialManager.trialManager;
+                if isfield(x,'responseWindowMs') && ~isempty(x.responseWindowMs) && ~isinf(x.responseWindowMs(2))
+                    %OLD
+                    %[out.lickTimes compiledLUT] = extractFieldAndEnsure(trialRecords,{},'lickTimesInCell',compiledLUT); % wrt discrimStart
+                    %[out.discrimStart compiledLUT] = extractFieldAndEnsure(trialRecords,{},'discrimStart',compiledLUT); % wrt trial start
+
+                    %NEW
+                    [out.lickTimes compiledLUT]= extractFieldAndEnsure(trialRecords,{},'lickTimesInMatrix',compiledLUT);
+                    [out.preResponseStartRaw compiledLUT]= extractFieldAndEnsure(trialRecords,{},'preResponseStartRaw',compiledLUT);
+                    [out.discrimStartRaw compiledLUT]= extractFieldAndEnsure(trialRecords,{},'discrimStartRaw',compiledLUT);
+                    [out.trialStartRaw compiledLUT]= extractFieldAndEnsure(trialRecords,{},'trialStartRaw',compiledLUT);
+
+                    [out.expectedPreRequestDurSec compiledLUT]= extractFieldAndEnsure(trialRecords,{},'expectedPreRequestDurSec',compiledLUT);
+                    [out.responseWindowStartSec compiledLUT]= extractFieldAndEnsure(trialRecords,{},'responseWindowStartSec',compiledLUT);
+                    [out.responseWindowStopSec compiledLUT]= extractFieldAndEnsure(trialRecords,{},'responseWindowStopSec',compiledLUT);
+                    [out.discrimStart compiledLUT] = extractFieldAndEnsure(trialRecords,{},'discrimStart',compiledLUT); % prob want this too
+
+                else
+                    % this may error if rats run on something else after a goNoGo task... leaving the
+                    %field undefined... might have to define cells of nan's for all rats,
+                    %but trying to avoid that
+                    %[out.lickTimes]=nans
+                    %[out.discrimStart]=nans
+                end
+            end
+
+            % out.numRequests=ones(1,length(trialRecords))*nan;
+            % for i=1:length(trialRecords)
+            %     if isfield(trialRecords(i),'responseDetails') && isfield(trialRecords(i).responseDetails,'tries') && ...
+            %             ~isempty(trialRecords(i).responseDetails.tries) % if this field exists, overwrite the nan
+            %         out.numRequests(i)=size(trialRecords(i).responseDetails.tries,2)-1;
+            %     end
+            % end
+            % out.firstIRI=ones(1,length(trialRecords))*nan;
+            % for i=1:length(trialRecords)
+            %     if isfield(trialRecords(i),'responseDetails') && isfield(trialRecords(i).responseDetails,'times') && ...
+            %             ~isempty(trialRecords(i).responseDetails.times) && size(trialRecords(i).responseDetails.times,2)-1>=2
+            %         out.firstIRI(i)=diff(cell2mat(trialRecords(i).responseDetails.times(1:2)));
+            %     end
+            % end
+            try
+            verifyAllFieldsNCols(out,length(trialRecords));
+            catch
+                keyboard
+            end
+        end 
+    end
 end
 

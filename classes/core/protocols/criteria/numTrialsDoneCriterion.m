@@ -1,31 +1,17 @@
 classdef numTrialsDoneCriterion<criterion
 
     properties
+        numTrialsNeeded = 1;
     end
     
     methods
-        function s=numTrialsDoneCriterion(varargin)
+        function s=numTrialsDoneCriterion(numTrialsNeeded)
             % NUMTRIALSDONECRITERION  class constructor.  
             % s=numTrialsDoneCriterion([numTrialsNeeded])
-
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-                    s.numTrialsNeeded = 1;
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(varargin{1},'numTrialsDoneCriterion'))
-                        s = varargin{1};
-                    elseif isscalar(varargin{1})
-                        s.numTrialsNeeded = varargin{1};
-                        
-                    else
-                        error('Input argument is not a numTrialsDoneCriterion object')
-                    end
-                otherwise
-                    error('Wrong number of input arguments')
-            end
+            s=s@criterion();
+            
+            s.numTrialsNeeded = numTrialsNeeded;
+             
         end
         
         function [graduate details] = checkCriterion(c,subject,trainingStep,trialRecords, compiledRecords)

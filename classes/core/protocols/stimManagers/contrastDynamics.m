@@ -14,7 +14,9 @@ classdef contrastDynamics<stimManager
     end
     
     methods
-        function s=contrastDynamics(varargin)
+        function s=contrastDynamics(background, stimSpec, LEDParams, maxWidth,maxHeight,scaleFactor,interTrialLuminance)
+            
+            s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
             % CONTRASTDYNAMICS  class constructor.
             s.LEDParams.active = false;
             s.LEDParams.fraction = 0;
@@ -31,75 +33,34 @@ classdef contrastDynamics<stimManager
             s.stimSpec.numStimuli = 100;
             s.stimSpec.numFramesPerStim = 1;
 
-            % other ways to input stimspec
-            % s.stimSpec.type = 'sequential';
-            % s.stimSpec.pattern = 'grating';
-            % s.stimSpec.orientation = 0;
-            % s.stimSpec.contrasts = 0;
-            % s.stimSpec.radii = 0.2;
-            % s.stimSpec.numStimuli = 100;
-
-            % s.stimSpec.type = 'random';
-            % s.stimSpec.pattern = 'grating';
-            % s.stimSpec.orientation = 0;
-            % s.stimSpec.contrasts = logspace(log10(1),log10(100),10);
-            % s.stimSpec.radii = 0.2;
-            % s.stimSpec.numStimuli = 100;
-            % s.stimSpec.randomizer = 'twister'
-            % 
-            % 
-            % s.stimSpec.type = 'sequential';
-            % s.stimSpec.pattern = 'naturalNoise';
-            % s.stimSpec.orientation = 0;
-            % s.stimSpec.contrasts = logspace(log10(1),log10(100),10);
-            % s.stimSpec.radii = 0.2;
-            % s.stimSpec.numStimuli = 100;
-
-
-
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-
-                    
-                case 1
-                    % if input is of this class type
-                    if (isa(varargin{1},'contrastDynamics'))
-                        s = varargin{1};
-                    else
-                        error('Input argument is not a whiteNoiseBubble object')
-                    end
-                case 7
-                    % background
-                    if isscalar(varargin{1})
-                        s.background = varargin{1};
-                    elseif iscell(varargin{1})
-                        s.background = varargin{1}{1};
-                        s.blankOn = true;
-                        s.blankDuration = varargin{1}{2};
-                    else
-                        error('background must be a scalar or a cell with a blanking duration');
-                    end
-
-                    stimSpec = varargin{2};
-                    if ~isstruct(stimSpec)
-                        stimSpec;
-                        error('stimSpec needs to be a struct');
-                    end
-                    % some error checks for stiomspec
-                    if ~isempty(stimSpec)
-                        s.stimSpec = stimSpec;
-                    end
-
-                    LEDParams = varargin{3};
-                    if ~isempty(LEDParams)
-                        s.LEDParams = LEDParams
-                    end
-
-                    
-                otherwise
-                    error('invalid number of input arguments');
+            % background
+            if isscalar(background)
+                s.background = background;
+            elseif iscell(background)
+                s.background = background{1};
+                s.blankOn = true;
+                s.blankDuration = background{2};
+            else
+                error('background must be a scalar or a cell with a blanking duration');
             end
+
+            stimSpec = stimSpec;
+            if ~isstruct(stimSpec)
+                stimSpec;
+                error('stimSpec needs to be a struct');
+            end
+            % some error checks for stiomspec
+            if ~isempty(stimSpec)
+                s.stimSpec = stimSpec;
+            end
+
+            LEDParams = LEDParams;
+            if ~isempty(LEDParams)
+                s.LEDParams = LEDParams
+            end
+
+
+        
         end
         
         function [stimulus,updateSM,resolutionIndex,preRequestStim,preResponseStim,discrimStim,postDiscrimStim,interTrialStim,LUT,targetPorts,distractorPorts,...

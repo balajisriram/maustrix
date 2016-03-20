@@ -189,7 +189,7 @@ classdef soundManager
             %d=sprintf(d); ##### doesnt do anything anyways
         end
         
-        function [clip sampleRate sm updateSMCache] = getSound(sm,soundName)
+        function [clip, sampleRate, sm, updateSMCache] = getSound(sm,soundName)
             done=0;
             updateSMCache=0;
             for i=1:length(sm.clips)
@@ -198,7 +198,7 @@ classdef soundManager
                         error('found that name twice')
                     else
                         done=1;
-                        [clip sampleRate newSC updateSC]=getClip(sm.clips{i});
+                        [clip, sampleRate, newSC, updateSC]=getClip(sm.clips{i});
                         if updateSC
                             updateSMCache=1;
                             sm.clips{i}=newSC;
@@ -216,10 +216,6 @@ classdef soundManager
             for i=1:length(sm.clips)
                 s{i}=getName(sm.clips{i});
             end
-        end
-        
-        function sm=initializeSound(sm)
-            error('deprecated')
         end
         
         %by design: you can only have one sound playing at a time

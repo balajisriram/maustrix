@@ -141,7 +141,7 @@ classdef nAFC<trialManager
                 [rm, rewardSizeULorMS, ~, msPenalty, ~, msRewardSound, msPenaltySound, updateRM2] =...
                     calcReinforcement(getReinforcementManager(tm),trialRecords,compiledRecords, []);
                 if updateRM2
-                    tm=setReinforcementManager(tm,rm);
+                    tm.reinforcementManager = rm;
                 end
 
                 if correct
@@ -173,7 +173,7 @@ classdef nAFC<trialManager
                     if window>0
                         [floatprecision, cStim] = determineColorPrecision(tm, cStim, strategy);
                         textures = cacheTextures(tm,strategy,cStim,window,floatprecision);
-                        destRect = determineDestRect(tm, window, station, correctScale, cStim, strategy);
+                        destRect = determineDestRect(tm, window, correctScale, cStim, strategy);
                     elseif strcmp(getDisplayMethod(tm),'LED')
                         floatprecision=[];
                     else

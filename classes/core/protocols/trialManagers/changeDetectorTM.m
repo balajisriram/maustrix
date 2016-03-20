@@ -73,12 +73,9 @@ classdef changeDetectorTM<trialManager
             end
 
             % get an optional autorequest from the delayManager
-            dm = getDelayManager(trialManager);
-            if ~isempty(dm)
-                framesUntilOnset=floor(calcAutoRequest(dm)*hz/1000); % autorequest is in ms, convert to frames
-            else
-                framesUntilOnset=[]; % only if request port is triggered
-            end
+            dm = trialManager.delayManager; 
+            framesUntilOnset=floor(trialManager.delayManager.calcAutoRequest*hz/1000);
+            
             % get responseWindow
             responseWindow=floor(responseWindowMs*hz/1000); % can you floor inf?
 
@@ -287,7 +284,7 @@ classdef changeDetectorTM<trialManager
                 [rm,rewardSizeULorMS, garbage, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM2] =...
                     calcReinforcement(getReinforcementManager(tm),trialRecords,compiledRecords, []);
                 if updateRM2
-                    tm=setReinforcementManager(tm,rm);
+                    tm.reinforcementManager = rm;
                 end
 
                 if correct
@@ -319,7 +316,7 @@ classdef changeDetectorTM<trialManager
                     if window>0
                         [floatprecision cStim] = determineColorPrecision(tm, cStim, strategy);
                         textures = cacheTextures(tm,strategy,cStim,window,floatprecision);
-                        destRect = determineDestRect(tm, window, station, correctScale, cStim, strategy);
+                        destRect = determineDestRect(tm, window, correctScale, cStim, strategy);
                     elseif strcmp(getDisplayMethod(tm),'LED')
                         floatprecision=[];
                     else

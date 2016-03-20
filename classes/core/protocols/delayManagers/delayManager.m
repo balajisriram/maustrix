@@ -1,6 +1,5 @@
 classdef delayManager
-    %UNTITLED12 Summary of this class goes here
-    %   Detailed explanation goes here
+    % DELAYMANAGER
     
     properties
         label=[];
@@ -8,13 +7,8 @@ classdef delayManager
     
     methods
         function f=delayManager(label)
- 
             f.label=label;
-   
-        end % end function
-    
-    
+        end
     end
-    
 end
 

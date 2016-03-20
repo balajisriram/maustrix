@@ -75,13 +75,12 @@ classdef reinforcementManager
 
         end
         
-        function [rm updateRM] =cache(rm,trialRecords, subject)
-
+        function [rm, updateRM] =cache(rm,~, ~)
             updateRM=0;
         end
         
         function [rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound] ...
-    = calcCommonValues(r,base,baseRequest)
+                = calcCommonValues(r,base,baseRequest)
             rewardSizeULorMS= getScalar(r) * base;
             requestRewardSizeULorMS = getScalar(r) * baseRequest;
             msPenalty=getMsPenalty(r);
@@ -91,8 +90,8 @@ classdef reinforcementManager
         end
         
         function [r rewardSizeULorMS requestRewardSizeULorMS msPenalty msPuff msRewardSound msPenaltySound updateTM] = ...
-    calcEarlyPenalty(r,trialRecords, subject)
-
+                calcEarlyPenalty(r,trialRecords, subject)
+            
             %currently only cuedGoNoGo+asymetricReinforcement relies on this, but in principle other tm that punish early responses could use it
             %... if that is the case consider factoring code out of
             %cuedGoNoGo.updateTrialState and into trialmanager.updateTrialState
@@ -122,13 +121,6 @@ classdef reinforcementManager
             out=r.fractionPenaltySoundIsOn;
         end
         
-        function immutable=getImmutable(rm)
-            %if the rm is immutable then trialManager can't overwrite it with
-            %setReinforcementManager.  Default is changeable. i.e. mutable
-            error('method defunct') %pmm 090112, can be deleted
-            immutable=false;
-        end
-        
         function out=getMsPenalty(r)
             out=r.msPenalty;
         end
@@ -153,12 +145,9 @@ classdef reinforcementManager
             out=r.scalar;
         end
         
-        function r=setMsPenalty(r, value)
-            if all(size(value) == [1 1]) && isnumeric(value) && value>0
-               r.msPenalty = value;
-            else
-                error('scalar must be a number > 0')
-            end
+        function r = set.msPenalty(r,val)
+            assert(isscalar(val)&&sign(val),'reinforcementManager:incorrectValue','penalty should be a positive scalar');
+            r.msPenalty = val;
         end
         
         function rm=setReinforcementParam(rm,param,val)

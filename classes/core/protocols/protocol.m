@@ -6,6 +6,10 @@ classdef protocol
         loopedTS = false;
     end
     
+    properties (Dependent = true)
+        numTrainingSteps
+    end
+    
     methods
         function p=protocol(varargin)
             % PROTOCOL  class constructor. 
@@ -61,15 +65,7 @@ classdef protocol
                 error('need a box and a ratrix')
             end
         end
-
-
-        function p=calibrateEyeTracker(p,step)
-            p.trainingSteps{step}=calibrateEyeTracker(p.trainingSteps{step});
-
-            %if multistep, change all eyeTrackers on subsequent steps of the same type
-            %here in protocols eyetracker
-        end
-        
+     
         function protocol = changeStep(protocol, ts, stepNumToChange)
 
             if isscalar(stepNumToChange) && isinteger(stepNumToChange) && stepNumToChange>0 && stepNumToChange<=length(protocol.trainingSteps) && isa(ts,'trainingStep')
@@ -86,19 +82,15 @@ classdef protocol
             end
         end
         
-        function d=display(p)
+        function d=disp(p)
             d=['protocol ' p.id ': ' num2str(length(p.trainingSteps)) ' steps'];
             for i=1:length(p.trainingSteps)
                 d=[d '\n\ttraining step ' num2str(i) ':\n' display(p.trainingSteps{i})];
             end
             d=sprintf(d);
         end
-        
-        function out=getName(p)
-            out=p.id;
-        end
-        
-        function out=getNumTrainingSteps(p)
+    
+        function out=get.numTrainingSteps(p)
             out=length(p.trainingSteps);
         end
         

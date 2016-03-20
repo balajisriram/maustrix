@@ -154,7 +154,7 @@ classdef subject
         function [subject, r] = changeAllPercentCorrectionTrials(subject,newValue,r,comment,auth)
             
             validateattributes(r,{'ratrix'},{'nonempty'});
-            assert(~isempty(getSubjectFromID(r,subject.id)))
+            assert(~isempty(getSubjectFromID(r,subject.id)));
             
             for i=1:subject.protocol.numTrainingSteps
                 sm = subject.protocol.trainingSteps{i}.stimManager;

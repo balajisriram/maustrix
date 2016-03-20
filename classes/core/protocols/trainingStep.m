@@ -79,11 +79,9 @@ classdef trainingStep
         end
         
         function ok=boxOKForTrainingStep(t,b,r)
-            if isa(b,'box') && isa(r,'ratrix')
-                ok=boxOKForTrialManager(t.trialManager,b,r) & boxOKForStimManager(t.stimManager,b,r);
-            else
-                error('need a box and a ratrix')
-            end
+            validateattributes(b,{'box'},{'nonempty'});
+            validateattributes(r,{'ratrix'},{'nonempty'});
+            ok=t.trialManager.boxOKForTrialManager(b,r) & t.stimManager.boxOKForStimManager(b,r);
         end
         
         function trainingStep=calibrateEyeTracker(trainingStep)

@@ -81,7 +81,7 @@ classdef reinforcedAutopilot<trialManager
                 [rm, rewardSizeULorMS, ~, msPenalty, ~, msRewardSound, msPenaltySound, updateRM] =...
                     calcReinforcement(getReinforcementManager(tm),trialRecords,compiledRecords, []);
                 if updateRM
-                    tm=setReinforcementManager(tm,rm);
+                    tm.reinforcementManager = rm;
                 end
 
                 msPuff=0;
@@ -116,7 +116,7 @@ classdef reinforcedAutopilot<trialManager
                 if window>0
                     [floatprecision cStim] = determineColorPrecision(tm, cStim, strategy);
                     textures = cacheTextures(tm,strategy,cStim,window,floatprecision);
-                    destRect = determineDestRect(tm, window, station, correctScale, cStim, strategy);
+                    destRect = determineDestRect(tm, window, correctScale, cStim, strategy);
                 elseif strcmp(getDisplayMethod(tm),'LED')
                     floatprecision=[];
                 else

@@ -253,7 +253,7 @@ classdef changeDetectorTM<trialManager
                 floatprecision, textures, destRect, ...
                 requestRewardDone, punishResponses,compiledRecords,subject);
             if isempty(possibleTimeout)		
-                if ~isempty(result) && ~ischar(result) && isempty(correct) && strcmp(getPhaseLabel(spec),'reinforcement')
+                if ~isempty(result) && ~ischar(result) && isempty(correct) && strcmp(spec.phaseLabel,'reinforcement')
                     resp=find(result);
                     if length(resp)==1
                         correct = ismember(resp,targetPorts);
@@ -271,8 +271,8 @@ classdef changeDetectorTM<trialManager
             end
 
             % ========================================================
-            phaseType = getPhaseType(spec);
-            framesUntilTransition=getFramesUntilTransition(spec);
+            phaseType = spec.phaseType;
+            framesUntilTransition=spec.framesUntilTransition;
             % now, if phaseType is 'reinforced', use correct and call updateRewards(tm,correct)
             % this trialManager-specific method should do the following:
             % - call calcReinforcement(RM)
@@ -300,18 +300,18 @@ classdef changeDetectorTM<trialManager
 
                     elseif strcmp(getDisplayMethod(tm),'LED')
                         if isempty(framesUntilTransition)
-                            framesUntilTransition=ceil(getHz(spec)*rewardSizeULorMS/1000);
+                            framesUntilTransition=ceil(spec.hz*rewardSizeULorMS/1000);
                         else
                             framesUntilTransition
                             error('LED needs framesUntilTransition empty for reward')
                         end
-                        numCorrectFrames=ceil(getHz(spec)*rewardSizeULorMS/1000);
+                        numCorrectFrames=ceil(spec.hz*rewardSizeULorMS/1000);
                     else
                         error('huh?')
                     end
-                    spec=setFramesUntilTransition(spec,framesUntilTransition);
+                    spec.framesUntilTransition=framesUntilTransition;
                     [cStim correctScale] = correctStim(sm,numCorrectFrames);
-                    spec=setScaleFactor(spec,correctScale);
+                    spec.scaleFactor=correctScale;
                     strategy='noCache';
                     if window>0
                         [floatprecision cStim] = determineColorPrecision(tm, cStim, strategy);
@@ -322,7 +322,7 @@ classdef changeDetectorTM<trialManager
                     else
                         error('huh?')
                     end
-                    spec=setStim(spec,cStim);
+                    spec.stimulus=cStim;
                 else
                     rewardSizeULorMS=0;
                     msRewardSound=0;
@@ -336,18 +336,18 @@ classdef changeDetectorTM<trialManager
 
                     elseif strcmp(getDisplayMethod(tm),'LED')
                         if isempty(framesUntilTransition)
-                            framesUntilTransition=ceil(getHz(spec)*msPenalty/1000);
+                            framesUntilTransition=ceil(spec.hz*msPenalty/1000);
                         else
                             framesUntilTransition
                             error('LED needs framesUntilTransition empty for reward')
                         end
-                        numErrorFrames=ceil(getHz(spec)*msPenalty/1000);
+                        numErrorFrames=ceil(spec.hz*msPenalty/1000);
                     else
                         error('huh?')
                     end
-                    spec=setFramesUntilTransition(spec,framesUntilTransition);
+                    spec.framesUntilTransition=framesUntilTransition;
                     [eStim errorScale] = errorStim(sm,numErrorFrames);
-                    spec=setScaleFactor(spec,errorScale);
+                    spec.scaleFactor=errorScale;
                     strategy='noCache';
                     if window>0
                         [floatprecision eStim] = determineColorPrecision(tm, eStim, strategy);
@@ -358,7 +358,7 @@ classdef changeDetectorTM<trialManager
                     else
                         error('huh?')
                     end
-                    spec=setStim(spec,eStim);
+                    spec.stimulus=eStim;
                 end
 
             end % end reward handling

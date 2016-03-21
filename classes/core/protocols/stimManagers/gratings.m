@@ -38,7 +38,7 @@ classdef gratings<stimManager
         contrasts = [];
         durations = [];
         numRepeats = [];
-
+        
         radii = [];
         radiusType = 'gaussian';
         annuli = [];
@@ -49,32 +49,32 @@ classdef gratings<stimManager
         thresh = 0;
         changeableAnnulusCenter=false;
         changeableRadiusCenter=false;
-
+        
         LUT =[];
         LUTbits=0;
-
+        
         doCombos=true;
         ordering = [];
-
+        
         LEDParams = [];
     end
     
     methods
         function s=gratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,durations,radii,annuli,location, ...
-                   waveform,normalizationMethod,mean,thresh,numRepeats, ...
-                   maxWidth,maxHeight,scaleFactor,interTrialLuminance,doCombos, changeableAnnulusCenter, changeableRadiusCenter, LEDParams)
+                waveform,normalizationMethod,mean,thresh,numRepeats, ...
+                maxWidth,maxHeight,scaleFactor,interTrialLuminance,doCombos, changeableAnnulusCenter, changeableRadiusCenter, LEDParams)
             
             s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
-
+            
             s.ordering.method = 'ordered';
             s.ordering.seed = [];
             s.ordering.includeBlank = false;
-
+            
             s.LEDParams.active = false;
             s.LEDParams.numLEDs = 0;
             s.LEDParams.IlluminationModes = {};
-
-
+            
+            
             if islogical(doCombos)
                 s.doCombos=doCombos;
                 s.ordering.method = 'ordered';
@@ -95,7 +95,7 @@ classdef gratings<stimManager
             else
                 error('unknown way to specify doCombos. its either just a logical or a cell length 3.');
             end
-
+            
             % pixPerCycs
             if isvector(pixPerCycs) && isnumeric(pixPerCycs)
                 s.pixPerCycs=pixPerCycs;
@@ -128,7 +128,7 @@ classdef gratings<stimManager
             else
                 error('contrasts must be numbers between 0 and 1');
             end
-             % durations
+            % durations
             if isnumeric(durations) && all(all(durations>0))
                 s.durations=durations;
             else
@@ -156,7 +156,7 @@ classdef gratings<stimManager
             if isinteger(numRepeats) || isinf(numRepeats) || isNearInteger(numRepeats)
                 s.numRepeats=numRepeats;
             end
-
+            
             % check that if doCombos is false, then all parameters must be same length
             if ~s.doCombos
                 paramLength = length(s.pixPerCycs);
@@ -165,9 +165,9 @@ classdef gratings<stimManager
                         || paramLength~=length(s.annuli)
                     error('if doCombos is false, then all parameters (pixPerCycs, driftfrequencies, orientations, contrasts, phases, durations, radii, annuli) must be same length');
                 end
-            end           
-
-
+            end
+            
+            
             % location
             if isnumeric(location) && all(location>=0) && all(location<=1)
                 s.location=location;
@@ -206,7 +206,7 @@ classdef gratings<stimManager
             else
                 error('thresh must be >= 0')
             end
-
+            
             if nargin>19
                 if ismember(changeableAnnulusCenter,[0 1])
                     s.changeableAnnulusCenter=logical(changeableAnnulusCenter);
@@ -214,7 +214,7 @@ classdef gratings<stimManager
                     error('gratingWithChangeableAnnulusCenter must be true / false')
                 end
             end
-
+            
             if nargin>20
                 if ismember(changeableRadiusCenter,[0 1])
                     s.changeableRadiusCenter=logical(changeableRadiusCenter);
@@ -222,8 +222,8 @@ classdef gratings<stimManager
                     error('gratingWithChangeableRadiusCenter must be true / false')
                 end
             end
-
-
+            
+            
             % LED state
             if isstruct(LEDParams)
                 s.LEDParams = LEDParams;
@@ -249,31 +249,31 @@ classdef gratings<stimManager
                         end
                     end
                 end
-
+                
                 if abs(cumulativeFraction(end)-1)>eps
                     error('the cumulative fraction should sum to 1');
                 else
                     s.LEDParams.cumulativeFraction = cumulativeFraction;
                 end
-
+                
             end
-
+            
             % both changeableRadiusCentre and changeabkeAnnulusCentre cannot be
             % true at the same time
             if s.changeableAnnulusCenter && s.changeableRadiusCenter
                 error('cannot set changeableAnnulusCentre and changeableRadusCentre to true at the same time');
             end
-
-
-
-
-
+            
+            
+            
+            
+            
         end
         
-        function [stimulus,updateSM,resolutionIndex,preRequestStim,preResponseStim,discrimStim,postDiscrimStim,interTrialStim,LUT,targetPorts,distractorPorts,...
-    details,interTrialLuminance,text,indexPulses,imagingTasks] =...
-    calcStim(stimulus,trialManager,allowRepeats,resolutions,displaySize,LUTbits,...
-    responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
+        function [stimulus,updateSM,resolutionIndex,stimList,LUT,targetPorts,distractorPorts,...
+                details,interTrialLuminance,text,indexPulses,imagingTasks] =...
+                calcStim(stimulus,trialManager,allowRepeats,resolutions,displaySize,LUTbits,...
+                responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
             % see ratrixPath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
             % 1/3/0/09 - trialRecords now includes THIS trial
             indexPulses=[];
@@ -304,35 +304,35 @@ classdef gratings<stimManager
             if isnan(resolutionIndex)
                 resolutionIndex=1;
             end
-
+            
             scaleFactor=getScaleFactor(stimulus); % dummy value since we are phased anyways; the real scaleFactor is stored in each phase's stimSpec
-            interTrialLuminance = getInterTrialLuminance(stimulus); 
+            interTrialLuminance = getInterTrialLuminance(stimulus);
             interTrialDuration = getInterTrialDuration(stimulus);
             toggleStim=true;
             type='expert';
-
+            
             dynamicMode = true; % do things dynamically as in driftdemo2
             % dynamicMode=false;
-
+            
             % =====================================================================================================
-
+            
             details.pctCorrectionTrials=.5; % need to change this to be passed in from trial manager
             details.bias = getRequestBias(trialManager);
-
+            
             if ~isempty(trialRecords) && length(trialRecords)>=2
                 lastRec=trialRecords(end-1);
             else
                 lastRec=[];
             end
             [targetPorts distractorPorts details]=assignPorts(details,lastRec,responsePorts,trialManagerClass,allowRepeats);
-
+            
             % =====================================================================================================
-
+            
             % set up params for computeGabors
             height = min(height,getMaxHeight(stimulus));
             width = min(width,getMaxWidth(stimulus));
-
-
+            
+            
             % temporal frequency
             if isa(stimulus.driftfrequencies,'grEstimator')&&strcmp(getType(stimulus.driftfrequencies),'driftfrequencies')
                 if size(trialRecords(end).subjectsInBox,2)==1
@@ -345,7 +345,7 @@ classdef gratings<stimManager
             else
                 details.driftfrequencies=stimulus.driftfrequencies;
             end
-
+            
             %orientation
             if isa(stimulus.orientations,'grEstimator')&&strcmp(getType(stimulus.orientations),'orientations')
                 if size(trialRecords(end).subjectsInBox,2)==1
@@ -358,7 +358,7 @@ classdef gratings<stimManager
             else
                 details.orientations=stimulus.orientations;
             end
-
+            
             %contrasts
             if isa(stimulus.contrasts,'grEstimator')&&strcmp(getType(stimulus.contrasts),'contrasts')
                 if size(trialRecords(end).subjectsInBox,2)==1
@@ -371,10 +371,10 @@ classdef gratings<stimManager
             else
                 details.contrasts=stimulus.contrasts;
             end
-
-
+            
+            
             details.phases=stimulus.phases;
-
+            
             if isa(stimulus.location,'RFestimator')
                 if size(trialRecords(end).subjectsInBox,2)==1
                     subjectID=char(trialRecords(end).subjectsInBox);
@@ -388,12 +388,12 @@ classdef gratings<stimManager
                 else
                     error('only one subject allowed')
                 end
-                    singleUnitDetails.subjectID = subjectID;
+                singleUnitDetails.subjectID = subjectID;
                 details.location=chooseValues(stimulus.location,{singleUnitDetails});
             else
                 details.location=stimulus.location;
             end
-
+            
             if isa(stimulus.pixPerCycs,'grEstimator')&&strcmp(getType(stimulus.pixPerCycs),'spatialFrequencies')
                 if size(trialRecords(end).subjectsInBox,2)==1
                     subjectID=char(trialRecords(end).subjectsInBox);
@@ -401,14 +401,14 @@ classdef gratings<stimManager
                     error('only one subject allowed')
                 end
                 singleUnitDetails.subjectID = subjectID;
-                details.spatialFrequencies=chooseValues(stimulus.pixPerCycs,singleUnitDetails);    
+                details.spatialFrequencies=chooseValues(stimulus.pixPerCycs,singleUnitDetails);
             else
                 details.spatialFrequencies=stimulus.pixPerCycs; % 1/7/09 - renamed from pixPerCycs to spatialFrequencies (to avoid clashing with compile process)
             end
-
-
+            
+            
             details.durations=stimulus.durations;
-
+            
             if isa(stimulus.radii,'grEstimator')&&strcmp(getType(stimulus.radii),'radii')
                 if size(trialRecords(end).subjectsInBox,2)==1
                     subjectID=char(trialRecords(end).subjectsInBox);
@@ -420,7 +420,7 @@ classdef gratings<stimManager
             else
                 details.radii=stimulus.radii; % 1/7/09 - renamed from pixPerCycs to spatialFrequencies (to avoid clashing with compile process)
             end
-
+            
             details.radiusType = stimulus.radiusType;
             details.annuli=stimulus.annuli;
             details.numRepeats=stimulus.numRepeats;
@@ -435,19 +435,19 @@ classdef gratings<stimManager
             end
             details.changeableAnnulusCenter=stimulus.changeableAnnulusCenter;
             details.changeableRadiusCenter=stimulus.changeableRadiusCenter;
-
+            
             details.waveform=stimulus.waveform;
-
+            
             details.width=width;
             details.height=height;
-
+            
             % NOTE: all fields in details should be MxN now
-
+            
             % =====================================================================================================
-
+            
             % =====================================================================================================
             % dynamic mode
-            % for now we will attempt to calculate each frame on-the-fly, 
+            % for now we will attempt to calculate each frame on-the-fly,
             % but we might need to precache all contrast/orientation/pixPerCycs pairs and then rotate phase dynamically
             % still pass out stimSpecs as in cache mode, but the 'stim' is a struct of parameters
             % stim.pixPerCycs - frequency of the grating (how wide the bars are)
@@ -458,7 +458,7 @@ classdef gratings<stimManager
             % stim.durations - duration of each grating (in frames)
             % stim.mask - the mask to be used (empty if unmasked)
             stim=[];
-
+            
             stim.width=details.width;
             stim.height=details.height;
             stim.location=details.location;
@@ -466,7 +466,7 @@ classdef gratings<stimManager
             stim.waveform=details.waveform;
             stim.changeableAnnulusCenter=details.changeableAnnulusCenter;
             stim.changeableRadiusCenter=details.changeableRadiusCenter;
-
+            
             % details has the parameters before combos, stim should have them after combos are taken
             if stimulus.doCombos
                 % do combos here
@@ -487,11 +487,11 @@ classdef gratings<stimManager
                 stim.orientations=details.orientations;
                 stim.contrasts=details.contrasts;
                 stim.phases=details.phases;
-                stim.durations=round(details.durations*hz); % CONVERTED FROM seconds to frames    
+                stim.durations=round(details.durations*hz); % CONVERTED FROM seconds to frames
                 stim.radii=details.radii;
                 stim.annuli=details.annuli;
             end
-
+            
             % support for includeBlank
             if details.includeBlank
                 stim.pixPerCycs(end+1) = stim.pixPerCycs(end);
@@ -503,12 +503,12 @@ classdef gratings<stimManager
                 stim.radii(end+1)=stim.radii(end);
                 stim.annuli(end+1)=stim.annuli(end);
             end
-
+            
             % convert from radii=[0.8 0.8 0.6 1.2 0.7] to [1 1 2 3 4] (stupid unique automatically sorts when we dont want to)
-            [a b] = unique(fliplr(stim.radii)); 
+            [a b] = unique(fliplr(stim.radii));
             unsortedUniques=stim.radii(sort(length(stim.radii)+1 - b));
             [garbage stim.maskInds]=ismember(stim.radii,unsortedUniques);
-
+            
             % now make our cell array of masks and the maskInd vector that indexes into the masks for each combination of params
             % compute mask only once if radius is not infinite
             stim.masks=cell(1,length(unsortedUniques));
@@ -518,15 +518,15 @@ classdef gratings<stimManager
                 else
                     mask=[];
                     maskParams=[unsortedUniques(i) 999 0 0 ...
-                    1.0 stimulus.thresh details.location(1) details.location(2)]; %11/12/08 - for some reason mask contrast must be 2.0 to get correct result
-
+                        1.0 stimulus.thresh details.location(1) details.location(2)]; %11/12/08 - for some reason mask contrast must be 2.0 to get correct result
+                    
                     switch details.radiusType
                         case 'gaussian'
                             mask(:,:,1)=ones(height,width,1)*stimulus.mean;
                             mask(:,:,2)=computeGabors(maskParams,0,width,height,...
                                 'none', stimulus.normalizationMethod,0,0);
-
-                            % necessary to make use of PTB alpha blending: 1 - 
+                            
+                            % necessary to make use of PTB alpha blending: 1 -
                             mask(:,:,2) = 1 - mask(:,:,2); % 0 = transparent, 255=opaque (opposite of our mask)
                             stim.masks{i}=mask;
                         case 'hardEdge'
@@ -534,12 +534,12 @@ classdef gratings<stimManager
                             [WIDTH HEIGHT] = meshgrid(1:width,1:height);
                             mask(:,:,2)=double((((WIDTH-width*details.location(1)).^2)+((HEIGHT-height*details.location(2)).^2)-((unsortedUniques(i))^2*(height^2)))>0);
                             stim.masks{i}=mask;
-
+                            
                     end
                 end
             end
             % convert from annuli=[0.8 0.8 0.6 1.2 0.7] to [1 1 2 3 4] (stupid unique automatically sorts when we dont want to)
-            [a b] = unique(fliplr(stim.annuli)); 
+            [a b] = unique(fliplr(stim.annuli));
             unsortedUniquesAnnuli=stim.annuli(sort(length(stim.annuli)+1 - b));
             [garbage stim.annuliInds]=ismember(stim.annuli,unsortedUniquesAnnuli);
             % annuli array
@@ -558,31 +558,31 @@ classdef gratings<stimManager
                 annulus(:,:,2)=bool(1:height,1:width);
                 stim.annuliMatrices{i}=annulus;
             end
-
+            
             if isinf(stim.numRepeats)
                 timeout=[];
             else
                 timeout=sum(stim.durations)*stim.numRepeats;
             end
-
+            
             switch stimulus.waveform
                 case 'haterenImage1000'
                     path='\\132.239.158.183\rlab_storage\pmeier\vanhateren\iml_first1000';
-                            imName='imk01000.iml';
+                    imName='imk01000.iml';
                     f1=fopen(fullfile(path,imName),'rb','ieee-be');
                     w=1536;h=1024;
                     im=fread(f1,[w,h],'uint16');
                     im=im';
                     %          subplot(2,2,1); hist(im(:))
                     %          subplot(2,2,2); imagesc(im); colormap(gray)
-                     im=im-mean(im(:));
-                     im=0.5*im/std(im(:));
-                     im(im>1)=1;
-                     im(im<-1)=-1;
-                     %         subplot(2,2,3); hist(im(:))
-                     %         subplot(2,2,4); imagesc(im); colormap(gray)
-                     details.images=im;
-                     stim.images=details.images;
+                    im=im-mean(im(:));
+                    im=0.5*im/std(im(:));
+                    im(im>1)=1;
+                    im(im<-1)=-1;
+                    %         subplot(2,2,3); hist(im(:))
+                    %         subplot(2,2,4); imagesc(im); colormap(gray)
+                    details.images=im;
+                    stim.images=details.images;
                 case 'catcam530a'
                     path='\\132.239.158.183\rlab_storage\pmeier\CatCam\labelb000530a';
                     imName='Catt0910.tif';
@@ -597,9 +597,9 @@ classdef gratings<stimManager
                     stim.images=details.images;
             end
             % LEDParams
-
+            
             [details, stim] = setupLED(details, stim, stimulus.LEDParams,arduinoCONN);
-
+            
             discrimStim=[];
             discrimStim.stimulus=stim;
             discrimStim.stimType=type;
@@ -607,7 +607,7 @@ classdef gratings<stimManager
             discrimStim.startFrame=0;
             discrimStim.autoTrigger=[];
             discrimStim.framesUntilTimeout=timeout;
-
+            
             preRequestStim=[];
             preRequestStim.stimulus=interTrialLuminance;
             preRequestStim.stimType='loop';
@@ -615,12 +615,12 @@ classdef gratings<stimManager
             preRequestStim.startFrame=0;
             preRequestStim.autoTrigger=[];
             preRequestStim.punishResponses=false;
-
+            
             preResponseStim=discrimStim;
             preResponseStim.punishResponses=false;
-
+            
             postDiscrimStim = [];
-
+            
             interTrialStim.duration = interTrialDuration;
             details.interTrialDuration = interTrialDuration;
             % =====================================================================================================
@@ -638,15 +638,15 @@ classdef gratings<stimManager
         
         function commonName = commonNameForStim(stimType,params)
             classType = class(stimType);
-
+            
             numSpatialFrequencies = length(params.spatialFrequencies);
             numDriftfrequencies = length(params.driftfrequencies);
             numOrientations = length(params.orientations);
-
+            
             stimAxes = [numSpatialFrequencies numDriftfrequencies numOrientations];
             sweepTypes = {'spatGr','tempGr','orGr','cntrGr','radGr'};
             sweepUnits = {'spatFreqs.','tempFreqs.','orientations.','contrasts.','radii.'};
-
+            
             if length(find(stimAxes>1))>1
                 complexStimType = true;
                 stimIsSwept = true;
@@ -660,8 +660,8 @@ classdef gratings<stimManager
                 complexStimType = false;
                 stimIsSwept = false;
             end
-
-            if params.annuli 
+            
+            if params.annuli
                 if isfield(params, 'changeableAnnulusCenter') && params.changeableAnnulusCenter
                     annuliStr = 'with mannulus.';
                 else
@@ -670,7 +670,7 @@ classdef gratings<stimManager
             else
                 annuliStr = '';
             end
-
+            
             if ~complexStimType && stimIsSwept
                 if isfield(params,'waveform')
                     commonName = sprintf('%s: %d %s %s waveform: %s.',sweepType,stimAxes(stimAxes>1),sweepUnit,annuliStr,params.waveform);
@@ -690,7 +690,7 @@ classdef gratings<stimManager
         
         function paramsIdentical = compareStimRecords(stimType,params1,params2)
             stimParameters = {'spatialFrequencies','driftfrequencies','orientations','phases','contrasts',...
-                    'location','durations','radii','annuli','numRepeats','doCombos','changeableAnnulusCenter','waveform'};
+                'location','durations','radii','annuli','numRepeats','doCombos','changeableAnnulusCenter','waveform'};
             diffIn = {};
             %==========================================================================
             % BEGIN NUMERIC DATA TYPES
@@ -702,7 +702,7 @@ classdef gratings<stimManager
             else
                 diffIn{end+1} = {'spatialFrequencies'};
             end
-
+            
             % check for driftfrequencies
             if isfield(params1,'driftfrequencies') && isfield(params2,'driftfrequencies') && ...
                     length(params1.driftfrequencies)==length(params2.driftfrequencies) && ...
@@ -711,7 +711,7 @@ classdef gratings<stimManager
             else
                 diffIn{end+1} = {'driftfrequencies'};
             end
-
+            
             % check for orientations
             if isfield(params1,'orientations') && isfield(params2,'orientations') && ...
                     length(params1.orientations)==length(params2.orientations) && ...
@@ -720,7 +720,7 @@ classdef gratings<stimManager
             else
                 diffIn{end+1} = {'orientations'};
             end
-
+            
             % check for phases
             if isfield(params1,'phases') && isfield(params2,'phases') && ...
                     length(params1.phases)==length(params2.phases) && ...
@@ -729,7 +729,7 @@ classdef gratings<stimManager
             else
                 diffIn{end+1} = {'phases'};
             end
-
+            
             % check for contrasts
             if isfield(params1,'contrasts') && isfield(params2,'contrasts') && ...
                     length(params1.contrasts)==length(params2.contrasts) && ...
@@ -738,7 +738,7 @@ classdef gratings<stimManager
             else
                 diffIn{end+1} = {'contrasts'};
             end
-
+            
             % check for location
             if isfield(params1,'location') && isfield(params2,'location') && ...
                     length(params1.location)==length(params2.location) && ...
@@ -747,7 +747,7 @@ classdef gratings<stimManager
             else
                 diffIn{end+1} = {'location'};
             end
-
+            
             % check for durations
             if isfield(params1,'durations') && isfield(params2,'durations') && ...
                     length(params1.durations)==length(params2.durations) && ...
@@ -756,7 +756,7 @@ classdef gratings<stimManager
             else
                 diffIn{end+1} = {'durations'};
             end
-
+            
             % check for radii
             if isfield(params1,'radii') && isfield(params2,'radii') && ...
                     length(params1.radii)==length(params2.radii) && ...
@@ -765,7 +765,7 @@ classdef gratings<stimManager
             else
                 diffIn{end+1} = {'radii'};
             end
-
+            
             % check for annuli
             if isfield(params1,'annuli') && isfield(params2,'annuli') && ...
                     length(params1.annuli)==length(params2.annuli) && ...
@@ -774,7 +774,7 @@ classdef gratings<stimManager
             else
                 diffIn{end+1} = {'annuli'};
             end
-
+            
             % check for numRepeats
             if isfield(params1,'numRepeats') && isfield(params2,'numRepeats') && ...
                     length(params1.numRepeats)==length(params2.numRepeats) && ...
@@ -787,9 +787,9 @@ classdef gratings<stimManager
             %==========================================================================
             %==========================================================================
             % BEGIN LOGICAL DATA TYPES
-
+            
             stimParameters = {'doCombos','changeableAnnulusCenter','waveform'};
-
+            
             % check for doCombos
             if isfield(params1,'doCombos') && isfield(params2,'doCombos') && ...
                     length(params1.doCombos)==length(params2.doCombos) && ...
@@ -798,7 +798,7 @@ classdef gratings<stimManager
             else
                 diffIn{end+1} = {'doCombos'};
             end
-
+            
             % check for changeableAnnulusCenter
             if isfield(params1,'changeableAnnulusCenter') && isfield(params2,'changeableAnnulusCenter') && ...
                     length(params1.changeableAnnulusCenter)==length(params2.changeableAnnulusCenter) && ...
@@ -807,25 +807,25 @@ classdef gratings<stimManager
             else
                 diffIn{end+1} = {'changeableAnnulusCenter'};
             end
-
+            
             % END LOGICAL DATA TYPES
             %==========================================================================
             %==========================================================================
             % BEGIN STRING DATA TYPES
-
+            
             % check for waveform
             if isfield(params1,'waveform') && isfield(params2,'waveform') && strcmp(params1.waveform,params2.waveform)
                 % do nothing
             else
                 diffIn{end+1} = {'waveform'};
             end
-
+            
             % END STRING DATA TYPES
             %==========================================================================
-
+            
             paramsIdentical = isempty(diffIn);
         end
-
+        
         function displayCumulativePhysAnalysis(sm,cumulativedata,parameters)
             devON = false;
             if devON
@@ -840,7 +840,7 @@ classdef gratings<stimManager
             if strcmp(sweptParameter,'orientations')
                 vals=rad2deg(vals);
             end
-
+            
             if all(rem(vals,1)==0)
                 format='%2.0f';
             else
@@ -849,20 +849,20 @@ classdef gratings<stimManager
             for i=1:length(vals);
                 valNames{i}=num2str(vals(order(i)),format);
             end;
-
+            
             colors=jet(numTypes);
             figure(parameters.figHandle); % new for each trial
             clf(parameters.figHandle);
             set(gcf,'position',[100 300 560 620])
             figName = sprintf('%s. %s. trialRange: %s',parameters.trodeName,parameters.stepName,mat2str(parameters.trialRange));
             set(gcf,'Name',figName,'NumberTitle','off')
-
+            
             subplot(3,2,1); hold off; %p=plot([1:numPhaseBins]-.5,rate')
             colordef white
-
+            
             numRepeats = cumulativedata.stimInfo.stimulusDetails.numRepeats;
-
-
+            
+            
             numPhaseBins = cumulativedata.numPhaseBins;
             rate = cumulativedata.rate(order,:);
             rateSEM = cumulativedata.rateSEM(order,:);
@@ -876,7 +876,7 @@ classdef gratings<stimManager
             powSEM = cumulativedata.powSEM(order);
             cohSEM = cumulativedata.cohSEM(order);
             eyeData = cumulativedata.eyeData;
-
+            
             plot([0 numPhaseBins], [rate(1) rate(1)],'color',[1 1 1]); hold on;% to save tight axis chop
             x=[1:numPhaseBins]-.5;
             for i=1:numTypes
@@ -892,7 +892,7 @@ classdef gratings<stimManager
             end
             xlabel('phase');  set(gca,'XTickLabel',{'0','pi','2pi'},'XTick',([0 .5 1]*numPhaseBins)); ylabel('rate'); set(gca,'YTickLabel',[0:.1:1]*cumulativedata.refreshRate,'YTick',[0:.1:1])
             axis tight
-
+            
             %rate density over phase... doubles as a legend
             subplot(3,2,2); hold off;
             im=zeros([size(phaseDensity) 3]);
@@ -907,12 +907,12 @@ classdef gratings<stimManager
             axis([0 size(im,2) 0 size(im,1)]+.5);
             ylabel(sweptParameter); set(gca,'YTickLabel',valNames,'YTick',size(im,1)*([1:length(vals)]-.5)/length(vals))
             xlabel('phase');  set(gca,'XTickLabel',{'0','pi','2pi'},'XTick',([0 .5 1]*numPhaseBins)+.5);
-
+            
             subplot(3,2,3); hold off; plot(mean(rate'),'k','lineWidth',2); hold on; %legend({'Fo'})
             xlabel(sweptParameter); set(gca,'XTickLabel',valNames,'XTick',[1:length(vals)]); ylabel('rate (f0)'); set(gca,'YTickLabel',[0:.1:1]*cumulativedata.refreshRate); %,'YTick',[0:.1:1]
             set(gca,'XLim',[1 length(vals)])
-
-
+            
+            
             subplot(3,2,4); hold off
             if ~isempty(pow)
                 modulation=pow./(cumulativedata.refreshRate*mean(rate'));
@@ -923,8 +923,8 @@ classdef gratings<stimManager
                 sigs=find(cohLB>0);
                 plot(sigs,cohScaled(sigs),'o','color',[.6 .6 .6]);
                 legend({'f1','f1/f0','coh'})
-
-
+                
+                
                 plot([1:length(vals); 1:length(vals)],[pow; pow]+(powSEM'*[-1 1])','k')
                 %plot([1:length(vals); 1:length(vals)],[pow; pow]+(powSEM'*[-1 1])','k')
                 plot([1:length(vals); 1:length(vals)]+0.1,[coh; coh]+(cohSEM'*[-1 1])','color',[.8 .8 .8])
@@ -938,7 +938,7 @@ classdef gratings<stimManager
             isi=diff(cumulativedata.spikeTimestamps)*1000;
             N=sum(isi<cumulativedata.ISIviolationMS); percentN=100*N/length(isi);
             ylim=get(gca,'YLim');
-
+            
             subplot(3,2,5);
             numBins=40; maxTime=10; % ms
             edges=linspace(0,maxTime,numBins); [count]=histc(isi,edges);
@@ -949,7 +949,7 @@ classdef gratings<stimManager
             infoString=sprintf('viol: %2.2f%%\n(%d /%d)',percentN,N,length(isi))
             text(xvals(3),max(count),infoString,'HorizontalAlignment','right','VerticalAlignment','top');
             ylabel('count'); xlabel('isi (ms)')
-
+            
             subplot(3,2,6); hold off;
             if ~isempty(eyeData)
                 [px py crx cry]=getPxyCRxy(eyeData,10);
@@ -965,14 +965,14 @@ classdef gratings<stimManager
             else
                 text(.5,.5,'no eye data')
             end
-
+            
             % now plot the spikes
             ax = axes('Position',[0.91 0.91 0.08 0.08]);
-
+            
             plot(cumulativedata.spikeWaveforms','r')
             axis tight
             set(ax,'XTick',[],'Ytick',[]);
-
+            
         end
         
         function displayCumulativePhysAnalysisDev(sm,cumulativedata,parameters)
@@ -988,7 +988,7 @@ classdef gratings<stimManager
             if strcmp(sweptParameter,'orientations')
                 vals=rad2deg(vals);
             end
-
+            
             if all(rem(vals,1)==0)
                 format='%2.0f';
             else
@@ -997,17 +997,17 @@ classdef gratings<stimManager
             for i=1:length(vals);
                 valNames{i}=num2str(vals(order(i)),format);
             end;
-
+            
             colors=jet(numTypes);
             figure(parameters.figHandle); % new for each trial
             clf(parameters.figHandle);
             set(gcf,'position',[100 300 560 620])
             figName = sprintf('%s. %s. trialRange: %s',parameters.trodeName,parameters.stepName,mat2str(parameters.trialRange));
             set(gcf,'Name',figName,'NumberTitle','off')
-
+            
             subplot(3,2,1); hold off; %p=plot([1:numPhaseBins]-.5,rate')
             colordef white
-
+            
             numRepeats = cumulativedata.stimInfo.numRepeats;
             numPhaseBins = cumulativedata.stimInfo.numPhaseBins;
             phaseDensity = cumulativedata.phaseDensity(:,:,order);
@@ -1023,7 +1023,7 @@ classdef gratings<stimManager
             powSEM = cumulativedata.powSEM(order);
             cohSEM = cumulativedata.cohSEM(order);
             eyeData = cumulativedata.eyeData;
-
+            
             plot([0 numPhaseBins], [rate(1) rate(1)],'color',[1 1 1]); hold on;% to save tight axis chop
             x=[1:numPhaseBins]-.5;
             for i=1:numTypes
@@ -1039,7 +1039,7 @@ classdef gratings<stimManager
             end
             xlabel('phase');  set(gca,'XTickLabel',{'0','pi','2pi'},'XTick',([0 .5 1]*numPhaseBins)); ylabel('rate'); set(gca,'YTickLabel',[0:.1:1]*cumulativedata.refreshRate,'YTick',[0:.1:1])
             axis tight
-
+            
             %rate density over phase... doubles as a legend
             subplot(3,2,2); hold off;
             im=zeros([size(phaseDensity) 3]);
@@ -1054,12 +1054,12 @@ classdef gratings<stimManager
             axis([0 size(im,2) 0 size(im,1)]+.5);
             ylabel(sweptParameter); set(gca,'YTickLabel',valNames,'YTick',size(im,1)*([1:length(vals)]-.5)/length(vals))
             xlabel('phase');  set(gca,'XTickLabel',{'0','pi','2pi'},'XTick',([0 .5 1]*numPhaseBins)+.5);
-
+            
             subplot(3,2,3); hold off; plot(mean(rate'),'k','lineWidth',2); hold on; %legend({'Fo'})
             xlabel(sweptParameter); set(gca,'XTickLabel',valNames,'XTick',[1:length(vals)]); ylabel('rate (f0)'); set(gca,'YTickLabel',[0:.1:1]*cumulativedata.refreshRate); %,'YTick',[0:.1:1]
             set(gca,'XLim',[1 length(vals)])
-
-
+            
+            
             subplot(3,2,4); hold off
             if ~isempty(pow)
                 modulation=pow./(cumulativedata.refreshRate*mean(rate'));
@@ -1070,8 +1070,8 @@ classdef gratings<stimManager
                 sigs=find(cohLB>0);
                 plot(sigs,cohScaled(sigs),'o','color',[.6 .6 .6]);
                 legend({'f1','f1/f0','coh'})
-
-
+                
+                
                 plot([1:length(vals); 1:length(vals)],[pow; pow]+(powSEM'*[-1 1])','k')
                 %plot([1:length(vals); 1:length(vals)],[pow; pow]+(powSEM'*[-1 1])','k')
                 plot([1:length(vals); 1:length(vals)]+0.1,[coh; coh]+(cohSEM'*[-1 1])','color',[.8 .8 .8])
@@ -1085,7 +1085,7 @@ classdef gratings<stimManager
             isi=diff(cumulativedata.spikeTimestamps)*1000;
             N=sum(isi<cumulativedata.ISIviolationMS); percentN=100*N/length(isi);
             ylim=get(gca,'YLim');
-
+            
             subplot(3,2,5);
             numBins=40; maxTime=10; % ms
             edges=linspace(0,maxTime,numBins); [count]=histc(isi,edges);
@@ -1096,7 +1096,7 @@ classdef gratings<stimManager
             infoString=sprintf('viol: %2.2f%%\n(%d /%d)',percentN,N,length(isi))
             text(xvals(3),max(count),infoString,'HorizontalAlignment','right','VerticalAlignment','top');
             ylabel('count'); xlabel('isi (ms)')
-
+            
             subplot(3,2,6); hold off;
             if ~isempty(eyeData)
                 [px py crx cry]=getPxyCRxy(eyeData,10);
@@ -1112,25 +1112,25 @@ classdef gratings<stimManager
             else
                 text(.5,.5,'no eye data')
             end
-
+            
             % now plot the spikes
             ax = axes('Position',[0.91 0.91 0.08 0.08]);
-
+            
             plot(cumulativedata.spikeWaveforms','r')
             axis tight
             set(ax,'XTick',[],'Ytick',[]);
-
+            
         end
-
+        
         function [doFramePulse, expertCache, dynamicDetails, textLabel, i, dontclear, indexPulse] = ...
-    drawExpertFrame(stimulus,stim,i,phaseStartTime,totalFrameNum,window,textLabel,destRect,filtMode,...
-    expertCache,ifi,scheduledFrameNum,dropFrames,dontclear,dynamicDetails)
+                drawExpertFrame(stimulus,stim,i,phaseStartTime,totalFrameNum,window,textLabel,destRect,filtMode,...
+                expertCache,ifi,scheduledFrameNum,dropFrames,dontclear,dynamicDetails)
             % 11/14/08 - implementing expert mode for gratings
             % this function calculates an expert frame, and then makes and draws the texture; nothing needs to be done in runRealTimeLoop
             % this should be a stimManager-specific implementation (if expert mode is supported for the given stimulus)
-
+            
             floatprecision=1;
-
+            
             % increment i
             if dropFrames
                 i=scheduledFrameNum;
@@ -1138,14 +1138,14 @@ classdef gratings<stimManager
                 i=i+1;
             end
             % stimulus = stimManager
-
+            
             doFramePulse=true;
-
+            
             % expertCache should contain masktexs and annulitexs
             if isempty(expertCache)
                 expertCache.masktexs=[];
                 expertCache.annulitexs=[];
-
+                
                 if stim.changeableAnnulusCenter % initialize
                     %start with mouse in the center
                     [a,b]=WindowCenter(window);
@@ -1155,12 +1155,12 @@ classdef gratings<stimManager
                     expertCache.framesTillLeftClickAllowed=0;
                     % cache all annuli right away ... will cause some drop frames... but
                     % then since its changeable we are not so precise in absolute time
-
+                    
                     %record the state of the first frame
                     dynamicDetails{1}.annulusDestRec=destRect;
                     dynamicDetails{1}.annulusInd=expertCache.annulusInd;
                     dynamicDetails{1}.frame=i;
-
+                    
                     for j=1:length(unique(stim.annuliInds))
                         expertCache.annulitexs{j}=... % expertCache.annulitexs{stim.annuliInds(gratingToDraw)}=...
                             Screen('MakeTexture',window,double(stim.annuliMatrices{j}),0,0,floatprecision);
@@ -1173,8 +1173,8 @@ classdef gratings<stimManager
             % find which grating we are supposed to draw
             gratingInds = cumsum(stim.durations(:));
             gratingToDraw = min(find(mod(i-1,gratingInds(end))+1<=gratingInds));
-
-
+            
+            
             % stim.pixPerCycs - frequency of the grating (how wide the bars are)
             % stim.orientations - angle of the grating
             % stim.driftfrequencies - frequency of the phase (how quickly we go through a 0:2*pi cycle of the sine curve) - in cycles per second
@@ -1183,19 +1183,19 @@ classdef gratings<stimManager
             % stim.durations - duration of each grating (in frames)
             % stim.masks - the masks to be used (empty if unmasked)
             % stim.annuliMatrices - the annuli to be used
-
+            
             black=0.0;
             % white=stim.contrasts(gratingToDraw);
             white=1.0;
             gray = (white-black)/2;
-
+            
             %stim.velocities(gratingToDraw) is in cycles per second
             cycsPerFrameVel = stim.driftfrequencies(gratingToDraw)*ifi; % in units of cycles/frame
             offset = 2*pi*cycsPerFrameVel*i;
             nextOffset = 2*pi*cycsPerFrameVel*(i+1);
             indexPulse=mod(offset,4*pi)>mod(nextOffset,4*pi);  % every 2 cycles
-
-
+            
+            
             % Create a 1D vector x based on the frequency pixPerCycs
             % make the grating twice the normal width (to cover entire screen if rotated)
             x = (1:stim.width*2)*2*pi/stim.pixPerCycs(gratingToDraw);
@@ -1216,21 +1216,21 @@ classdef gratings<stimManager
                     stim.waveform
                     error('that waveform is not coded')
             end
-
+            
             % grating=repmat(grating, [1 2]);
             % Make grating texture
             gratingtex=Screen('MakeTexture',window,grating,0,0,floatprecision);
-
+            
             % set srcRect
             srcRect=[0 0 size(grating,2) 1];
-
+            
             % Draw grating texture, rotated by "angle":
             destWidth = destRect(3)-destRect(1);
             destHeight = destRect(4)-destRect(2);
             destRectForGrating = [destRect(1)-destWidth/2, destRect(2)-destHeight, destRect(3)+destWidth/2,destRect(4)+destHeight];
             Screen('DrawTexture', window, gratingtex, srcRect, destRectForGrating, ...
                 (180/pi)*stim.orientations(gratingToDraw), filtMode);
-
+            
             if ~isempty(stim.masks)
                 % Draw gaussian mask over grating: We need to subtract 0.5 from
                 % the real size to avoid interpolation artifacts that are
@@ -1250,7 +1250,7 @@ classdef gratings<stimManager
                     expertCache.masktexs{stim.maskInds(gratingToDraw)} = ...
                         Screen('MakeTexture',window,stim.masks{stim.maskInds(gratingToDraw)},0,0,floatprecision);
                 end
-
+                
                 if isempty(expertCache.annulitexs)
                     expertCache.annulitexs=cell(1,length(unique(stim.annuliInds)));
                 end
@@ -1259,11 +1259,11 @@ classdef gratings<stimManager
                         Screen('MakeTexture',window,double(stim.annuliMatrices{stim.annuliInds(gratingToDraw)}),...
                         0,0,floatprecision);
                 end
-
+                
                 % Draw mask texture: (with no rotation)
                 Screen('DrawTexture', window, expertCache.masktexs{stim.maskInds(gratingToDraw)}, [], destRect,[], filtMode);
                 % start calculating frames now
-
+                
                 if stim.changeableAnnulusCenter
                     [mouseX, mouseY, buttons]=GetMouse(window);
                     if buttons(1) % right click if you want to update the position... only persists this trial!
@@ -1271,9 +1271,9 @@ classdef gratings<stimManager
                         %shift stimulus away from predefined location by the amount that the mouse is away from center
                         expertCache.positionShift=[mouseX-a mouseY-b];
                     end
-
+                    
                     expertCache.framesTillLeftClickAllowed=max(0,expertCache.framesTillLeftClickAllowed-1);  %count down till 0
-
+                    
                     if buttons(3) && expertCache.framesTillLeftClickAllowed==0 % left click if you want to update the size... only persists this trial!
                         anSizes=unique(stim.annuliInds);
                         %whichSize=(mod(expertCache.annulusInd-1,length(anSizes))+1)+1;
@@ -1282,10 +1282,10 @@ classdef gratings<stimManager
                         expertCache.annulusInd=anInd(1);
                         expertCache.framesTillLeftClickAllowed=10; % lock out 10 frames till next change allowed
                     end
-
+                    
                     %sustain the moved stim location regardless of mouse down
                     annulusDestRec=destRect+expertCache.positionShift([1 2 1 2]);
-
+                    
                     if any(buttons)
                         %only send dynamic details on frames that change positions by mouse down
                         dynamicDetails{end+1}.annulusDestRec=annulusDestRec;
@@ -1293,7 +1293,7 @@ classdef gratings<stimManager
                         dynamicDetails{end}.frame=i;
                         %dynamicDetails.sendDuringRealtimeloop=true;
                     end
-
+                    
                     %stim.annuliInds(gratingToDraw) === annulusInd
                     Screen('DrawTexture',window,expertCache.annulitexs{stim.annuliInds(expertCache.annulusInd)},[],annulusDestRec,[],filtMode);
                 else
@@ -1301,9 +1301,9 @@ classdef gratings<stimManager
                     Screen('DrawTexture',window,expertCache.annulitexs{stim.annuliInds(gratingToDraw)},[],annulusDestRec,[],filtMode);
                 end
                 Screen('Close',expertCache.masktexs{stim.maskInds(gratingToDraw)});
-
+                
             end
-
+            
             %textLabel=sprintf('annInd: %d',expertCache.annulusInd) %only used for a test
             inspect=0;
             if inspect & i>3
@@ -1318,39 +1318,39 @@ classdef gratings<stimManager
                 sca
                 keyboard
             end
-
-
+            
+            
             % clear the gratingtex from vram
             Screen('Close',gratingtex);
-
-
+            
+            
         end % end function
-
+        
         function retval = enableCumulativePhysAnalysis(sm)
             % returns true if physAnalysis knows how to deal with, and wants each chunk
             % as it comes.  true for getting each chunk, false for getting the
             % combination of all chunks after analysisManagerByChunk has detected
             % spikes, sorted them, and rebundled them as spikes in their chunked format
-
+            
             retval=true; %stim managers could sub class this method if they want to run on EVERY CHUNK, as opposed to the end of the trial
-
+            
         end % end function
         
         function [out newLUT]=extractDetailFields(sm,basicRecords,trialRecords,LUTparams)
             newLUT=LUTparams.compiledLUT;
-
+            
             try
                 stimDetails=[trialRecords.stimDetails];
                 [out.correctionTrial newLUT] = extractFieldAndEnsure(stimDetails,{'correctionTrial'},'scalar',newLUT);
                 [out.pctCorrectionTrials newLUT] = extractFieldAndEnsure(stimDetails,{'pctCorrectionTrials'},'scalar',newLUT);
                 [out.doCombos newLUT] = extractFieldAndEnsure(stimDetails,{'doCombos'},'scalar',newLUT);
-
+                
             catch ex
                 out=handleExtractDetailFieldsException(sm,ex,trialRecords);
                 verifyAllFieldsNCols(out,length(trialRecords));
                 return
             end
-
+            
             verifyAllFieldsNCols(out,length(trialRecords));
         end
         
@@ -1361,36 +1361,36 @@ classdef gratings<stimManager
             %might want a fast way to load the default which is the same each time
             %edf wants to migrate this to a ststion method  - this code is redundant
             %for each stim -- ACK!
-
+            
             if ~exist('linearizedRange','var') || isempty(linearizedRange)
                 linearizedRange = [0 1];
             end
-
+            
             if ~exist('plotOn','var')
                 plotOn=0;
             end
-
+            
             useUncorrected=0;
-
+            
             switch method
-                case 'mostRecentLinearized'    
+                case 'mostRecentLinearized'
                     method
                     error('that method for getting a LUT is not defined');
-                case 'tempLinearRedundantCode'   
+                case 'tempLinearRedundantCode'
                     LUTBitDepth=8;
-                    numColors=2^LUTBitDepth; maxColorID=numColors-1; fraction=1/(maxColorID); 
+                    numColors=2^LUTBitDepth; maxColorID=numColors-1; fraction=1/(maxColorID);
                     ramp=[0:fraction:1];
                     grayColors= [ramp;ramp;ramp]';
                     %maybe ask for red / green / blue gun only
                     linearizedCLUT=grayColors;
                 case '2009Trinitron255GrayBoxInterpBkgnd.5'
-
+                    
                     conn=dbConn();
                     mac='0018F35DFAC0'  % from the phys rig
                     timeRange=[datenum('06-09-2009 23:01','mm-dd-yyyy HH:MM') datenum('06-11-2009 23:59','mm-dd-yyyy HH:MM')];
                     cal=getCalibrationData(conn,mac,timeRange);
                     closeConn(conn)
-
+                    
                     LUTBitDepth=8;
                     spyderCdPerMsquared=cal.measuredValues;
                     stim=cal.details.method{2};
@@ -1407,7 +1407,7 @@ classdef gratings<stimManager
                 case 'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5'
                     conn=dbConn();
                     [junk mac] = getMACaddress();
-
+                    
                     if ~strcmp(mac,'001D7D9ACF80')% how come mac changed??? it was this prev... 00095B8E6171
                         warning('using uncorrected gamma for non-rig monitors')
                         LUTBitDepth=8;
@@ -1445,7 +1445,7 @@ classdef gratings<stimManager
                 case 'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5'
                     conn=dbConn();
                     [junk mac] = getMACaddress();
-
+                    
                     if ~strcmp(mac,'00095B8E6171')
                         warning('using uncorrected gamma for non-rig monitors')
                         LUTBitDepth=8;
@@ -1463,7 +1463,7 @@ classdef gratings<stimManager
                         if checkLocal
                             a = dir(getRatrixPath);
                             if any(ismember({a.name},'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat')) && ...
-                                datenum(a(ismember({a.name},'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat')).date)>floor(now)
+                                    datenum(a(ismember({a.name},'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat')).date)>floor(now)
                                 temp = load(fullfile(getRatrixPath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat'));
                                 linearizedCLUT = temp.cal.linearizedCLUT;
                                 downloadCLUT = false;
@@ -1495,28 +1495,28 @@ classdef gratings<stimManager
                     method
                     error('that method for getting a LUT is not defined');
             end
-
+            
             method
             s.LUT=linearizedCLUT;
         end
         
         function s=flushLUT(s)
             %method to flush the look up table, see fillLUT
-
-            s.LUT=[];   
+            
+            s.LUT=[];
             s.LUTbits=0;
         end
         
         function out = getDetails(sm,stim,what)
-
+            
             switch what
                 case 'sweptParameters'
                     sweepnames={'spatialFrequencies','driftfrequencies','orientations','contrasts','phases','durations','radii','annuli'};
-
+                    
                     numValsPerParam = [length(stim.stimulusDetails.spatialFrequencies) length(stim.stimulusDetails.driftfrequencies) length(stim.stimulusDetails.orientations)...
                         length(stim.stimulusDetails.contrasts) length(stim.stimulusDetails.phases) length(stim.stimulusDetails.durations)...
                         length(stim.stimulusDetails.radii) length(stim.stimulusDetails.annuli)];
-
+                    
                     out=sweepnames(find(numValsPerParam>1));
                 otherwise
                     error('unknown what');
@@ -1527,11 +1527,11 @@ classdef gratings<stimManager
             if isempty(s.LUT) || s.LUTbits~=bits
                 updateSM=true;
                 s.LUTbits=bits;
-            %     s=fillLUT(s,'useThisMonitorsUncorrectedGamma');  %TEMP - don't commit
-            %     s=fillLUT(s,'tempLinearRedundantCode');
+                %     s=fillLUT(s,'useThisMonitorsUncorrectedGamma');  %TEMP - don't commit
+                %     s=fillLUT(s,'tempLinearRedundantCode');
                 %s=fillLUT(s,'2009Trinitron255GrayBoxInterpBkgnd.5');
                 %s=fillLUT(s,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5'); % March 2011 ViewSonic
-            %     s=fillLUT(s,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5'); % May 2011 Westinghouse
+                %     s=fillLUT(s,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5'); % May 2011 Westinghouse
                 [a b] = getMACaddress;
                 if ismember(b,{'7CD1C3E5176F',... balaji Macbook air
                         })
@@ -1544,10 +1544,10 @@ classdef gratings<stimManager
             end
             out=s.LUT;
         end
-
-
+        
+        
         function out = getPhysAnalysisObject(sm,subject,tr,channels,dataPath,stim,c,mon,rigState)
-
+            
             if ~exist('c','var')||isempty(c)
                 c = struct([]);
             end
@@ -1580,10 +1580,10 @@ classdef gratings<stimManager
                         otherwise
                             out = 'undefinedGratings';
                     end
-                case 2        
+                case 2
                     if any(ismember(sweptParameters,'contrasts')) && ...
-                                    any(ismember(sweptParameters,'radii'))
-                                out = 'cntr-radGratings';
+                            any(ismember(sweptParameters,'radii'))
+                        out = 'cntr-radGratings';
                     else
                         warning('only special analysis included');
                         out = 'unsupported';
@@ -1594,13 +1594,13 @@ classdef gratings<stimManager
         end
         
         function [analysisdata cumulativedata] = physAnalysis(stimManager,spikeRecord,stimulusDetails,plotParameters,parameters,cumulativedata,eyeData,LFPRecord)
-
+            
             %% processed clusters and spikes
             theseSpikes = logical(spikeRecord.processedClusters);
             spikes=spikeRecord.spikes(theseSpikes);
             spikeWaveforms = spikeRecord.spikeWaveforms(theseSpikes,:);
             spikeTimestamps = spikeRecord.spikeTimestamps(theseSpikes);
-
+            
             %% SET UP RELATION stimInd <--> frameInd
             numStimFrames=max(spikeRecord.stimInds);
             analyzeDrops=true;
@@ -1612,17 +1612,17 @@ classdef gratings<stimManager
                 firstFramePerStimInd=~[0 diff(spikeRecord.stimInds)==0];
                 correctedFrameIndices=spikeRecord.correctedFrameIndices(firstFramePerStimInd);
             end
-
-            %% 
+            
+            %%
             trials = repmat(parameters.trialNumber,length(stimFrames),1);
-
+            
             %% is there randomization?
             if ~isfield(stimulusDetails,'method')
                 mode = {'ordered',[]};
             else
                 mode = {stimulusDetails.method,stimulusDetails.seed};
             end
-
+            
             %% get the stimulusCombo
             if stimulusDetails.doCombos==1
                 comboMatrix = generateFactorialCombo({stimulusDetails.spatialFrequencies,stimulusDetails.driftfrequencies,stimulusDetails.orientations,...
@@ -1635,7 +1635,7 @@ classdef gratings<stimManager
                 durations=round(comboMatrix(6,:)*parameters.refreshRate); % CONVERTED FROM seconds to frames
                 radii=comboMatrix(7,:);
                 annuli=comboMatrix(8,:);
-
+                
                 repeat=ceil(stimFrames/sum(durations));
                 numRepeats=ceil(numStimFrames/sum(durations));
                 chunkEndFrame=[cumsum(repmat(durations,1,numRepeats))];
@@ -1644,34 +1644,34 @@ classdef gratings<stimManager
                 chunkEndFrame = chunkEndFrame';
                 numChunks=length(chunkStartFrame);
                 trialsByChunk = repmat(parameters.trialNumber,numChunks,1);
-                numTypes=length(durations); %total number of types even having multiple sweeps  
+                numTypes=length(durations); %total number of types even having multiple sweeps
             else
                 error('analysis not handled yet for this case')
             end
-
+            
             numValsPerParam=...
                 [length(unique(pixPerCycs)) length(unique(driftfrequencies))  length(unique(orientations))...
                 length(unique(contrasts)) length(unique(startPhases)) length(unique(durations))...
                 length(unique(radii))  length(unique(annuli))];
-
+            
             %% find which parameters are swept
             names={'pixPerCycs','driftfrequencies','orientations','contrasts','startPhases',...
                 'durations','radii','annuli'};
-
+            
             sweptParameters = names(find(numValsPerParam>1));
             numSweptParams = length(sweptParameters);
             valsSwept = cell(length(sweptParameters),0);
             for sweptNo = 1:length(find(numValsPerParam>1))
                 valsSwept{sweptNo} = eval(sweptParameters{sweptNo});
             end
-
+            
             % durations of each condition should be unique
             if length(unique(durations))==1
                 duration=unique(durations);
             else
                 error('multiple durations can''t rely on mod to determine the frame type')
             end
-
+            
             stimInfo.stimulusDetails = stimulusDetails;
             stimInfo.refreshRate = parameters.refreshRate;
             % stimInfo.pixPerCycs = unique(pixPerCycs);
@@ -1687,22 +1687,22 @@ classdef gratings<stimManager
             stimInfo.numSweptParams = numSweptParams;
             stimInfo.valsSwept = valsSwept;
             stimInfo.numTypes = numTypes;
-
+            
             %% to begin with no attempt will be made to group acording to type
             typesUnordered=repmat([1:numTypes],duration,numRepeats);
             typesUnordered=typesUnordered(stimFrames); % vectorize matrix and remove extras
             repeats = reshape(repmat([1:numRepeats],[duration*numTypes 1]),[duration*numTypes*numRepeats 1]);
             repeats = repeats(stimFrames);
             samplingRate=parameters.samplingRate;
-
+            
             % calc phase per frame, just like dynamic
             x = 2*pi./pixPerCycs(typesUnordered); % adjust phase for spatial frequency, using pixel=1 which is likely always offscreen, given roation and oversizeness
             cycsPerFrameVel = driftfrequencies(typesUnordered)*1/(parameters.refreshRate); % in units of cycles/frame
             offset = 2*pi*cycsPerFrameVel.*stimFrames';
             risingPhases=x+offset+startPhases(typesUnordered);
-            phases=mod(risingPhases,2*pi); 
+            phases=mod(risingPhases,2*pi);
             phases = phases';
-
+            
             % count the number of spikes per frame
             % spikeCount is a 1xn vector of (number of spikes per frame), where n = number of frames
             spikeCount=zeros(size(correctedFrameIndices,1),1);
@@ -1710,7 +1710,7 @@ classdef gratings<stimManager
                 spikeCount(i)=length(find(spikes>=correctedFrameIndices(i,1)&spikes<=correctedFrameIndices(i,2))); % inclusive?  policy: include start & stop
             end
             switch numSweptParams
-                case 1        
+                case 1
                     valsActual = valsSwept{1};
                     valsOrdered = sort(valsSwept{1});
                     types = nan(size(typesUnordered));
@@ -1719,11 +1719,11 @@ classdef gratings<stimManager
                     end
                 case 2
                     types = nan(size(typesUnordered));
-                    numSwept1 = length(unique(valsSwept{1})); 
+                    numSwept1 = length(unique(valsSwept{1}));
                     numSwept2 = length(unique(valsSwept{2}));
                     valsSwept1 = unique(valsSwept{1});
                     valsSwept2 = unique(valsSwept{2});
-
+                    
                     for i = 1:numSwept1
                         for j = 1:numSwept2
                             types(typesUnordered==((i-1)*numSwept2+j)) = find((valsSwept{1}==valsSwept1(i))&(valsSwept{2}==valsSwept2(j)));
@@ -1732,10 +1732,10 @@ classdef gratings<stimManager
                 case 3
                     error('not yet supported')
             end
-
-
-
-
+            
+            
+            
+            
             % update what we know about te analysis to analysisdata
             analysisdata.stimInfo = stimInfo;
             analysisdata.trialNumber = parameters.trialNumber;
@@ -1745,12 +1745,12 @@ classdef gratings<stimManager
             analysisdata.phases = phases;
             analysisdata.types = types;
             analysisdata.repeats = repeats;
-
+            
             % analysisdata.firingRateByPhase = firingRateByPhase;
             analysisdata.spikeWaveforms = spikeWaveforms;
             analysisdata.spikeTimestamps = spikeTimestamps;
-
-
+            
+            
             % for storage in cumulative data....sort the relevant fields
             stimInfo.pixPerCycs = sort(unique(pixPerCycs));
             stimInfo.driftfrequencies = sort(unique(driftfrequencies));
@@ -1760,18 +1760,18 @@ classdef gratings<stimManager
             stimInfo.durations = sort(unique(durations));
             stimInfo.radii = sort(unique(radii));
             stimInfo.annuli = sort(unique(annuli));
-
+            
             %get eyeData for phase-eye analysis
             if ~isempty(eyeData)
                 [px py crx cry]=getPxyCRxy(eyeData,10);
                 eyeSig=[crx-px cry-py];
                 eyeSig(end,:)=[]; % remove last ones to match (not principled... what if we should throw out the first ones?)
-
+                
                 if length(unique(eyeSig(:,1)))>10 % if at least 10 x-positions
-
+                    
                     regionBoundsXY=[1 .5]; % these are CRX-PY bounds of unknown degrees
                     [within ellipses]=selectDenseEyeRegions(eyeSig,1,regionBoundsXY);
-
+                    
                     whichOne=0; % various things to look at
                     switch whichOne
                         case 0
@@ -1795,9 +1795,9 @@ classdef gratings<stimManager
                             bound=3*std(eyeMotion(~isnan(eyeMotion)));
                             motionEdges=linspace(-bound,bound,100);
                             count=histc(eyeMotion,motionEdges);
-
+                            
                             figure; bar(motionEdges,log(count),'histc'); ylabel('log(count)'); xlabel('eyeMotion (crx-px)''')
-
+                            
                             figure; plot(phases',eyeMotion,'.'); % no motion per phase (more interesting for sqaure wave single freq)
                     end
                 else
@@ -1808,7 +1808,7 @@ classdef gratings<stimManager
                 analysisdata.eyedata = [];
                 eyeSig = [];
             end
-
+            
             %% now update cumulativedata
             if isempty(cumulativedata)
                 cumulativedata.trialNumbers = parameters.trialNumber;
@@ -1819,12 +1819,12 @@ classdef gratings<stimManager
                 cumulativedata.types = types;
                 cumulativedata.repeats = repeats;
                 cumulativedata.spikeWaveforms = spikeWaveforms;
-                cumulativedata.spikeTimestamps = spikeTimestamps;    
+                cumulativedata.spikeTimestamps = spikeTimestamps;
                 cumulativedata.eyeData = eyeSig;
             elseif ~isequal(rmfield(cumulativedata.stimInfo,{'stimulusDetails','refreshRate','valsSwept'}),rmfield(stimInfo,{'stimulusDetails','refreshRate','valsSwept'}))
                 keyboard
                 error('something mighty fishy going on here.is it just an issue to do with repeats?');
-
+                
             else % now concatenate only along the first dimension of phaseDensity and other stuff
                 cumulativedata.trialNumbers = [cumulativedata.trialNumbers;parameters.trialNumber];
                 cumulativedata.spikeCount = [cumulativedata.spikeCount;spikeCount]; % i shall not store firingRateByPhase in cumulative
@@ -1836,19 +1836,19 @@ classdef gratings<stimManager
                 cumulativedata.spikeTimestamps = [cumulativedata.spikeTimestamps;spikeTimestamps];
                 cumulativedata.eyeData = [cumulativedata.eyeData;eyeSig];
             end
-
-
-
+            
+            
+            
         end
-
+        
         function [analysisdata cumulativedata] = physAnalysisDev(stimManager,spikeRecord,stimulusDetails,plotParameters,parameters,cumulativedata,eyeData,LFPRecord)
-
+            
             %% processed clusters and spikes
             theseSpikes = logical(spikeRecord.processedClusters);
             spikes=spikeRecord.spikes(theseSpikes);
             spikeWaveforms = spikeRecord.spikeWaveforms(theseSpikes,:);
             spikeTimestamps = spikeRecord.spikeTimestamps(theseSpikes);
-
+            
             %% SET UP RELATION stimInd <--> frameInd
             numStimFrames=max(spikeRecord.stimInds);
             analyzeDrops=true;
@@ -1860,17 +1860,17 @@ classdef gratings<stimManager
                 firstFramePerStimInd=~[0 diff(spikeRecord.stimInds)==0];
                 correctedFrameIndices=spikeRecord.correctedFrameIndices(firstFramePerStimInd);
             end
-
-            %% 
+            
+            %%
             trials = repmat(parameters.trialNumber,length(stimFrames),1);
-
+            
             %% is there randomization?
             if ~isfield(stimulusDetails,'method')
                 mode = {'ordered',[]};
             else
                 mode = {stimulusDetails.method,stimulusDetails.seed};
             end
-
+            
             %% get the stimulusCombo
             if stimulusDetails.doCombos==1
                 comboMatrix = generateFactorialCombo({stimulusDetails.spatialFrequencies,stimulusDetails.driftfrequencies,stimulusDetails.orientations,...
@@ -1883,7 +1883,7 @@ classdef gratings<stimManager
                 durations=round(comboMatrix(6,:)*parameters.refreshRate); % CONVERTED FROM seconds to frames
                 radii=comboMatrix(7,:);
                 annuli=comboMatrix(8,:);
-
+                
                 repeat=ceil(stimFrames/sum(durations));
                 numRepeats=ceil(numStimFrames/sum(durations));
                 chunkEndFrame=[cumsum(repmat(durations,1,numRepeats))];
@@ -1892,34 +1892,34 @@ classdef gratings<stimManager
                 chunkEndFrame = chunkEndFrame';
                 numChunks=length(chunkStartFrame);
                 trialsByChunk = repmat(parameters.trialNumber,numChunks,1);
-                numTypes=length(durations); %total number of types even having multiple sweeps  
+                numTypes=length(durations); %total number of types even having multiple sweeps
             else
                 error('analysis not handled yet for this case')
             end
-
+            
             numValsPerParam=...
                 [length(unique(pixPerCycs)) length(unique(driftfrequencies))  length(unique(orientations))...
                 length(unique(contrasts)) length(unique(startPhases)) length(unique(durations))...
                 length(unique(radii))  length(unique(annuli))];
-
+            
             %% find which parameters are swept
             names={'pixPerCycs','driftfrequencies','orientations','contrasts','startPhases',...
                 'durations','radii','annuli'};
-
+            
             sweptParameters = names(find(numValsPerParam>1));
             numSweptParams = length(sweptParameters);
             valsSwept = cell(length(sweptParameters),0);
             for sweptNo = 1:length(find(numValsPerParam>1))
                 valsSwept{sweptNo} = eval(sweptParameters{sweptNo});
             end
-
+            
             % durations of each condition should be unique
             if length(unique(durations))==1
                 duration=unique(durations);
             else
                 error('multiple durations can''t rely on mod to determine the frame type')
             end
-
+            
             stimInfo.stimulusDetails = stimulusDetails;
             stimInfo.refreshRate = parameters.refreshRate;
             % stimInfo.pixPerCycs = unique(pixPerCycs);
@@ -1935,22 +1935,22 @@ classdef gratings<stimManager
             stimInfo.numSweptParams = numSweptParams;
             stimInfo.valsSwept = valsSwept;
             stimInfo.numTypes = numTypes;
-
+            
             %% to begin with no attempt will be made to group acording to type
             typesUnordered=repmat([1:numTypes],duration,numRepeats);
             typesUnordered=typesUnordered(stimFrames); % vectorize matrix and remove extras
             repeats = reshape(repmat([1:numRepeats],[duration*numTypes 1]),[duration*numTypes*numRepeats 1]);
             repeats = repeats(stimFrames);
             samplingRate=parameters.samplingRate;
-
+            
             % calc phase per frame, just like dynamic
             x = 2*pi./pixPerCycs(typesUnordered); % adjust phase for spatial frequency, using pixel=1 which is likely always offscreen, given roation and oversizeness
             cycsPerFrameVel = driftfrequencies(typesUnordered)*1/(parameters.refreshRate); % in units of cycles/frame
             offset = 2*pi*cycsPerFrameVel.*stimFrames';
             risingPhases=x+offset+startPhases(typesUnordered);
-            phases=mod(risingPhases,2*pi); 
+            phases=mod(risingPhases,2*pi);
             phases = phases';
-
+            
             % count the number of spikes per frame
             % spikeCount is a 1xn vector of (number of spikes per frame), where n = number of frames
             spikeCount=zeros(size(correctedFrameIndices,1),1);
@@ -1966,9 +1966,9 @@ classdef gratings<stimManager
             for i = 1:length(valsOrdered)
                 types(typesUnordered==i) = find(valsOrdered==valsActual(i));
             end
-
-
-
+            
+            
+            
             % update what we know about te analysis to analysisdata
             analysisdata.stimInfo = stimInfo;
             analysisdata.trialNumber = parameters.trialNumber;
@@ -1978,12 +1978,12 @@ classdef gratings<stimManager
             analysisdata.phases = phases;
             analysisdata.types = types;
             analysisdata.repeats = repeats;
-
+            
             % analysisdata.firingRateByPhase = firingRateByPhase;
             analysisdata.spikeWaveforms = spikeWaveforms;
             analysisdata.spikeTimestamps = spikeTimestamps;
-
-
+            
+            
             % for storage in cumulative data....sort the relevant fields
             stimInfo.pixPerCycs = sort(unique(pixPerCycs));
             stimInfo.driftfrequencies = sort(unique(driftfrequencies));
@@ -1993,18 +1993,18 @@ classdef gratings<stimManager
             stimInfo.durations = sort(unique(durations));
             stimInfo.radii = sort(unique(radii));
             stimInfo.annuli = sort(unique(annuli));
-
+            
             %get eyeData for phase-eye analysis
             if ~isempty(eyeData)
                 [px py crx cry]=getPxyCRxy(eyeData,10);
                 eyeSig=[crx-px cry-py];
                 eyeSig(end,:)=[]; % remove last ones to match (not principled... what if we should throw out the first ones?)
-
+                
                 if length(unique(eyeSig(:,1)))>10 % if at least 10 x-positions
-
+                    
                     regionBoundsXY=[1 .5]; % these are CRX-PY bounds of unknown degrees
                     [within ellipses]=selectDenseEyeRegions(eyeSig,1,regionBoundsXY);
-
+                    
                     whichOne=0; % various things to look at
                     switch whichOne
                         case 0
@@ -2028,9 +2028,9 @@ classdef gratings<stimManager
                             bound=3*std(eyeMotion(~isnan(eyeMotion)));
                             motionEdges=linspace(-bound,bound,100);
                             count=histc(eyeMotion,motionEdges);
-
+                            
                             figure; bar(motionEdges,log(count),'histc'); ylabel('log(count)'); xlabel('eyeMotion (crx-px)''')
-
+                            
                             figure; plot(phases',eyeMotion,'.'); % no motion per phase (more interesting for sqaure wave single freq)
                     end
                 else
@@ -2041,7 +2041,7 @@ classdef gratings<stimManager
                 analysisdata.eyedata = [];
                 eyeSig = [];
             end
-
+            
             %% now update cumulativedata
             if isempty(cumulativedata)
                 cumulativedata.trialNumbers = parameters.trialNumber;
@@ -2052,12 +2052,12 @@ classdef gratings<stimManager
                 cumulativedata.types = types;
                 cumulativedata.repeats = repeats;
                 cumulativedata.spikeWaveforms = spikeWaveforms;
-                cumulativedata.spikeTimestamps = spikeTimestamps;    
+                cumulativedata.spikeTimestamps = spikeTimestamps;
                 cumulativedata.eyeData = eyeSig;
             elseif ~isequal(rmfield(cumulativedata.stimInfo,{'stimulusDetails','refreshRate','valsSwept'}),rmfield(stimInfo,{'stimulusDetails','refreshRate','valsSwept'}))
                 keyboard
                 error('something mighty fishy going on here.is it just an issue to do with repeats?');
-
+                
             else % now concatenate only along the first dimension of phaseDensity and other stuff
                 cumulativedata.trialNumbers = [cumulativedata.trialNumbers;parameters.trialNumber];
                 cumulativedata.spikeCount = [cumulativedata.spikeCount;spikeCount]; % i shall not store firingRateByPhase in cumulative
@@ -2069,11 +2069,11 @@ classdef gratings<stimManager
                 cumulativedata.spikeTimestamps = [cumulativedata.spikeTimestamps;spikeTimestamps];
                 cumulativedata.eyeData = [cumulativedata.eyeData;eyeSig];
             end
-
-
-
+            
+            
+            
         end
-
+        
         function out=stimMgrOKForTrialMgr(sm,tm)
             if isa(tm,'trialManager')
                 switch class(tm)
@@ -2101,10 +2101,10 @@ classdef gratings<stimManager
             % quality.frameIndices
             % quality.frameTimes
             % quality.frameLengths (this was used by getFrameTimes to calculate passedQualityTest)
-
+            
             %retval=quality.passedQualityTest;
-
-
+            
+            
             % keyboard
             if length(quality.passedQualityTest)>1
                 %if many chunks, the last one might have no frames or spikes, but the
@@ -2117,13 +2117,13 @@ classdef gratings<stimManager
             else
                 qualityOK=quality.passedQualityTest;
             end
-
+            
             retval=qualityOK && ...
-                (isLastChunkInTrial || enableChunkedPhysAnalysis(sm)) &&...    
+                (isLastChunkInTrial || enableChunkedPhysAnalysis(sm)) &&...
                 (overwriteAll || ~analysisExists);
         end % end function
-
-
+        
+        
         
         
     end

@@ -9,8 +9,8 @@ classdef afcCoherentDots<stimManager
         bkgdSpeed = {0.1,0.1};                    % speed of bkgd dots
         dotDirection = {[0],[pi]};                % 0 is to the right. pi is to the left
         bkgdDirection = {[0],[pi]};               % 0 is to the right. pi is to the left
-        dotColor = {0,0};                         % can be a single number< 1 (used as a gray scale value); a single row of 3/4 (RGB/RGBA) ; or many rows o4 the above number sets in which case randomly chosen 
-        bkgdDotColor = {0,0};                     % can be a single number< 1 (used as a gray scale value); a single row of 3/4 (RGB/RGBA) ; or many rows o4 the above number sets in which case randomly chosen 
+        dotColor = {0,0};                         % can be a single number< 1 (used as a gray scale value); a single row of 3/4 (RGB/RGBA) ; or many rows o4 the above number sets in which case randomly chosen
+        bkgdDotColor = {0,0};                     % can be a single number< 1 (used as a gray scale value); a single row of 3/4 (RGB/RGBA) ; or many rows o4 the above number sets in which case randomly chosen
         dotSize = {[9],[9]};                      % Width of dots in pixels
         bkgdSize = {[3],[3]};                     % Width in pixels
         dotShape = {{'circle'},{'circle'}};       % 'circle' or 'rectangle'
@@ -19,21 +19,21 @@ classdef afcCoherentDots<stimManager
         renderDistance = NaN;                     % is 1 for flat and is a range for perspective
         maxDuration = {inf, inf};                 % in seconds (inf is until response)
         background = 0;                           % black background
-
+        
         LUT =[];
         LUTbits=0;
-
+        
         doCombos=true;
         ordering;
-        doPostDiscrim = false; 
-
+        doPostDiscrim = false;
+        
         LEDParams;
     end
     
     methods
         function s=afcCoherentDots(numDots,bkgdNumDots, dotCoherence,bkgdCoherence, dotSpeed,bkgdSpeed, dotDirection,bkgdDirection,...
-                   dotColor,bkgdColor, dotSize,bkgdSize, dotShape,bkgdShape, renderMode, maxDuration,background,...
-                   maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, doPostDiscrim)
+                dotColor,bkgdColor, dotSize,bkgdSize, dotShape,bkgdShape, renderMode, maxDuration,background,...
+                maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, doPostDiscrim)
             % AFCCOHERENTDOTS  class constructor.
             % this class is specifically designed for behavior.
             % s = afcCoherentDots(numDots,bkgdNumDots, dotCoherence,bkgdCoherence, dotSpeed,bkgdSpeed, dotDirection,bkgdDirection,...
@@ -44,18 +44,18 @@ classdef afcCoherentDots<stimManager
             %   speed - an array of positive numbers in units of dotSize/second
             %   direction - the direction the coheret dots move it. non coherent dots
             %         will do some kind of jiggle in all directions
-            %   color - can be a single number< 1 (used as a gray scale value); a single row of 3/4 (RGB/RGBA) ; or many rows o4 the above number sets in which case randomly chosen 
+            %   color - can be a single number< 1 (used as a gray scale value); a single row of 3/4 (RGB/RGBA) ; or many rows o4 the above number sets in which case randomly chosen
             %   dotSize - size in pixels of each dot (square)
             %   dotShape - 'circle or 'rectangle'
             %   renderMode - 'perspective' or 'flat'
             %   maxDuration - length of the movie in seconds. particularly useful for
-            %          stimli with specific time.... 
+            %          stimli with specific time....
             %   screenZoom - scaleFactor argument passed to stimManager constructor
             %   interTrialLuminance - (optional) defaults to 0
             %   doCombos - whether to do combos or not...
-
+            
             s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
-
+            
             eps = 0.0000001;
             s.ordering.method = 'twister';
             s.ordering.seed = [];
@@ -63,7 +63,7 @@ classdef afcCoherentDots<stimManager
             s.LEDParams.numLEDs = 0;
             s.LEDParams.IlluminationModes = {};
             
-
+            
             % create object using specified values
             s.numDots = numDots;
             s.bkgdNumDots = bkgdNumDots;
@@ -87,8 +87,8 @@ classdef afcCoherentDots<stimManager
             s.scaleFactor = scaleFactor;
             s.interTrialLuminance = interTrialLuminance;
             s.doCombos = doCombos;
-
-
+            
+            
             % doCombos
             if islogical(doCombos)
                 s.doCombos = doCombos;
@@ -107,7 +107,7 @@ classdef afcCoherentDots<stimManager
                 doCombos
                 error('doCombos not in the right format');
             end
-
+            
             % numDots
             if iscell(numDots) && length(numDots)==2 && ...
                     isnumeric(numDots{1}) && all(numDots{1}>=0) && isnumeric(numDots{2}) && all(numDots{2}>=0)
@@ -118,7 +118,7 @@ classdef afcCoherentDots<stimManager
                 numDots
                 error('numDots not in the right format');
             end
-
+            
             % bkgdNumDots
             if iscell(bkgdNumDots) && length(bkgdNumDots)==2 && ...
                     isnumeric(bkgdNumDots{1}) && all(bkgdNumDots{1}>=0) && isnumeric(bkgdNumDots{2}) && all(bkgdNumDots{2}>=0)
@@ -130,11 +130,11 @@ classdef afcCoherentDots<stimManager
                 bkgdNumDots
                 error('bkgdNumDots not in the right format');
             end
-
+            
             % dotCoherence
             if iscell(dotCoherence) && length(dotCoherence)==2 && ...
                     isnumeric(dotCoherence{1}) && all(dotCoherence{1}>=0) && all(dotCoherence{1}<=1) && ...
-                    isnumeric(dotCoherence{2}) && all(dotCoherence{2}>=0) && all(dotCoherence{2}<=1) 
+                    isnumeric(dotCoherence{2}) && all(dotCoherence{2}>=0) && all(dotCoherence{2}<=1)
                 s.dotCoherence = dotCoherence;
                 if ~doCombos && length(dotCoherence{1})~=L1 && length(dotCoherence{2})~=L2
                     error('the lengths don''t match. ')
@@ -143,11 +143,11 @@ classdef afcCoherentDots<stimManager
                 dotCoherence
                 error('dotCoherence not in the right format');
             end
-
+            
             % bkgdCoherence
             if iscell(bkgdCoherence) && length(bkgdCoherence)==2 && ...
                     isnumeric(bkgdCoherence{1}) && all(bkgdCoherence{1}>=0) && all(bkgdCoherence{1}<=1) && ...
-                    isnumeric(bkgdCoherence{2}) && all(bkgdCoherence{2}>=0) && all(bkgdCoherence{2}<=1) 
+                    isnumeric(bkgdCoherence{2}) && all(bkgdCoherence{2}>=0) && all(bkgdCoherence{2}<=1)
                 s.bkgdCoherence = bkgdCoherence;
                 if ~doCombos && length(bkgdCoherence{1})~=L1 && length(bkgdCoherence{2})~=L2
                     error('the lengths don''t match. ')
@@ -156,7 +156,7 @@ classdef afcCoherentDots<stimManager
                 bkgdCoherence
                 error('bkgdCoherence not in the right format');
             end
-
+            
             % dotSpeed
             if iscell(dotSpeed) && length(dotSpeed)==2 && ...
                     isnumeric(dotSpeed{1}) && all(dotSpeed{1}>=0) && ...
@@ -169,7 +169,7 @@ classdef afcCoherentDots<stimManager
                 dotSpeed
                 error('dotSpeed not in the right format');
             end
-
+            
             % bkgdSpeed
             if iscell(bkgdSpeed) && length(bkgdSpeed)==2 && ...
                     isnumeric(bkgdSpeed{1}) && all(bkgdSpeed{1}>=0) && ...
@@ -182,7 +182,7 @@ classdef afcCoherentDots<stimManager
                 bkgdSpeed
                 error('bkgdSpeed not in the right format');
             end
-
+            
             % dotDirection
             if iscell(dotDirection) && length(dotDirection)==2 && ...
                     isnumeric(dotDirection{1}) && ...
@@ -195,7 +195,7 @@ classdef afcCoherentDots<stimManager
                 dotDirection
                 error('dotDirection not in the right format');
             end
-
+            
             % bkgdDirection
             if iscell(bkgdDirection) && length(bkgdDirection)==2 && ...
                     isnumeric(bkgdDirection{1}) &&  ...
@@ -208,7 +208,7 @@ classdef afcCoherentDots<stimManager
                 bkgdDirection
                 error('bkgdDirection not in the right format');
             end
-
+            
             % dotColor
             if iscell(dotColor) && length(dotColor)==2 && ...
                     isnumeric(dotColor{1}) &&  length(size(dotColor{1}))<=2 && ... % a 2-D array
@@ -225,7 +225,7 @@ classdef afcCoherentDots<stimManager
                 dotColor
                 error('dotColor not in the right format');
             end
-
+            
             % bkgdDotColor
             if iscell(s.bkgdDotColor) && length(s.bkgdDotColor)==2 && ...
                     isnumeric(s.bkgdDotColor{1}) &&  length(size(s.bkgdDotColor{1}))<=2 && ... % a 2-D array
@@ -242,8 +242,8 @@ classdef afcCoherentDots<stimManager
                 s.bkgdDotColor
                 error('bkgdDotColor not in the right format');
             end
-
-
+            
+            
             % dotSize
             if iscell(dotSize) && length(dotSize)==2 && ...
                     isnumeric(dotSize{1}) && all(dotSize{1}>0) && ...
@@ -256,7 +256,7 @@ classdef afcCoherentDots<stimManager
                 dotSize
                 error('dotSize not in the right format');
             end
-
+            
             % bkgdSize
             if iscell(bkgdSize) && length(bkgdSize)==2 && ...
                     isnumeric(bkgdSize{1}) && all(bkgdSize{1}>0) && ...
@@ -269,8 +269,8 @@ classdef afcCoherentDots<stimManager
                 bkgdSize
                 error('bkgdSize not in the right format');
             end
-
-
+            
+            
             % dotShape
             if iscell(dotShape) && length(dotShape)==2 && ...
                     iscell(dotShape{1}) && all(ismember(dotShape{1}, {'circle','square'})) && ...
@@ -283,7 +283,7 @@ classdef afcCoherentDots<stimManager
                 dotShape
                 error('dotShape not in the right format');
             end
-
+            
             % bkgdShape
             if iscell(bkgdShape) && length(bkgdShape)==2 && ...
                     iscell(bkgdShape{1}) && all(ismember(bkgdShape{1}, {'circle','square'})) && ...
@@ -296,7 +296,7 @@ classdef afcCoherentDots<stimManager
                 bkgdShape
                 error('bkgdShape not in the right format');
             end
-
+            
             % renderMode
             if iscell(renderMode) && ischar(renderMode{1}) && ismember(renderMode{1},{'flat','perspective'})
                 s.renderMode = renderMode{1};
@@ -315,7 +315,7 @@ classdef afcCoherentDots<stimManager
                 renderMode
                 error('renderMode not in the right format');
             end
-
+            
             % maxDuration
             if iscell(maxDuration) && length(maxDuration)==2 && ...
                     isnumeric(maxDuration{1}) && all(maxDuration{1}>0) && ...
@@ -328,7 +328,7 @@ classdef afcCoherentDots<stimManager
                 maxDuration
                 error('maxDuration not in the right format');
             end
-
+            
             % background
             if isnumeric(background)
                 s.background = background;
@@ -336,7 +336,7 @@ classdef afcCoherentDots<stimManager
                 background
                 error('background not in the right format');
             end
-
+            
             % doPostDiscrim
             if doPostDiscrim
                 % make sure that maxDuration is set to finite values
@@ -347,7 +347,7 @@ classdef afcCoherentDots<stimManager
             else
                 s.doPostDiscrim = false;
             end
-
+            
             if nargin==24
                 % LED state
                 if isstruct(LEDParams)
@@ -374,7 +374,7 @@ classdef afcCoherentDots<stimManager
                             end
                         end
                     end
-
+                    
                     if abs(cumulativeFraction(end)-1)>eps
                         error('the cumulative fraction should sum to 1');
                     else
@@ -382,41 +382,40 @@ classdef afcCoherentDots<stimManager
                     end
                 end
             end
-
+            
         end
         
-        function [stimulus,updateSM,resolutionIndex,preRequestStim,preResponseStim,discrimStim,postDiscrimStim,interTrialStim,LUT,targetPorts,distractorPorts,...
-    details,interTrialLuminance,text,indexPulses,imagingTasks] =...
-    calcStim(stimulus,trialManager,allowRepeats,resolutions,displaySize,LUTbits,...
-    responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
-            % see ratrixPath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
+        function [stimulus,updateSM,resolutionIndex,stimList,LUT,targetPorts,distractorPorts,...
+                details,interTrialLuminance,text,indexPulses,imagingTasks] =...
+                calcStim(stimulus,trialManager,allowRepeats,resolutions,displaySize,LUTbits,...
+                responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
             trialManagerClass = class(trialManager);
             % 1/30/09 - trialRecords now includes THIS trial
             indexPulses=[];
             imagingTasks=[];
             [LUT stimulus updateSM]=getLUT(stimulus,LUTbits);
-
+            
             [junk, mac] = getMACaddress();
             sca;
-
+            
             switch mac
                 case {'A41F7278B4DE','A41F729213E2','A41F726EC11C' } %gLab-Behavior rigs 1,2,3
                     [resolutionIndex height width hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
                 case {'7845C4256F4C', '7845C42558DF','A41F729211B1'} %gLab-Behavior rigs 4,5,6
                     [resolutionIndex height width hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
-                otherwise 
+                otherwise
                     [resolutionIndex height width hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
             end
-
+            
             if isnan(resolutionIndex)
                 resolutionIndex=1;
             end
-
+            
             scaleFactor=getScaleFactor(stimulus); % dummy value since we are phased anyways; the real scaleFactor is stored in each phase's stimSpec
-            interTrialLuminance = getInterTrialLuminance(stimulus); 
-
+            interTrialLuminance = getInterTrialLuminance(stimulus);
+            
             interTrialDuration = getInterTrialDuration(stimulus);
-
+            
             details.pctCorrectionTrials=getPercentCorrectionTrials(trialManager); % need to change this to be passed in from trial manager
             details.bias = getRequestBias(trialManager);
             if ~isempty(trialRecords) && length(trialRecords)>=2
@@ -425,15 +424,15 @@ classdef afcCoherentDots<stimManager
                 lastRec=[];
             end
             [targetPorts, distractorPorts, details]=assignPorts(details,lastRec,responsePorts,trialManagerClass,allowRepeats);
-
-
+            
+            
             toggleStim=true; type='expert';
             dynamicMode = true; %false %true
-
+            
             % set up params for computeGabors
             height = min(height,getMaxHeight(stimulus));
             width = min(width,getMaxWidth(stimulus));
-
+            
             % lets save some of the details for later
             possibleStims.numDots        = stimulus.numDots;
             possibleStims.bkgdNumDots    = stimulus.bkgdNumDots;
@@ -455,7 +454,7 @@ classdef afcCoherentDots<stimManager
             possibleStims.doCombos       = stimulus.doCombos;
             details.possibleStims        = possibleStims;
             details.afcCoherentDotsType  = getType(stimulus,structize(stimulus));
-
+            
             % whats the chosen stim?
             if targetPorts==1
                 chosenStimIndex = 1;
@@ -464,77 +463,77 @@ classdef afcCoherentDots<stimManager
             else
                 error('cannot support this here')
             end
-
+            
             stim = [];
-
-
+            
+            
             stim.height = height;
             stim.width = width;
             stim.rngMethod = stimulus.ordering.method;
             if isempty(stimulus.ordering.seed)
                 stim.seedVal = sum(100*clock);
             end
-
-            if stimulus.doCombos    
+            
+            if stimulus.doCombos
                 % numDots
                 tempVar = randperm(length(stimulus.numDots{chosenStimIndex}));
                 stim.numDots = stimulus.numDots{chosenStimIndex}(tempVar(1));
-
+                
                 % bkgdNumDots
                 tempVar = randperm(length(stimulus.bkgdNumDots{chosenStimIndex}));
                 stim.bkgdNumDots = stimulus.bkgdNumDots{chosenStimIndex}(tempVar(1));
-
+                
                 % dotCoherence
                 tempVar = randperm(length(stimulus.dotCoherence{chosenStimIndex}));
                 stim.dotCoherence = stimulus.dotCoherence{chosenStimIndex}(tempVar(1));
-
+                
                 % bkgdCoherence
                 tempVar = randperm(length(stimulus.bkgdCoherence{chosenStimIndex}));
                 stim.bkgdCoherence = stimulus.bkgdCoherence{chosenStimIndex}(tempVar(1));
-
+                
                 % dotSpeed
                 tempVar = randperm(length(stimulus.dotSpeed{chosenStimIndex}));
                 stim.dotSpeed = stimulus.dotSpeed{chosenStimIndex}(tempVar(1));
-
+                
                 % bkgdSpeed
                 tempVar = randperm(length(stimulus.bkgdSpeed{chosenStimIndex}));
                 stim.bkgdSpeed = stimulus.bkgdSpeed{chosenStimIndex}(tempVar(1));
-
+                
                 % dotDirection
                 tempVar = randperm(length(stimulus.dotDirection{chosenStimIndex}));
                 stim.dotDirection = stimulus.dotDirection{chosenStimIndex}(tempVar(1));
-
+                
                 % bkgdDirection
                 tempVar = randperm(length(stimulus.bkgdDirection{chosenStimIndex}));
                 stim.bkgdDirection = stimulus.bkgdDirection{chosenStimIndex}(tempVar(1));
-
+                
                 % dotColor
                 tempVar = randperm(size(stimulus.dotColor{chosenStimIndex},1));
                 stim.dotColor = stimulus.dotColor{chosenStimIndex}(tempVar(1),:);
-
+                
                 % bkgdDotColor
                 tempVar = randperm(size(stimulus.bkgdDotColor{chosenStimIndex},1));
                 stim.bkgdDotColor = stimulus.bkgdDotColor{chosenStimIndex}(tempVar(1),:);
-
+                
                 % dotSize
                 tempVar = randperm(length(stimulus.dotSize{chosenStimIndex}));
                 stim.dotSize = stimulus.dotSize{chosenStimIndex}(tempVar(1));
-
+                
                 % bkgdSize
                 tempVar = randperm(length(stimulus.bkgdSize{chosenStimIndex}));
                 stim.bkgdSize = stimulus.bkgdSize{chosenStimIndex}(tempVar(1));
-
+                
                 % dotShape
                 tempVar = randperm(length(stimulus.dotShape{chosenStimIndex}));
                 stim.dotShape = stimulus.dotShape{chosenStimIndex}(tempVar(1));
-
+                
                 % bkgdShape
                 tempVar = randperm(length(stimulus.bkgdShape{chosenStimIndex}));
                 stim.bkgdShape = stimulus.bkgdShape{chosenStimIndex}(tempVar(1));
-
+                
                 % renderMode
                 stim.renderMode = stimulus.renderMode;
-
+                
                 % maxDuration
                 tempVar = randperm(length(stimulus.maxDuration{chosenStimIndex}));
                 if ~ismac
@@ -544,18 +543,18 @@ classdef afcCoherentDots<stimManager
                     % shouldnt. assume hz = 60 (hack)
                     stim.maxDuration = round(stimulus.maxDuration{chosenStimIndex}(tempVar(1))*60);
                 end
-
+                
                 % background
                 stim.background = stimulus.background;
-
+                
                 % doCombos
                 stim.doCombos = stimulus.doCombos;
-
+                
             else
-                    % numDots
+                % numDots
                 tempVar = randperm(length(stimulus.numDots{chosenStimIndex}));
                 which = tempVar(1);
-
+                
                 stim.numDots = stimulus.numDots{chosenStimIndex}(which);
                 stim.bkgdNumDots = stimulus.bkgdNumDots{chosenStimIndex}(which);
                 stim.dotCoherence = stimulus.dotCoherence{chosenStimIndex}(which);
@@ -570,10 +569,10 @@ classdef afcCoherentDots<stimManager
                 stim.bkgdSize = stimulus.bkgdSize{chosenStimIndex}(which);
                 stim.dotShape = stimulus.dotShape{chosenStimIndex}(which);
                 stim.bkgdShape = stimulus.bkgdShape{chosenStimIndex}(which);
-
+                
                 % waveform
                 stim.renderMode = stimulus.renderMode;
-
+                
                 if ~ismac
                     stim.maxDuration = round(stimulus.maxDuration{chosenStimIndex}(which)*hz);
                 elseif ismac && hz==0
@@ -581,16 +580,16 @@ classdef afcCoherentDots<stimManager
                     % shouldnt. assume hz = 60 (hack)
                     stim.maxDuration = round(stimulus.maxDuration{chosenStimIndex}(which)*60);
                 end
-
+                
                 % background
                 stim.background = stimulus.background;
-
+                
                 % doCombos
                 stim.doCombos = stimulus.doCombos;
-
+                
             end
-
-
+            
+            
             % have a version in ''details''
             details.doCombos       = stimulus.doCombos;
             details.numDots        = stim.numDots;
@@ -614,35 +613,35 @@ classdef afcCoherentDots<stimManager
             details.seedVal        = stim.seedVal;
             details.height         = stim.height;
             details.width          = stim.width;
-
-
+            
+            
             if isinf(stim.maxDuration)
                 timeout=[];
             else
                 timeout=stim.maxDuration;
             end
-
+            
             switch stim.renderMode
                 case 'perspective'
                     % lets make the render distances work here
                     stim.dotsRenderDistance = stimulus.renderDistance(1) + rand(stim.numDots,1)*(stimulus.renderDistance(2) - stimulus.renderDistance(1));
                     stim.bkgdRenderDistance = stimulus.renderDistance(1) + rand(stim.bkgdNumDots,1)*(stimulus.renderDistance(2) - stimulus.renderDistance(1));
-
+                    
                     details.dotsRenderDistance = stim.dotsRenderDistance;
                     details.bkgdRenderDistance = stim.bkgdRenderDistance;
                 case 'flat'
                     % lets make the render distances work here
                     stim.dotsRenderDistance = ones(stim.numDots,1);
                     stim.bkgdRenderDistance = ones(stim.bkgdNumDots,1);
-
+                    
                     details.dotsRenderDistance = stim.dotsRenderDistance;
                     details.bkgdRenderDistance = stim.bkgdRenderDistance;
             end
-
+            
             % LEDParams
             [details, stim] = setupLED(details, stim, stimulus.LEDParams,arduinoCONN);
-
-
+            
+            
             discrimStim=[];
             discrimStim.stimulus=stim;
             discrimStim.stimType=type;
@@ -654,7 +653,7 @@ classdef afcCoherentDots<stimManager
                 keyboard;
             end
             discrimStim.framesUntilTimeout=timeout;
-
+            
             preRequestStim=[];
             preRequestStim.stimulus=interTrialLuminance;
             preRequestStim.stimType='loop';
@@ -662,21 +661,21 @@ classdef afcCoherentDots<stimManager
             preRequestStim.startFrame=0;
             preRequestStim.autoTrigger=[];
             preRequestStim.punishResponses=false;
-
+            
             preResponseStim = [];
-
+            
             if stimulus.doPostDiscrim
                 postDiscrimStim = preRequestStim;
             else
                 postDiscrimStim = [];
             end
-
+            
             interTrialStim.duration = interTrialDuration;
             details.interTrialDuration = interTrialDuration;
             details.stimManagerClass = class(stimulus);
             details.trialManagerClass = trialManagerClass;
             details.scaleFactor = scaleFactor;
-
+            
             if strcmp(trialManagerClass,'nAFC') && details.correctionTrial
                 text='correction trial!';
             else
@@ -685,24 +684,24 @@ classdef afcCoherentDots<stimManager
         end
         
         function [doFramePulse, expertCache, dynamicDetails, textLabel, i, dontclear, indexPulse] = ...
-    drawExpertFrame(stimulus,stim,i,phaseStartTime,totalFrameNum,window,textLabel,destRect,filtMode,...
-    expertCache,ifi,scheduledFrameNum,dropFrames,dontclear,dynamicDetails)
+                drawExpertFrame(stimulus,stim,i,phaseStartTime,totalFrameNum,window,textLabel,destRect,filtMode,...
+                expertCache,ifi,scheduledFrameNum,dropFrames,dontclear,dynamicDetails)
             % 11/14/08 - implementing expert mode for gratings
             % this function calculates an expert frame, and then makes and draws the texture; nothing needs to be done in runRealTimeLoop
             % this should be a stimManager-specific implementation (if expert mode is supported for the given stimulus)
-
+            
             floatprecision=1;
-
+            
             % increment i
             if dropFrames
                 i=scheduledFrameNum;
             else
                 i=i+1;
             end
-
+            
             doFramePulse=true;
             indexPulse = false;
-
+            
             % expertCache will have the current state of the system
             if isempty(expertCache)
                 expertCache.previousXYDots=[];
@@ -710,182 +709,182 @@ classdef afcCoherentDots<stimManager
                 expertCache.nextVelDots=[];
                 expertCache.nextVelBkgd=[];
             end
-
+            
             black=0.0;
             white=1.0;
             gray = (white-black)/2;
-
+            
             try
-            if i ==1
-                % for the first frame we will set nextVel to 0
-                expertCache.nextVelDots=zeros(stim.numDots,2);
-                expertCache.nextVelBkgd=zeros(stim.bkgdNumDots,2);
-
-                % save current state
+                if i ==1
+                    % for the first frame we will set nextVel to 0
+                    expertCache.nextVelDots=zeros(stim.numDots,2);
+                    expertCache.nextVelBkgd=zeros(stim.bkgdNumDots,2);
+                    
+                    % save current state
+                    try
+                        prevState = rng;
+                    catch
+                        prevState = rand('seed');
+                    end
+                    % seed the random number generator with available values (peppered with
+                    % the current frame number
+                    try
+                        rng(stim.seedVal,stim.rngMethod);
+                    catch
+                        rand('seed',stim.seedVal);
+                    end
+                    
+                    
+                    currentXYDots = rand(stim.numDots,2).*repmat([stim.width,stim.height],stim.numDots,1);
+                    currentXYBkgd = rand(stim.bkgdNumDots,2).*repmat([stim.width,stim.height],stim.bkgdNumDots,1);
+                    
+                    expertCache.previousXYDots=currentXYDots;
+                    expertCache.previousXYBkgd=currentXYBkgd;
+                    
+                    try
+                        rng(prevState);
+                    catch
+                        rand('seed',prevState);
+                    end
+                end
+                
+                % get previous positions. this is same as the random positions chosen for
+                % the first frame
+                oldXYDots=expertCache.previousXYDots;
+                oldXYBkgd=expertCache.previousXYBkgd;
+                
+                % get velocities calculated from previous frame. no change in velocity for
+                % first frame
+                currentXYDots=oldXYDots+expertCache.nextVelDots;
+                currentXYBkgd=oldXYBkgd+expertCache.nextVelBkgd;
+                
+                % there needs to be code here that checks for out of boundedness
+                dotsX = currentXYDots(:,1);
+                dotsY = currentXYDots(:,2);
+                currentXYDots((dotsX<0),1) = dotsX(dotsX<0)+stim.width;
+                currentXYDots((dotsX>stim.width),1) = dotsX(dotsX>stim.width)-stim.width;
+                currentXYDots((dotsY<0),2) = dotsY(dotsY<0)+stim.height;
+                currentXYDots((dotsY>stim.height),1) = dotsY(dotsY>stim.height)-stim.height;
+                
+                
+                bkgdX = currentXYBkgd(:,1);
+                bkgdY = currentXYBkgd(:,2);
+                currentXYBkgd((bkgdX<0),1) = bkgdX(bkgdX<0)+stim.width;
+                currentXYBkgd((bkgdX>stim.width),1) = bkgdX(bkgdX>stim.width)-stim.width;
+                currentXYBkgd((bkgdY<0),2) = bkgdY(bkgdY<0)+stim.height;
+                currentXYBkgd((bkgdY>stim.height),1) = bkgdY(bkgdY>stim.height)-stim.height;
+                
+                % find dotSize from stim.dotsRenderDistance and stim.bkdgRenderDistance
+                dotSize = stim.dotSize./stim.dotsRenderDistance;
+                bkgdSize = stim.bkgdSize./stim.bkgdRenderDistance;
+                
+                % find dotColor
+                dotColor = repmat(stim.dotColor,stim.numDots,1);
+                bkgdColor = repmat(stim.bkgdDotColor, stim.bkgdNumDots,1);
+                
+                % fill up the background to start with
+                Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                Screen('FillRect', window,255*stim.background);
+                % now the background dots
+                hasBkgd = ~isempty(currentXYBkgd);
+                if hasBkgd
+                    Screen('DrawDots',window,currentXYBkgd',bkgdSize',255*bkgdColor');
+                end
+                % and the actual dots
+                Screen('DrawDots',window,currentXYDots',dotSize',255*dotColor');
+                
+                % good now these positions go into the expertCache
+                expertCache.previousXYDots = currentXYDots;
+                expertCache.previousXYBkgd = currentXYBkgd;
+                
+                % done with the drawing for this frame - we need to worry about drawing the
+                % next frame now
+                
+                % figure out the speeds of the individual dots
+                dotSpeed = stim.dotSpeed./stim.dotsRenderDistance; % units of dotSize/sec
+                bkgdSpeed = stim.bkgdSpeed./stim.bkgdRenderDistance; % units of bkgdSize/sec
+                
+                % choose the coherent ones
                 try
                     prevState = rng;
+                    rng(stim.seedVal+i,stim.rngMethod);
                 catch
                     prevState = rand('seed');
+                    rand('seed',stim.seedVal+i);
                 end
-                % seed the random number generator with available values (peppered with
-                % the current frame number
-                try
-                    rng(stim.seedVal,stim.rngMethod);
-                catch
-                    rand('seed',stim.seedVal);
-                end
-
-
-                currentXYDots = rand(stim.numDots,2).*repmat([stim.width,stim.height],stim.numDots,1);
-                currentXYBkgd = rand(stim.bkgdNumDots,2).*repmat([stim.width,stim.height],stim.bkgdNumDots,1);
-
-                expertCache.previousXYDots=currentXYDots;
-                expertCache.previousXYBkgd=currentXYBkgd;
-
+                whichCoherentDots = rand(stim.numDots,1)<stim.dotCoherence;
+                whichCoherentBkgd = rand(stim.bkgdNumDots,1)<stim.bkgdCoherence;
                 try
                     rng(prevState);
                 catch
                     rand('seed',prevState);
                 end
-            end
-
-            % get previous positions. this is same as the random positions chosen for
-            % the first frame
-            oldXYDots=expertCache.previousXYDots;
-            oldXYBkgd=expertCache.previousXYBkgd;
-
-            % get velocities calculated from previous frame. no change in velocity for
-            % first frame
-            currentXYDots=oldXYDots+expertCache.nextVelDots;
-            currentXYBkgd=oldXYBkgd+expertCache.nextVelBkgd;
-
-            % there needs to be code here that checks for out of boundedness
-            dotsX = currentXYDots(:,1); 
-            dotsY = currentXYDots(:,2);
-            currentXYDots((dotsX<0),1) = dotsX(dotsX<0)+stim.width;
-            currentXYDots((dotsX>stim.width),1) = dotsX(dotsX>stim.width)-stim.width;
-            currentXYDots((dotsY<0),2) = dotsY(dotsY<0)+stim.height;
-            currentXYDots((dotsY>stim.height),1) = dotsY(dotsY>stim.height)-stim.height;
-
-
-            bkgdX = currentXYBkgd(:,1);
-            bkgdY = currentXYBkgd(:,2);
-            currentXYBkgd((bkgdX<0),1) = bkgdX(bkgdX<0)+stim.width;
-            currentXYBkgd((bkgdX>stim.width),1) = bkgdX(bkgdX>stim.width)-stim.width;
-            currentXYBkgd((bkgdY<0),2) = bkgdY(bkgdY<0)+stim.height;
-            currentXYBkgd((bkgdY>stim.height),1) = bkgdY(bkgdY>stim.height)-stim.height;
-
-            % find dotSize from stim.dotsRenderDistance and stim.bkdgRenderDistance
-            dotSize = stim.dotSize./stim.dotsRenderDistance;
-            bkgdSize = stim.bkgdSize./stim.bkgdRenderDistance;
-
-            % find dotColor
-            dotColor = repmat(stim.dotColor,stim.numDots,1);
-            bkgdColor = repmat(stim.bkgdDotColor, stim.bkgdNumDots,1);
-
-            % fill up the background to start with
-            Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            Screen('FillRect', window,255*stim.background);
-            % now the background dots
-            hasBkgd = ~isempty(currentXYBkgd);
-            if hasBkgd
-                Screen('DrawDots',window,currentXYBkgd',bkgdSize',255*bkgdColor');
-            end
-            % and the actual dots
-            Screen('DrawDots',window,currentXYDots',dotSize',255*dotColor');
-
-            % good now these positions go into the expertCache
-            expertCache.previousXYDots = currentXYDots;
-            expertCache.previousXYBkgd = currentXYBkgd;
-
-            % done with the drawing for this frame - we need to worry about drawing the
-            % next frame now
-
-            % figure out the speeds of the individual dots
-            dotSpeed = stim.dotSpeed./stim.dotsRenderDistance; % units of dotSize/sec
-            bkgdSpeed = stim.bkgdSpeed./stim.bkgdRenderDistance; % units of bkgdSize/sec
-
-            % choose the coherent ones
-            try
-                prevState = rng;
-                rng(stim.seedVal+i,stim.rngMethod);
-            catch
-                prevState = rand('seed');
-                rand('seed',stim.seedVal+i);
-            end
-            whichCoherentDots = rand(stim.numDots,1)<stim.dotCoherence;
-            whichCoherentBkgd = rand(stim.bkgdNumDots,1)<stim.bkgdCoherence;
-            try
-                rng(prevState);
-            catch
-                rand('seed',prevState);
-            end
-            % choose the chosen stim angle for the coherentOnes
-            dotDirection = stim.dotDirection.*double(whichCoherentDots);
-            bkgdDirection = stim.bkgdDirection.*double(whichCoherentBkgd);
-
-            % get the x and y velocities by doing the trigonometric transformations
-            expertCache.nextVelDots = [dotSpeed.*cos(dotDirection) -dotSpeed.*sin(dotDirection)]*stim.dotSize*ifi;
-            expertCache.nextVelBkgd = [bkgdSpeed.*cos(bkgdDirection) -bkgdSpeed.*sin(bkgdDirection)]*stim.bkgdSize*ifi;
-
-            % for the non coherent ones, set velocity to zero. set position to random
-            expertCache.nextVelDots(~whichCoherentDots,:) = repmat([0 0],sum(double(~whichCoherentDots)),1);
-            expertCache.nextVelBkgd(~whichCoherentBkgd,:) = repmat([0 0],sum(double(~whichCoherentBkgd)),1);
-            expertCache.previousXYDots(~whichCoherentDots,:) = repmat([0 0],sum(double(~whichCoherentDots)),1);
-            expertCache.previousXYBkgd(~whichCoherentBkgd,:) = repmat([0 0],sum(double(~whichCoherentBkgd)),1);
-            expertCache.previousXYDots = expertCache.previousXYDots + rand(stim.numDots,2).*repmat([stim.width,stim.height],stim.numDots,1).*double([~whichCoherentDots ~whichCoherentDots]);
-            expertCache.previousXYBkgd = expertCache.previousXYBkgd + rand(stim.bkgdNumDots,2).*repmat([stim.width,stim.height],stim.bkgdNumDots,1).*double([~whichCoherentBkgd ~whichCoherentBkgd]);
-
+                % choose the chosen stim angle for the coherentOnes
+                dotDirection = stim.dotDirection.*double(whichCoherentDots);
+                bkgdDirection = stim.bkgdDirection.*double(whichCoherentBkgd);
+                
+                % get the x and y velocities by doing the trigonometric transformations
+                expertCache.nextVelDots = [dotSpeed.*cos(dotDirection) -dotSpeed.*sin(dotDirection)]*stim.dotSize*ifi;
+                expertCache.nextVelBkgd = [bkgdSpeed.*cos(bkgdDirection) -bkgdSpeed.*sin(bkgdDirection)]*stim.bkgdSize*ifi;
+                
+                % for the non coherent ones, set velocity to zero. set position to random
+                expertCache.nextVelDots(~whichCoherentDots,:) = repmat([0 0],sum(double(~whichCoherentDots)),1);
+                expertCache.nextVelBkgd(~whichCoherentBkgd,:) = repmat([0 0],sum(double(~whichCoherentBkgd)),1);
+                expertCache.previousXYDots(~whichCoherentDots,:) = repmat([0 0],sum(double(~whichCoherentDots)),1);
+                expertCache.previousXYBkgd(~whichCoherentBkgd,:) = repmat([0 0],sum(double(~whichCoherentBkgd)),1);
+                expertCache.previousXYDots = expertCache.previousXYDots + rand(stim.numDots,2).*repmat([stim.width,stim.height],stim.numDots,1).*double([~whichCoherentDots ~whichCoherentDots]);
+                expertCache.previousXYBkgd = expertCache.previousXYBkgd + rand(stim.bkgdNumDots,2).*repmat([stim.width,stim.height],stim.bkgdNumDots,1).*double([~whichCoherentBkgd ~whichCoherentBkgd]);
+                
             catch ex
                 getReport(ex)
                 sca;
                 keyboard
             end
-
+            
         end % end function
         
         function [out newLUT]=extractDetailFields(sm,basicRecords,trialRecords,LUTparams)
             newLUT=LUTparams.compiledLUT;
-
+            
             try
                 stimDetails=[trialRecords.stimDetails];
                 [out.correctionTrial, newLUT] = extractFieldAndEnsure(stimDetails,{'correctionTrial'},'scalar',newLUT);
                 [out.pctCorrectionTrials, newLUT] = extractFieldAndEnsure(stimDetails,{'pctCorrectionTrials'},'scalar',newLUT);
                 [out.doCombos, newLUT] = extractFieldAndEnsure(stimDetails,{'doCombos'},'scalar',newLUT);
-
+                
                 [out.numDots, newLUT] = extractFieldAndEnsure(stimDetails,{'numDots'},'scalar',newLUT);
                 [out.bkgdNumDots, newLUT] = extractFieldAndEnsure(stimDetails,{'bkgdNumDots'},'scalar',newLUT);
-
+                
                 [out.dotCoherence, newLUT] = extractFieldAndEnsure(stimDetails,{'dotCoherence'},'scalar',newLUT);
                 [out.bkgdCoherence, newLUT] = extractFieldAndEnsure(stimDetails,{'bkgdCoherence'},'scalar',newLUT);
-
+                
                 [out.dotSpeed, newLUT] = extractFieldAndEnsure(stimDetails,{'dotSpeed'},'scalar',newLUT);
                 [out.bkgdSpeed, newLUT] = extractFieldAndEnsure(stimDetails,{'bkgdSpeed'},'scalar',newLUT);
-
+                
                 [out.dotDirection, newLUT] = extractFieldAndEnsure(stimDetails,{'dotDirection'},'scalar',newLUT);
                 [out.bkgdDirection, newLUT] = extractFieldAndEnsure(stimDetails,{'bkgdDirection'},'scalar',newLUT);
-
+                
                 [out.dotColor, newLUT] = extractFieldAndEnsure(stimDetails,{'dotColor'},'equalLengthVects',newLUT);
                 [out.bkgdDotColor, newLUT] = extractFieldAndEnsure(stimDetails,{'bkgdDotColor'},'equalLengthVects',newLUT);
-
+                
                 [out.dotSize, newLUT] = extractFieldAndEnsure(stimDetails,{'dotSize'},'scalar',newLUT);
                 [out.bkgdSize, newLUT] = extractFieldAndEnsure(stimDetails,{'bkgdSize'},'scalar',newLUT);
-
+                
                 [out.dotShape, newLUT] = extractFieldAndEnsure(stimDetails,{'dotShape'},'scalarLUT',newLUT);
                 [out.bkgdShape, newLUT] = extractFieldAndEnsure(stimDetails,{'bkgdShape'},'scalarLUT',newLUT);
-
+                
                 [out.maxDuration, newLUT] = extractFieldAndEnsure(stimDetails,{'maxDuration'},'scalar',newLUT);
                 [out.background, newLUT] = extractFieldAndEnsure(stimDetails,{'background'},'scalar',newLUT);
-
+                
                 [out.height, newLUT] = extractFieldAndEnsure(stimDetails,{'height'},'scalar',newLUT);
                 [out.width, newLUT] = extractFieldAndEnsure(stimDetails,{'width'},'scalar',newLUT);
-
+                
                 [out.seedVal, newLUT] = extractFieldAndEnsure(stimDetails,{'seedVal'},'scalar',newLUT);
-
+                
                 [out.rngMethod, newLUT] = extractFieldAndEnsure(stimDetails,{'rngMethod'},'scalarLUT',newLUT);
-
+                
                 [out.renderMode, newLUT] = extractFieldAndEnsure(stimDetails,{'renderMode'},'scalarLUT',newLUT);
-
+                
             catch ex
                 if ismember(ex.identifier,{'MATLAB:UnableToConvert'})
                     stimDetails(length(trialRecords)).correctionTrial = NaN;
@@ -901,7 +900,7 @@ classdef afcCoherentDots<stimManager
                             stimDetails(i).phases = trialRecords(i).stimDetails.phases;
                             stimDetails(i).contrasts = trialRecords(i).stimDetails.contrasts;
                             stimDetails(i).radii = trialRecords(i).stimDetails.radii;
-                            stimDetails(i).maxDuration = trialRecords(i).stimDetails.maxDuration;         
+                            stimDetails(i).maxDuration = trialRecords(i).stimDetails.maxDuration;
                         else
                             stimDetails(i).pctCorrectionTrials = nan;
                             stimDetails(i).correctionTrial = nan;
@@ -919,14 +918,14 @@ classdef afcCoherentDots<stimManager
                     [out.correctionTrial newLUT] = extractFieldAndEnsure(stimDetails,{'correctionTrial'},'scalar',newLUT);
                     [out.pctCorrectionTrials newLUT] = extractFieldAndEnsure(stimDetails,{'pctCorrectionTrials'},'scalar',newLUT);
                     [out.doCombos newLUT] = extractFieldAndEnsure(stimDetails,{'doCombos'},'scalar',newLUT);
-
+                    
                     [out.pixPerCycsCenter newLUT] = extractFieldAndEnsure(stimDetails,{'pixPerCycs'},'scalar',newLUT);
                     [out.driftfrequenciesCenter newLUT] = extractFieldAndEnsure(stimDetails,{'driftfrequencies'},'scalar',newLUT);
                     [out.orientationsCenter newLUT] = extractFieldAndEnsure(stimDetails,{'orientations'},'scalar',newLUT);
                     [out.phasesCenter newLUT] = extractFieldAndEnsure(stimDetails,{'phases'},'scalar',newLUT);
                     [out.contrastsCenter newLUT] = extractFieldAndEnsure(stimDetails,{'contrasts'},'scalar',newLUT);
                     [out.radiiCenter newLUT] = extractFieldAndEnsure(stimDetails,{'radii'},'scalar',newLUT);
-
+                    
                     [out.maxDuration newLUT] = extractFieldAndEnsure(stimDetails,{'maxDuration'},'scalar',newLUT);
                     [out.afcGratingType newLUT] = extractFieldAndEnsure(stimDetails,{'afcGratingType'},'scalarLUT',newLUT);
                 else
@@ -935,7 +934,7 @@ classdef afcCoherentDots<stimManager
                     return
                 end
             end
-
+            
             verifyAllFieldsNCols(out,length(trialRecords));
         end
         
@@ -946,49 +945,49 @@ classdef afcCoherentDots<stimManager
             %might want a fast way to load the default which is the same each time
             %edf wants to migrate this to a ststion method  - this code is redundant
             %for each stim -- ACK!
-
-
+            
+            
             if ~exist('plotOn','var')
                 plotOn=0;
             end
-
+            
             useUncorrected=0;
-
+            
             switch method
                 case 'mostRecentLinearized'
-
+                    
                     method
                     error('that method for getting a LUT is not defined');
                 case 'linearizedDefault'
-
-                    %WARNING:  need to get gamma from measurements of ratrix workstation with NEC monitor and new graphics card 
-
-
+                    
+                    %WARNING:  need to get gamma from measurements of ratrix workstation with NEC monitor and new graphics card
+                    
+                    
                     LUTBitDepth=8;
-
+                    
                     %sample from lower left of triniton, pmm 070106
-                        %sent=       [0      0.0667    0.1333    0.2000    0.2667    0.3333    0.4000    0.4667    0.5333  0.6000    0.6667    0.7333    0.8000    0.8667    0.9333    1.0000];
-                        %measured_R= [0.0052 0.0058    0.0068    0.0089    0.0121    0.0167    0.0228    0.0304    0.0398  0.0510    0.065     0.080     0.097     0.117     0.139     0.1645];       
-                        %measured_G= [0.0052 0.0053    0.0057    0.0067    0.0085    0.0113    0.0154    0.0208    0.0278  0.036     0.046     0.059     0.073     0.089     0.107     0.128 ];
-                        %measured_B= [0.0052 0.0055    0.0065    0.0077    0.0102    0.0137    0.0185    0.0246    0.0325  0.042     0.053     0.065     0.081     0.098     0.116     0.138];  
-
+                    %sent=       [0      0.0667    0.1333    0.2000    0.2667    0.3333    0.4000    0.4667    0.5333  0.6000    0.6667    0.7333    0.8000    0.8667    0.9333    1.0000];
+                    %measured_R= [0.0052 0.0058    0.0068    0.0089    0.0121    0.0167    0.0228    0.0304    0.0398  0.0510    0.065     0.080     0.097     0.117     0.139     0.1645];
+                    %measured_G= [0.0052 0.0053    0.0057    0.0067    0.0085    0.0113    0.0154    0.0208    0.0278  0.036     0.046     0.059     0.073     0.089     0.107     0.128 ];
+                    %measured_B= [0.0052 0.0055    0.0065    0.0077    0.0102    0.0137    0.0185    0.0246    0.0325  0.042     0.053     0.065     0.081     0.098     0.116     0.138];
+                    
                     %sample values from FE992_LM_Tests2_070111.smr: (actually logged them: pmm 070403) -used physiology graphic card
-                        sent=       [0      0.0667    0.1333    0.2000    0.2667    0.3333    0.4000    0.4667    0.5333  0.6000    0.6667    0.7333    0.8000    0.8667    0.9333    1.0000];
-                        measured_R= [0.0034 0.0046    0.0077    0.0128    0.0206    0.0309    0.0435    0.0595    0.0782  0.1005    0.1260    0.1555    0.189     0.227     0.268     0.314 ];
-                        measured_G= [0.0042 0.0053    0.0073    0.0110    0.0167    0.0245    0.0345    0.047     0.063   0.081     0.103     0.127     0.156     0.187     0.222     0.260 ];
-                        measured_B= [0.0042 0.0051    0.0072    0.0105    0.0160    0.0235    0.033     0.0445    0.0595  0.077     0.097     0.120     0.1465    0.176     0.208     0.244 ];
-
-                        %oldCLUT = Screen('LoadNormalizedGammaTable', w, linearizedCLUT,1);
+                    sent=       [0      0.0667    0.1333    0.2000    0.2667    0.3333    0.4000    0.4667    0.5333  0.6000    0.6667    0.7333    0.8000    0.8667    0.9333    1.0000];
+                    measured_R= [0.0034 0.0046    0.0077    0.0128    0.0206    0.0309    0.0435    0.0595    0.0782  0.1005    0.1260    0.1555    0.189     0.227     0.268     0.314 ];
+                    measured_G= [0.0042 0.0053    0.0073    0.0110    0.0167    0.0245    0.0345    0.047     0.063   0.081     0.103     0.127     0.156     0.187     0.222     0.260 ];
+                    measured_B= [0.0042 0.0051    0.0072    0.0105    0.0160    0.0235    0.033     0.0445    0.0595  0.077     0.097     0.120     0.1465    0.176     0.208     0.244 ];
+                    
+                    %oldCLUT = Screen('LoadNormalizedGammaTable', w, linearizedCLUT,1);
                 case 'useThisMonitorsUncorrectedGamma'
-
+                    
                     LUTBitDepth=8;
-                    numColors=2^LUTBitDepth; maxColorID=numColors-1; fraction=1/(maxColorID); 
+                    numColors=2^LUTBitDepth; maxColorID=numColors-1; fraction=1/(maxColorID);
                     ramp=[0:fraction:1];
                     grayColors= [ramp;ramp;ramp]';
                     %maybe ask for red / green / blue gun only
                     uncorrected=grayColors;
                     useUncorrected=1;
-
+                    
                 case 'localCalibStore'
                     try
                         temp = load(fullfile(getRatrixPath,'monitorCalibration','tempCLUT.mat'));
@@ -998,9 +997,9 @@ classdef afcCoherentDots<stimManager
                         disp('did you store local calibration details at all????');
                         rethrow(ex)
                     end
-
+                    
                 case 'calibrateNow'
-
+                    
                     %[measured_R measured_G measured_B] measureRGBscale()
                     method
                     error('that method for getting a LUT is not defined');
@@ -1008,7 +1007,7 @@ classdef afcCoherentDots<stimManager
                     method
                     error('that method for getting a LUT is not defined');
             end
-
+            
             if useUncorrected
                 linearizedCLUT=uncorrected;
             else
@@ -1017,25 +1016,25 @@ classdef afcCoherentDots<stimManager
                     subplot([311]);
                 end
                 [linearizedCLUT(:,1) g.R]=fitGammaAndReturnLinearized(sent, measured_R, linearizedRange, 2^LUTBitDepth,plotOn);
-
+                
                 if plotOn
                     subplot([312]);
                 end
                 [linearizedCLUT(:,2) g.G]=fitGammaAndReturnLinearized(sent, measured_G, linearizedRange, 2^LUTBitDepth,plotOn);
-
+                
                 if plotOn
                     subplot([313]);
                 end
                 [linearizedCLUT(:,3) g.B]=fitGammaAndReturnLinearized(sent, measured_B, linearizedRange, 2^LUTBitDepth,plotOn);
             end
-
+            
             s.LUT=linearizedCLUT;
         end
         
         function s=flushLUT(s)
             %method to flush the look up table, see fillLUT
-
-            s.LUT=[];   
+            
+            s.LUT=[];
             s.LUTbits=0;
         end
         
@@ -1044,7 +1043,7 @@ classdef afcCoherentDots<stimManager
                 case 'sweptParameters'
                     if stim.doCombos
                         sweepnames={'numDots','dotCoherence','dotSpeed','dotDirection','dotSize','dotShape','maxDuration'};
-
+                        
                         which = [false false false false false false false];
                         for i = 1:length(sweepnames)
                             if length(stim.(sweepnames{i}){1})>1 || length(stim.(sweepnames{i}){2})>1
@@ -1052,7 +1051,7 @@ classdef afcCoherentDots<stimManager
                             end
                         end
                         out1=sweepnames(which);
-
+                        
                         if stim.bkgdNumDots{1}>0 || stim.bkgdNumDots{2}>0
                             sweepnames={'bkgdNumDots','bkgdCoherence','bkgdSpeed','bkgdDirection','bkgdSize','bkgdShape'};
                             which = [false false false false false false];
@@ -1065,13 +1064,13 @@ classdef afcCoherentDots<stimManager
                         else
                             out2 = {};
                         end
-
+                        
                         out = {out1{:},out2{:}};
-
+                        
                         if size(stim.dotColor{1},1)>1 || size(stim.dotColor{2},1)>1
                             out{end+1} = 'dotColor';
                         end
-
+                        
                         if size(stim.bkgdDotColor{1},1)>1 || size(stim.bkgdDotColor{2},1)>1
                             out{end+1} = 'bkgdDotColor';
                         end
@@ -1082,7 +1081,7 @@ classdef afcCoherentDots<stimManager
                     error('unknown what');
             end
         end
-
+        
         function [out s updateSM]=getLUT(s,bits)
             if isempty(s.LUT) || s.LUTbits~=bits
                 updateSM=true;
@@ -1095,7 +1094,7 @@ classdef afcCoherentDots<stimManager
                 else
                     s=fillLUT(s,'localCalibStore');
                 end
-
+                
             else
                 updateSM=false;
             end
@@ -1144,17 +1143,17 @@ classdef afcCoherentDots<stimManager
                         otherwise
                             out = 'undefinedGratings';
                     end
-                case 2        
+                case 2
                     error('if you want to get this working, you are gonna have to create a name for it. look at the previous line for a format');
                 case 3
-                    error('if you want to get this working, you are gonna have to create a name for it. look at the previous line for a format');    
+                    error('if you want to get this working, you are gonna have to create a name for it. look at the previous line for a format');
                 case 4
-                    error('if you want to get this working, you are gonna have to create a name for it. look at the previous line for a format');    
+                    error('if you want to get this working, you are gonna have to create a name for it. look at the previous line for a format');
                 otherwise
                     error('unsupported type. if you want this make a name for it');
             end
         end
-
+        
         function out=stimMgrOKForTrialMgr(sm,tm)
             if isa(tm,'trialManager')
                 switch class(tm)
@@ -1173,7 +1172,7 @@ classdef afcCoherentDots<stimManager
                 error('need a trialManager object')
             end
         end
-
+        
         
     end
     

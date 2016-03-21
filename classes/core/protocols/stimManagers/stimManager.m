@@ -18,13 +18,13 @@ classdef stimManager
             else
                 error('maxWidth and maxHeight must be positive')
             end
-
+            
             if (length(scaleFactor)==2 && all(scaleFactor>0)) || (length(scaleFactor)==1 && scaleFactor==0)
                 s.scaleFactor=scaleFactor;
             else
                 error('scale factor is either 0 (for scaling to full screen) or [width height] positive values')
             end
-
+            
             if isnumeric(interTrialLuminance)
                 if interTrialLuminance>=0 && interTrialLuminance<=1
                     s.interTrialLuminance=interTrialLuminance;
@@ -38,7 +38,7 @@ classdef stimManager
                 else
                     error('interTrailLuminance must be >=0 and <=1')
                 end
-
+                
                 if interTrialLuminance{2}>0
                     s.interTrialDuration=interTrialLuminance{2};
                 else
@@ -47,10 +47,6 @@ classdef stimManager
             else
                 error('either numeric background only or cell with background and duration')
             end
-        end
-        
-        function analysis(sm,detailRecords,subjectID)
-            %base stim manager detailed analysis does nothing
         end
         
         function out = boxOKForStimManager(stimManager,b,r)
@@ -67,27 +63,16 @@ classdef stimManager
             end
         end % end function
         
-        function    [value]  = canForceStimDetails(stimManager,forceStimDetails)
-            % returns true if the stimulus manager has a optional arguument in calcStim
-            % that forces the stimulus details to apply. Only managers that impliment
-            % this feature should return true, and they should be able to error check
-            % the force detail requests to confrim that they are valid requests... for
-            % example, you can request a field to change that does not exist on that
-            % stimulus
-
-              value = false;
-        end
-        
         function out=checkTargetIsPresent(sm,details)
             %By default this will error for all stimManager unless they overwrite this
             %method in order to express the appropriate logic
-
+            
             class(sm)
-
+            
             error('This stimManager has not defined if a target is present or absent.');
             %asymetricReinforcement probably would also handle an output of empty or
             %nan, but just erroring here is just more conservative
-
+            
             %out=[];
         end
         
@@ -103,10 +88,10 @@ classdef stimManager
             isIdent = false;
             diffIn = {};
         end
-
+        
         function [out, scale] = correctStim(stimManager,numFrames)
             scale=0;
-
+            
             out = double(getInterTrialLuminance(stimManager));
         end
         
@@ -118,10 +103,10 @@ classdef stimManager
                 d = d(order);
                 temp = load(fullfile(parameters.singleUnitPath,d(end).name));
                 currentUnit = temp.currentUnit;
-
+                
                 c = cumulativedata;
                 c.stimInfo = stimInfo;
-
+                
                 switch sweptParameterThis{1}
                     case 'pixPerCycs'
                         sfAnalysis = sfGratings(parameters.subjectID,trialNumbers,c);
@@ -155,35 +140,35 @@ classdef stimManager
             % called by analysis manager when overwrite spikes is false, and analsis
             % has generates a cumulative data for this range.  allows for display,
             % without recomputation
-
+            
             %does nothing by default
         end
-
+        
         function retval = enableChunkedPhysAnalysis(sm)
             % returns true if physAnalysis knows how to deal with, and wants each chunk
             % as it comes.  true for getting each chunk, false for getting the
             % combination of all chunks after analysisManagerByChunk has detected
             % spikes, sorted them, and rebundled them as spikes in their chunked format
-
+            
             retval=false; %stim managers could sub class this method if they want to run on EVERY CHUNK, as opposed to the end of the trial
-
+            
         end % end function
-
+        
         function retval = enableCumulativePhysAnalysis(sm)
             % returns true if physAnalysis knows how to deal with, and wants each chunk
             % as it comes.  true for getting each chunk, false for getting the
             % combination of all chunks after analysisManagerByChunk has detected
             % spikes, sorted them, and rebundled them as spikes in their chunked format
-
+            
             retval=false; %stim managers could sub class this method if they want to run on EVERY CHUNK, as opposed to the end of the trial
-
+            
         end % end function
         
         function [out scale] = errorStim(stimManager,numFrames)
             scale=0;
             x = double(rand(1,1,numFrames)>.5);
             errorStimIsOnlyBlack = true;
-            if errorStimIsOnlyBlack 
+            if errorStimIsOnlyBlack
                 out = zeros(size(x));
             else
                 out = x;
@@ -193,16 +178,16 @@ classdef stimManager
         function expertPostTrialCleanUp(stimManager)
             % this function is used in expert mode to perform user-defined cleanup tasks between phases
             % default behavior is to call Screen('Close') to clear all textures and close offscreen windows (but leave onscreen window!)
-
+            
             Screen('Close')
         end
-
-
-% ==================================================================
-% HELPER FUNCTIONS
-
+        
+        
+        % ==================================================================
+        % HELPER FUNCTIONS
+        
         function out=encodeResult(result,targs,dstrs,correct)
-
+            
             if isa(result,'double') && all(result==1 | result==0)
                 warning('edf sees double rather than logical response on osx 01.21.09 -- why?')
                 result=logical(result);
@@ -215,7 +200,7 @@ classdef stimManager
             end
             % if we do decide to re-implement errorchecking on targets/distractors, keep in mind that
             % targs/dstrs are in DECIMAL format (ie targetPorts [1,3] = '101' = 5)
-
+            
             if ischar(result)
                 switch result
                     case 'nominal'
@@ -250,7 +235,7 @@ classdef stimManager
                 class(result)
                 error('unrecognized result type')
             end
-
+            
             % if ismember(out,targs) == correct
             %     %pass
             % else
@@ -259,16 +244,16 @@ classdef stimManager
             %     correct
             %     error('bad correct calc')
             % end
-
+            
             if all(isempty(intersect(dstrs,targs)))
                 %pass
             else
                 error('found intersecting targets and distractors')
             end
-
+            
         end
-
-
+        
+        
         function [out compiledLUT] = ensureScalarOrAddCellToLUT(fieldArray, compiledLUT)
             % this function either returns a scalar array, or if it finds that fieldArray is a cell array, performs LUT processing on the fieldArray
             % this allows extractBasicFields to support versions of trialRecords that dont use a LUT
@@ -278,10 +263,10 @@ classdef stimManager
                 ensureTypedVector(fieldArray,'char'); % ensure that this is cell array of characters, otherwise no point using a LUT
                 [out compiledLUT] = addOrFindInLUT(compiledLUT, fieldArray);
             end
-
-            end % end function
-
-            function out = getResponseFromTrialRecords(trialRecords)
+            
+        end % end function
+        
+        function out = getResponseFromTrialRecords(trialRecords)
             % Get the trialRecords.response field if it exists, otherwise look for trialRecords.phaseRecords.responseDetails.tries
             % return -1 if neither exists...uh oh
             out=ones(1,length(trialRecords))*-1;
@@ -292,9 +277,9 @@ classdef stimManager
                     ~all(cellfun(@isempty,{trialRecords.phaseRecords})) % these two 'if' cases should be mutually exclusive in latest code, but not always been the case
                 out=cell2mat(cellfun(@getResponseFromTries,{trialRecords.phaseRecords},'UniformOutput',false));
             end
-            end
-
-            function out = getResponseTimeFromTrialRecords(trialRecords)
+        end
+        
+        function out = getResponseTimeFromTrialRecords(trialRecords)
             % Get the trialRecords.responseTime field if it exists, otherwise look for trialRecords.phaseRecords.responseDetails.tries
             % return -1 if neither exists...uh oh
             out=ones(1,length(trialRecords))*-1;
@@ -305,18 +290,18 @@ classdef stimManager
                     ~all(cellfun(@isempty,{trialRecords.phaseRecords})) % these two 'if' cases should be mutually exclusive in latest code, but not always been the case
                 out=cell2mat(cellfun(@getResponseTimeFromPhaseRecords,{trialRecords.phaseRecords},'UniformOutput',false));
             end
-            end
-
-            function out = decideResponse(response)
+        end
+        
+        function out = decideResponse(response)
             resp=find(response);
             if length(resp)==1 && ~ischar(response)
                 out=resp;
             else
                 out=-1;
             end
-            end % end function
-
-            function out = getResponseTimeFromPhaseRecords(phaseRecords)
+        end % end function
+        
+        function out = getResponseTimeFromPhaseRecords(phaseRecords)
             % #define response time = start of discrim phase to start of reinforced
             % phase
             % designed by balaji Aug 17 2012
@@ -333,11 +318,11 @@ classdef stimManager
                 out = phaseRecords(whichReinf).responseDetails.startTime-phaseRecords(whichDiscrim).responseDetails.startTime;
             end
             % keyboard
-            end
-
-            function out = getResponseFromTries(phaseRecords)
+        end
+        
+        function out = getResponseFromTries(phaseRecords)
             found = false;
-
+            
             try
                 pInd=find(strcmp({phaseRecords.phaseLabel},'discrim'));
                 % we assume the last try of the 'discrim' phase to be the response
@@ -347,10 +332,10 @@ classdef stimManager
                     out=decideResponse(response);
                     found = true;
                 end
-            catch 
+            catch
                 disp('failed probably because the reponse was in the post-discrim phase...')
             end
-
+            
             if ~found
                 % it is possible that the actual response is in the post-discrim
                 pIndAlt=find(strcmp({phaseRecords.phaseType},'post-discrim'));
@@ -367,27 +352,27 @@ classdef stimManager
                     end
                 end
             end
-
-
+            
+            
             if ~found
                 out = -1;
             end
         end % end function
-
+        
         function [out newLUT]=extractDetailFields(sm,basicRecords,trialRecords,LUTparams)
             out=struct;
             newLUT=LUTparams.compiledLUT;
             %out=struct('a',num2cell(1:length(trialRecords)));
             %out=rmfield(out,'a'); %makes a 1xn struct array with no fields (any nicer way to make this?)
-
+            
             verifyAllFieldsNCols(out,length(trialRecords));
         end
-
+        
         function    [value]  = getCurrentShapedValue(t)
             % currently returns empty. If shaping, see method on one of Philip's flanker stims.
-
-              value = [];
-
+            
+            value = [];
+            
         end
         
         %this needs to have access class 'protected' (subclasses need to use it,
@@ -403,7 +388,7 @@ classdef stimManager
         function i=getInterTrialLuminance(s)
             i=s.interTrialLuminance;
         end
-    
+        
         function out = getLEDParams(sm)
             out = sm.LEDParams;
         end
@@ -420,7 +405,7 @@ classdef stimManager
             % returns abbreviated class name
             % should be overriden by stimManager-specific strings
             % used to generate names for trainingSteps
-
+            
             outStr = class(stimManager);
         end % end function
         
@@ -429,12 +414,12 @@ classdef stimManager
         end
         
         function a=getPhysAnalysis(s,physRecords,filePaths)
-         % a default object, with default methods
+            % a default object, with default methods
             a=physiologyAnalysis(physRecords,filePaths);
         end
         
         function out = getPhysAnalysisObject(sm,subject,trials,channels,dataPath,stim,c)
-                    %      getPhysAnalysisObject(sm,s.subject,trials,chans,dataPath,physRecords,c);
+            %      getPhysAnalysisObject(sm,s.subject,trials,chans,dataPath,physRecords,c);
             if ~exist('c','var')||isempty(c)
                 c = struct([]);
             end
@@ -446,12 +431,12 @@ classdef stimManager
         end
         
         function soundsToPlay = getSoundsToPlay(stimManager, ports, lastPorts, phase, phaseType, stepsInPhase,msRewardSound, msPenaltySound, ...
-    targetOptions, distractorOptions, requestOptions, playRequestSoundLoop, trialManagerClass, trialDetails, stimDetails)
+                targetOptions, distractorOptions, requestOptions, playRequestSoundLoop, trialManagerClass, trialDetails, stimDetails)
             % see doc in stimManager.calcStim.txt
-
+            
             playLoopSounds={};
             playSoundSounds={};
-
+            
             % nAFC/goNoGo setup:
             if strcmp(trialManagerClass, 'nAFC') || ...
                     strcmp(trialManagerClass,'biasedNAFC') || ...
@@ -463,10 +448,10 @@ classdef stimManager
                 if phase==1 && stepsInPhase <=0
                     playSoundSounds{end+1} = {'trialStartSound', 50};
                 elseif strcmp(phaseType,'pre-request') && (any(ports(targetOptions)) || any(ports(distractorOptions)) || ...
-                    (any(ports) && isempty(requestOptions))) 
+                        (any(ports) && isempty(requestOptions)))
                     % play white noise (when responsePort triggered during phase 1)
                     playLoopSounds{end+1} = 'trySomethingElseSound';
-                elseif ismember(phaseType,{'discrim','pre-response'}) && any(ports(requestOptions))  
+                elseif ismember(phaseType,{'discrim','pre-response'}) && any(ports(requestOptions))
                     % play stim sound (when stim is requested during phase 2)
                     playLoopSounds{end+1} = 'keepGoingSound';
                 elseif strcmp(phaseType,'reinforced') && stepsInPhase <= 0 && trialDetails.correct
@@ -479,9 +464,9 @@ classdef stimManager
                     % play wrong sound
                     playSoundSounds{end+1} = {'wrongSound', msPenaltySound};
                 end
-
-            % freeDrinks setup
-            % this will have to be fixed for passiveViewing (either as a flag on freeDrinks or as a new trialManager)
+                
+                % freeDrinks setup
+                % this will have to be fixed for passiveViewing (either as a flag on freeDrinks or as a new trialManager)
             elseif strcmp(trialManagerClass, 'freeDrinks') || strcmp(trialManagerClass, 'freeDrinksCenterOnly') || strcmp(trialManagerClass, 'freeDrinksSidesOnly') || strcmp(trialManagerClass, 'freeDrinksAlternate')
                 if phase==1 && stepsInPhase <=0
                     playSoundSounds{end+1} = {'trialStartSound', 50};
@@ -489,7 +474,7 @@ classdef stimManager
                     % play white noise (when any port that is not a target is triggered)
                     playLoopSounds{end+1} = 'trySomethingElseSound';
                 elseif ismember(phaseType,{'discrim','pre-response'}) && ~isempty(requestOptions) && any(ports(requestOptions)) % passiveViewing freeDrinks
-                    % check that the requestMode and requestRewardDone also pass 
+                    % check that the requestMode and requestRewardDone also pass
                     % same logic as in the request reward handling, but for sound
                     % play keepGoing sound?
                     if playRequestSoundLoop
@@ -506,16 +491,16 @@ classdef stimManager
                 end
             elseif ismember(trialManagerClass, {'autopilot','reinforcedAutopilot'})
                 % do nothing because we don't play any sounds in this case
-                 if phase==1 && stepsInPhase <=0
+                if phase==1 && stepsInPhase <=0
                     playSoundSounds{end+1} = {'trialStartSound', 50};
-                 end
+                end
             else
                 trialManagerClass
                 error('default getSoundsToPlay should only be for non-phased cases');
             end
-
+            
             soundsToPlay = {playLoopSounds, playSoundSounds};
-
+            
         end % end function
         
         function out=handleExtractDetailFieldsException(sm,ex,trialRecords)
@@ -541,8 +526,8 @@ classdef stimManager
         function    [value]  = hasUpdatablePercentCorrectionTrial(sm)
             % returns false unless a stim subclass overrides it. Then can use
             % changeAllPercentCorrectionTrials
-
-              value = false;
+            
+            value = false;
         end
         
         function [analysisdata cumulativedata] = physAnalysis(stimManager,spikeRecord,stimData,plotParameters,parameters,cumulativedata,eyeData,LFPRecord)
@@ -550,63 +535,63 @@ classdef stimManager
             warning('using default physAnalysis that does nothing');
             analysisdata=[];
         end % end function
-
-        function [stimulus updateSM stimulusDetails]=postScreenResetCheckAndOrCache(stimulus,updateSM,stimulusDetails);
+        
+        function [stimulus, updateSM, stimulusDetails]=postScreenResetCheckAndOrCache(stimulus,updateSM,stimulusDetails);
             %by default, this method does nothing.  some stims can check or cache
             %things
         end
         
-        function [image details]= sampleStimFrame(stimManager,trialManagerClass,forceStimDetails,responsePorts,height,width)
+        function [image, details]= sampleStimFrame(stimManager,trialManagerClass,forceStimDetails,responsePorts,height,width)
             %returns a single image from calc stim movie
-
+            
             if ~exist('trialManagerClass','var') || isempty(trialManagerClass)
                 trialManagerClass='nAFC'
             end
-
+            
             if ~exist('forceStimDetails','var') || isempty(forceStimDetails)
                 doForce=0;
             else
                 doForce=1;
             end
-
+            
             if ~exist('responsePorts') || isempty(responsePorts)
                 responsePorts=[3];
             end
-
+            
             if ~exist('height') || isempty(height)
                 height=getMaxHeight(stimManager);
             end
-
+            
             if ~exist('width') || isempty(width)
                 width=getMaxWidth(stimManager);
             end
-
-                %defaults
-                totalPorts=[3];
-                trialRecords=[];
-                %trialManagerClass = 'nAFC'
-                frameRate = [];
-                frame=1;
-                displaySize=[]; % to fix 1/8/09
-                LUTbits=[];     % to fix 1/8/09
-                resolutions=[]; % to fix 1/8/09
-                allowRepeats=1; % to fix 4/19/09
-                % also note that this function doesn't actually use PTB - so why do the resInd stuff? - we really shouldnt
-
-                if ~doForce
-                    %basic calcstim
-                       [stimulus,updateSM,resolutionIndex,preOnsetStim,preResponseStim,discrimStim,LUT,targetPorts,distractorPorts,details,interTrialLuminance,text,indexPulses]=...
-                            calcStim(stimManager,trialManagerClass,allowRepeats,resolutions,displaySize,LUTbits,responsePorts,totalPorts,trialRecords);
+            
+            %defaults
+            totalPorts=[3];
+            trialRecords=[];
+            %trialManagerClass = 'nAFC'
+            frameRate = [];
+            frame=1;
+            displaySize=[]; % to fix 1/8/09
+            LUTbits=[];     % to fix 1/8/09
+            resolutions=[]; % to fix 1/8/09
+            allowRepeats=1; % to fix 4/19/09
+            % also note that this function doesn't actually use PTB - so why do the resInd stuff? - we really shouldnt
+            
+            if ~doForce
+                %basic calcstim
+                [stimulus,updateSM,resolutionIndex,stimList,LUT,targetPorts,distractorPorts,details,interTrialLuminance,text,indexPulses]=...
+                    calcStim(stimManager,trialManagerClass,allowRepeats,resolutions,displaySize,LUTbits,responsePorts,totalPorts,trialRecords);
+            else
+                if canForceStimDetails(stimManager,forceStimDetails)
+                    [stimulus,updateSM,resolutionIndex,stimList,LUT,targetPorts,distractorPorts,details,interTrialLuminance,text,indexPulses]=...
+                        calcStim(stimManager,trialManagerClass,allowRepeats,resolutions,displaySize,LUTbits,responsePorts,totalPorts,trialRecords,forceStimDetails);
                 else
-                    if canForceStimDetails(stimManager,forceStimDetails)
-                            [stimulus,updateSM,resolutionIndex,preOnsetStim,preResponseStim,discrimStim,LUT,targetPorts,distractorPorts,details,interTrialLuminance,text,indexPulses]=...
-                            calcStim(stimManager,trialManagerClass,allowRepeats,resolutions,displaySize,LUTbits,responsePorts,totalPorts,trialRecords,forceStimDetails);
-                    else
-                        class(stimManager)
-                        error('can''t force these stim details')
-                    end
+                    class(stimManager)
+                    error('can''t force these stim details')
                 end
-
+            end
+            
             stimvideo=discrimStim.stimulus;
             image = reshape(stimvideo(:, :, frame), size(stimvideo,1), size(stimvideo,2));
         end
@@ -618,7 +603,7 @@ classdef stimManager
                 width
                 error('bad width')
             end
-
+            
             if iswholenumber(height) && all(size(height)==1) && height>0
                 s.maxHeight=height;
             else
@@ -626,12 +611,7 @@ classdef stimManager
                 error('bad height')
             end
         end
-
-        function out=stationOKForStimManager(stimManager,s)
-            out=1;
-    
-        end % end function
-
+        
         function retval = worthPhysAnalysis(sm,quality,analysisExists,overwriteAll,isLastChunkInTrial)
             % returns true if worth spike sorting given the values in the quality struct
             % default method for all stims - can be overriden for specific stims
@@ -640,7 +620,7 @@ classdef stimManager
             % quality.frameIndices
             % quality.frameTimes
             % quality.frameLengths (this was used by getFrameTimes to calculate passedQualityTest)
-
+            
             if length(quality.passedQualityTest)>1 && ~enableChunkedPhysAnalysis(sm)
                 %if many chunks, the last one might have no frames or spikes, but the
                 %analysis should still complete if the the previous chunks are all
@@ -652,24 +632,19 @@ classdef stimManager
                 %if there is only one, or you will try to analyze each chunk as you get it, then only check this one
                 qualityOK=quality.passedQualityTest(end);
             end
-
+            
             retval=qualityOK && ...
-                (isLastChunkInTrial || enableChunkedPhysAnalysis(sm)) &&...    
-                (overwriteAll || ~analysisExists);
+                (isLastChunkInTrial || enableChunkedPhysAnalysis(sm)) &&...
+                (overwriteAll || ~analysisExists);            
+        end
 
-            warning('setting retval to true');
-            retval = true;
-
-        end % end function
-
-        
     end
     
     methods (Static)
-       function [out compiledLUT]=extractBasicFields(trialRecords,compiledLUT)
+        function [out, compiledLUT]=extractBasicFields(trialRecords,compiledLUT)
             %note many of these are actually restricted by the trialManager -- ie
             %nAFC has scalar targetPorts, but freeDrinks doesn't.
-
+            
             bloat=false;
             % fields to extract from trialRecords:
             %   trialNumber
@@ -700,7 +675,7 @@ classdef stimManager
             %   didHumanResponse
             %   containedForcedRewards
             %   didStochasticResponse
-
+            
             % ==============================================================================================
             % start extracting fields
             [out.trialNumber, compiledLUT]                                =extractFieldAndEnsure(trialRecords,{'trialNumber'},'scalar',compiledLUT);
@@ -718,7 +693,7 @@ classdef stimManager
             [out.protocolDate, compiledLUT]                               =extractFieldAndEnsure(trialRecords,{'protocolVersion','date'},'datenum',compiledLUT);
             % change correct to be something that needs to be computed if trialManagerClass=nAFC
             [out.correct, compiledLUT]                                    =extractFieldAndEnsure(trialRecords,{},'correct',compiledLUT);
-
+            
             [out.trialManagerClass, compiledLUT]                          =extractFieldAndEnsure(trialRecords,{'trialManagerClass'},'scalarLUT',compiledLUT);
             [out.stimManagerClass, compiledLUT]                           =extractFieldAndEnsure(trialRecords,{'stimManagerClass'},'scalarLUT',compiledLUT);
             [out.schedulerClass, compiledLUT]                             =extractFieldAndEnsure(trialRecords,{'schedulerClass'},'scalarLUT',compiledLUT);
@@ -743,14 +718,14 @@ classdef stimManager
             % need a try-catch here because this is potentially dangerous (stimDetails may not be the same for all trials, in which case this will error
             % from the vector indexing
             try
-            %     if strcmp(LUTlookup(compiledLUT,unique(out.trialManagerClass)),'nAFC')
-                    [out.correctionTrial, compiledLUT]                            =extractFieldAndEnsure(trialRecords,{'stimDetails','correctionTrial'},'scalar',compiledLUT);
-            %     else
-            %         out.correctionTrial=ones(1,length(trialRecords))*nan;
-            %     end
+                %     if strcmp(LUTlookup(compiledLUT,unique(out.trialManagerClass)),'nAFC')
+                [out.correctionTrial, compiledLUT]                            =extractFieldAndEnsure(trialRecords,{'stimDetails','correctionTrial'},'scalar',compiledLUT);
+                %     else
+                %         out.correctionTrial=ones(1,length(trialRecords))*nan;
+                %     end
             catch
                 out.correctionTrial=ones(1,length(trialRecords))*nan;
-            end    
+            end
             % 1/14/09 - added numRequestLicks and firstILI
             [out.numRequests, compiledLUT]                                =extractFieldAndEnsure(trialRecords,{},'numRequests',compiledLUT);
             [out.firstIRI, compiledLUT]                                   =extractFieldAndEnsure(trialRecords,{},'firstIRI',compiledLUT);
@@ -758,19 +733,19 @@ classdef stimManager
             [out.actualRewardDuration, compiledLUT]                       =extractFieldAndEnsure(trialRecords,{},'actualRewardDuration',compiledLUT);
             [out.proposedRewardDuration, compiledLUT]                       =extractFieldAndEnsure(trialRecords,{},'proposedRewardDuration',compiledLUT);
             [out.proposedPenaltyDuration, compiledLUT]                       =extractFieldAndEnsure(trialRecords,{},'proposedPenaltyDuration',compiledLUT);
-
+            
             % adding code to get details about reinforcement
             [out.potentialRewardMS,compiledLUT]                             = extractFieldAndEnsure(trialRecords, {'reinforcementManager','rewardSizeULorMS'},'scalar',compiledLUT);
             [out.potentialRequestRewardMS,compiledLUT]                             = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','requestRewardSizeULorMS'},'scalar',compiledLUT);
             [out.potentialRewardScalar,compiledLUT]                         = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','scalar'},'scalar',compiledLUT);
             [out.potentialPenalty,compiledLUT]                              = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','msPenalty'},'scalar',compiledLUT);
-
-
+            
+            
             % 3/5/09 - we need to calculate a 'response' field for analysis based either on trialRecords.response (old-style)
             % or trialRecords.phaseRecords.responseDetails.tries (new-style) for the phase labeled 'discrim'
             [out.response]                                               =getResponseFromTrialRecords(trialRecords);
             [out.responseTime]                                           =getResponseTimeFromTrialRecords(trialRecords);
-
+            
             %12/10/09 - access to more lick info... only do it for goNoGos to prevent bloat
             % this would be reasonable: any(strcmp(trialRecords(1).trialManagerClass,{'cuedGoNoGo','goNoGo'}))
             % but only have the ID of the trialManger=26 without the LUT, thus using the
@@ -781,18 +756,18 @@ classdef stimManager
                     %OLD
                     %[out.lickTimes compiledLUT] = extractFieldAndEnsure(trialRecords,{},'lickTimesInCell',compiledLUT); % wrt discrimStart
                     %[out.discrimStart compiledLUT] = extractFieldAndEnsure(trialRecords,{},'discrimStart',compiledLUT); % wrt trial start
-
+                    
                     %NEW
                     [out.lickTimes compiledLUT]= extractFieldAndEnsure(trialRecords,{},'lickTimesInMatrix',compiledLUT);
                     [out.preResponseStartRaw compiledLUT]= extractFieldAndEnsure(trialRecords,{},'preResponseStartRaw',compiledLUT);
                     [out.discrimStartRaw compiledLUT]= extractFieldAndEnsure(trialRecords,{},'discrimStartRaw',compiledLUT);
                     [out.trialStartRaw compiledLUT]= extractFieldAndEnsure(trialRecords,{},'trialStartRaw',compiledLUT);
-
+                    
                     [out.expectedPreRequestDurSec compiledLUT]= extractFieldAndEnsure(trialRecords,{},'expectedPreRequestDurSec',compiledLUT);
                     [out.responseWindowStartSec compiledLUT]= extractFieldAndEnsure(trialRecords,{},'responseWindowStartSec',compiledLUT);
                     [out.responseWindowStopSec compiledLUT]= extractFieldAndEnsure(trialRecords,{},'responseWindowStopSec',compiledLUT);
                     [out.discrimStart compiledLUT] = extractFieldAndEnsure(trialRecords,{},'discrimStart',compiledLUT); % prob want this too
-
+                    
                 else
                     % this may error if rats run on something else after a goNoGo task... leaving the
                     %field undefined... might have to define cells of nan's for all rats,
@@ -801,7 +776,7 @@ classdef stimManager
                     %[out.discrimStart]=nans
                 end
             end
-
+            
             % out.numRequests=ones(1,length(trialRecords))*nan;
             % for i=1:length(trialRecords)
             %     if isfield(trialRecords(i),'responseDetails') && isfield(trialRecords(i).responseDetails,'tries') && ...
@@ -817,11 +792,19 @@ classdef stimManager
             %     end
             % end
             try
-            verifyAllFieldsNCols(out,length(trialRecords));
+                verifyAllFieldsNCols(out,length(trialRecords));
             catch
                 keyboard
             end
-        end 
+        end
+        
+        function analysis(~,~)
+            %base stim manager detailed analysis does nothing
+        end
+        
+        function out=stationOKForStimManager()
+            out=1; 
+        end
     end
 end
 

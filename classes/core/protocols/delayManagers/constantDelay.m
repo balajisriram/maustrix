@@ -10,21 +10,13 @@ classdef constantDelay<delayManager
             % OBJ=constantDelay(value)
             % value - in ms
             f=f@delayManager('constantDelay function');
-
- 
             f.value=value;
-                  
-
-        end % end function
+        end
 
         function d = calcAutoRequest(c)
         % returns autoRequest delay in terms of ms
-
             d=c.value;
-
         end
-        
     end
-    
 end
 

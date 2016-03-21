@@ -13,6 +13,10 @@ classdef trialManager
         responseWindowMs
     end
     
+    properties (Dependent = true)
+        allowRepeats
+    end
+    
     methods
         function t=trialManager(sndMgr,reinfMgr,delMgr,frameDropCorner,dropFrames,requestPorts,saveDetailedFramedrops,customDescription,responseWindowMs,showText)
             % TRIALMANAGER  class constructor.  ABSTRACT CLASS-- DO NOT INSTANTIATE
@@ -91,8 +95,7 @@ classdef trialManager
             d=[t.description sprintf('\n\t\t\tsoundManager:\t') display(t.soundMgr)];
         end
         
-        function [tm, updateTM, newSM, updateSM, stopEarly, tR, st, updateRM] ...
-                = doTrial(tm,st,sm,sub,r,rn,tR,sessNo,cR)
+        function [tm, updateTM, newSM, updateSM, stopEarly, tR, st, updateRM] = doTrial(tm,st,sm,sub,r,rn,tR,sessNo,cR)
             % This function handles most of the per-trial functionality, including stim creation and display, reward handling, and trialRecord recording.
             % Main functions called: calcStim, createStimSpecsFromParams, stimOGL
             % INPUTS:
@@ -138,7 +141,7 @@ classdef trialManager
             ts = p.trainingSteps{t};
             
             if tRInd>1
-                tR(tRInd).trialNumber=tR(tRInd-1).trialNumber+1;
+                tR( tRInd).trialNumber=tR(tRInd-1).trialNumber+1;
             else
                 tR(tRInd).trialNumber=1;
             end
@@ -200,11 +203,7 @@ classdef trialManager
             [newSM, ...
                 updateSM, ...
                 resInd, ...
-                preRequestStim, ...
-                preResponseStim, ...
-                discrimStim, ...
-                postDiscrimStim, ...
-                interTrialStim, ...
+                stimList, ...
                 LUT, ...
                 tR(tRInd).targetPorts, ...
                 tR(tRInd).distractorPorts, ...
@@ -262,9 +261,8 @@ classdef trialManager
             
             checkPorts(tm,tR(tRInd).targetPorts,tR(tRInd).distractorPorts);
             
-            [stimSpecs, startingStimSpecInd] = createStimSpecsFromParams(tm,preRequestStim,preResponseStim,discrimStim,postDiscrimStim,interTrialStim,...
-                tR(tRInd).targetPorts,tR(tRInd).distractorPorts,getRequestPorts(tm,st.numPorts),...
-                tR(tRInd).interTrialLuminance,refreshRate,indexPulses);
+            [stimSpecs, startingStimSpecInd] = createStimSpecsFromParams(tm,stimList,tR(tRInd).targetPorts,tR(tRInd).distractorPorts,tm.getRequestPorts(st.numPorts),...
+                refreshRate,indexPulses);
             
             tm.validateStimSpecs(stimSpecs);
             
@@ -500,18 +498,6 @@ classdef trialManager
             
         end
         
-        function out=getDisplayMethod(tm)
-            out=tm.displayMethod;
-        end
-        
-        function sm=getMsMinimumClearDuration(tm)
-            sm=tm.msMinimumClearDuration;
-        end
-        
-        function sm=getMsMinimumPokeDuration(tm)
-            sm=tm.msMinimumPokeDuration;
-        end
-        
         function outStr = getNameFragment(trialManager)
             % returns abbreviated class name
             % should be overriden by trialManager-specific strings
@@ -529,20 +515,6 @@ classdef trialManager
                     out=1:numPorts;
                 case 'center'
                     out=floor((numPorts+1)/2);
-            end
-            
-        end
-        
-        function out = getResponseWindowMs(tm)
-            out=tm.responseWindowMs;
-        end
-        
-        function trialManager=stopEyeTracking(trialManager)
-            
-            if isempty(trialManager.eyeTracker)
-                %empty eyeTracker?  don't do anything!
-            else
-                trialManager.eyeTracker=stop(trialManager.eyeTracker);
             end
             
         end
@@ -1728,21 +1700,10 @@ classdef trialManager
             
             if window>0
                 % draw interTrialLuminance first
-                if true  % trunk should always leave this true, only false for a local test
-                    Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                    interTrialTex=Screen('MakeTexture', window, interTrialLuminance,0,0,interTrialPrecision); %need floatprecision=0 for remotedesktop
-                    Screen('DrawTexture', window, interTrialTex,phaseData{end}.destRect, [], filtMode);
-                    [timestamps.vbl, sos, startTime]=Screen('Flip',window);
-                else
-                    % %to find out properties of the interTrialTex
-                    %     allWindows=Screen('Windows');
-                    %     texIDsThere=allWindows(find(Screen(allWindows,'WindowKind')==-1))
-                    %     tx=screen('getImage',interTrialTex,[],[],2);
-                    %     tx(:)
-                    %     interTrialTex
-                    %     sca
-                    %     keyboard
-                end
+                Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                interTrialTex=Screen('MakeTexture', window, interTrialLuminance,0,0,interTrialPrecision); %need floatprecision=0 for remotedesktop
+                Screen('DrawTexture', window, interTrialTex,phaseData{end}.destRect, [], filtMode);
+                [timestamps.vbl, sos, startTime]=Screen('Flip',window);
             end
             
             timestamps.lastFrameTime=GetSecs;
@@ -1838,12 +1799,12 @@ classdef trialManager
                     
                     % =========================================================================
                     spec = stimSpecs{phaseInd};
-                    stim = getStim(spec);
-                    transitionCriterion = getTransitions(spec);
-                    framesUntilTransition = getFramesUntilTransition(spec);
-                    phaseType = getPhaseType(spec);
+                    stim = spec.stimulus;
+                    transitionCriterion = spec.transitions;
+                    framesUntilTransition = spec.framesUntilTransition;
+                    phaseType = spec.phaseType;
                     punishLastResponse=punishResponses;
-                    punishResponses = getPunishResponses(spec);
+                    punishResponses = spec.punishResponses;
                     
                     % =========================================================================
                     
@@ -1865,8 +1826,8 @@ classdef trialManager
                         numFramesInStim = Inf;
                     end
                     
-                    isFinalPhase = getIsFinalPhase(spec);
-                    autoTrigger = getAutoTrigger(spec);
+                    isFinalPhase = spec.isFinalPhase;
+                    autoTrigger = spec.autoTrigger;
                     
                     % =========================================================================
                     
@@ -2651,8 +2612,8 @@ classdef trialManager
                 
                 for i=1:length(stimSpecs)
                     spec = stimSpecs{i};
-                    stim = getStim(spec);
-                    type = getStimType(spec);
+                    stim = spec.stimulus;
+                    type = spec.stimType;
                     metaPixelSize = getScaleFactor(spec);
                     framesUntilTransition = getFramesUntilTransition(spec);
                     

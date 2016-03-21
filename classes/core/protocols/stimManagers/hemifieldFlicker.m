@@ -2,15 +2,15 @@ classdef hemifieldFlicker<stimManager
     
     properties
         numCalcIndices = [];
-        targetContrasts = []; 
-        distractorContrasts = []; 
+        targetContrasts = [];
+        distractorContrasts = [];
         fieldWidthPct = 0;
         fieldHeightPct = 0;
         mean = 0;
         stddev = 0;
         thresh = 0;
-        flickerType = 0; 
-        yPosPct = 0; 
+        flickerType = 0;
+        yPosPct = 0;
     end
     
     methods
@@ -18,7 +18,7 @@ classdef hemifieldFlicker<stimManager
                 stddev,thresh,flickerType,yPositionPercent,maxWidth,maxHeight,scaleFactor,interTrialLuminance)
             % Hemifield Flicker  class constructor.
             % s =
-            % hemifieldFlicker([pixPerCycs],[targetContrasts],[distractorContrasts],fieldWidthPct,fieldHeightPct,mean,stddev,thresh,flickerType,yPositionPercent,maxWidth,maxHeight,scaleFactor,interTrialLuminance) 
+            % hemifieldFlicker([pixPerCycs],[targetContrasts],[distractorContrasts],fieldWidthPct,fieldHeightPct,mean,stddev,thresh,flickerType,yPositionPercent,maxWidth,maxHeight,scaleFactor,interTrialLuminance)
             % mean, contrasts, yPositionPercent normalized (0 <= value <= 1)
             % Description of arguments:
             % =========================
@@ -28,62 +28,62 @@ classdef hemifieldFlicker<stimManager
             % fieldHeightPct - Height (vertical) in Y axis as a percentage of screen (0 <= fieldHeight <= 1)
             % mean - Mean brightness
             % stddev - Standard deviation of contrast (for Gaussian)
-            % thresh - in normalized luminance units, the value below which the stim should not appear 
+            % thresh - in normalized luminance units, the value below which the stim should not appear
             % flickerType - 0 for binary flicker; 1 for Gaussian flicker
             % yPosPct - Position in Y axis (vertical) of screen to present the fields
             s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
-
-  
-            % create object using specified values        
+            
+            
+            % create object using specified values
             if all(pixPerCycs)>0
                 s.numCalcIndices=pixPerCycs;
             else
                 error('numCalcIndices must be > 0')
             end
-
+            
             if all(isnumeric(targetContrasts)) && all(isnumeric(distractorContrasts))
                 s.targetContrasts=targetContrasts;
                 s.distractorContrasts=distractorContrasts;
             else
                 error('target and distractor contrasts must be numbers')
             end
-
+            
             if fieldWidthPct >= 0 && fieldWidthPct<=1
                 s.fieldWidthPct=fieldWidthPct;
             else
                 error('fieldWidthPct must be >= 0')
             end
-
+            
             if fieldHeightPct >= 0 && fieldHeightPct<=1
                 s.fieldHeightPct=fieldHeightPct;
             else
                 error('fieldHeightPct must be >= 0')
-            end    
-
+            end
+            
             if mean >=0
                 s.mean=mean;
             else
                 error('0 <= mean <= 1')
             end
-
+            
             if stddev >= 0
                 s.stddev=stddev;
             else
                 error('stddev must be >= 0')
             end
-
+            
             if thresh >= 0
                 s.thresh=thresh;
             else
                 error('thresh must be >= 0')
             end
-
+            
             if isnumeric(flickerType)
                 s.flickerType=flickerType;
             else
                 error('flickerType must be 0 at this time (only binary flicker supported)')
             end
-
+            
             if isnumeric(yPositionPercent)
                 s.yPosPct=yPositionPercent;
             else
@@ -98,33 +98,33 @@ classdef hemifieldFlicker<stimManager
                 unique(detailRecords.pctCorrectionTrials)
                 warning('standard hemifieldFlicker config violated')
             end
-
+            
             options=cellfun(@union,detailRecords.targetPorts,detailRecords.distractorPorts,'UniformOutput',false);
-
+            
             goods=detailRecords.isCorrection==0 ...
                 & cellfun(@ismember,num2cell(detailRecords.response),options) ...
                 & ~detailRecords.containedManualPokes ...
                 & ~detailRecords.didHumanResponse ...
                 & ~detailRecords.containedForcedRewards ...
                 & ~detailRecords.didStochasticResponse;
-
+            
             contrasts=detailRecords.contrasts;
             xPosPcts=detailRecords.xPosPcts;
             if ~any(contrasts(:)<0) && ~any(xPosPcts(:)<0) %nan<0 gives 0
                 contrasts(isnan(contrasts))=-1;
                 xPosPcts(isnan(xPosPcts))=-1;
-
+                
                 contrasts=sort(contrasts);
                 xPosPcts=sort(xPosPcts);
-
+                
                 %any time flickers change location or contrast, increment session number (location change doesn't count if singleton).  also when trial is more than an hour since previous trial.
                 sessionNum=cumsum([1    sign(    double((24*diff(detailRecords.date))>1)    +   sum(abs(diff(contrasts')'))   +  (sum(abs(diff(xPosPcts')'))>0 & sum(xPosPcts(:,2:end)~=-1)~=1)  )   ]);
             else
                 error('found contrasts or xPosPcts less than zero')
             end
-
+            
             alpha=.05;
-
+            
             data.perf.phat=[];
             data.perf.pci=[];
             data.bias.phat=[];
@@ -132,15 +132,15 @@ classdef hemifieldFlicker<stimManager
             sessionContrasts={};
             sessionXPosPcts={};
             sessions=[];
-
+            
             trialsIncluded=0;
             minTrials=25;
             for i=1:max(sessionNum)
                 trials=sessionNum==i & goods;
-
+                
                 if sum(trials)>=minTrials
                     trialsIncluded=trialsIncluded+sum(trials);
-
+                    
                     sessionContrasts{end+1}=unique(contrasts(:,trials)','rows');
                     sessionXPosPcts{end+1}=unique(xPosPcts(:,trials)','rows');
                     if size(sessionContrasts{end},1)~=1 || (size(sessionXPosPcts{end},1)~=1 && ~all(sum((sessionXPosPcts{end}~=-1)')==1))
@@ -149,91 +149,91 @@ classdef hemifieldFlicker<stimManager
                     sessionContrasts{end}=sessionContrasts{end}(sessionContrasts{end}~=-1);
                     sessionXPosPcts{end}=sessionXPosPcts{end}(sessionXPosPcts{end}~=-1);
                     sessionXPosPcts{end}=sessionXPosPcts{end}(:)';
-
+                    
                     total=sum(trials);
                     correct=sum(trials & detailRecords.correct);
                     responseRight=sum(trials & detailRecords.response==3);
                     [phat pci]=binofit([correct responseRight],[total total],alpha);
-
-
+                    
+                    
                     if all(pci(:,1)<pci(:,2))
-
+                        
                         ind=1;
                         data.perf.phat(end+1)=phat(ind);
                         data.perf.pci(end+1,:)=pci(ind,:);
-
+                        
                         ind=2;
                         data.bias.phat(end+1)=phat(ind);
                         data.bias.pci(end+1,:)=pci(ind,:);
-
+                        
                         sessions(end+1)=i;
-
+                        
                     else
                         error('pci''s came back descending')
                     end
-
+                    
                 else
                     fprintf('skipping a %d session\n',sum(trials))
                 end
             end
             fprintf('included %d clumped of %d good trials (%g%%)\n',trialsIncluded,sum(goods),round(100*trialsIncluded/sum(goods)));
-
+            
             figName=sprintf('%s: hemifieldFlicker performance and bias',subjectID);
             figure('Name',figName)
             subplot(3,1,1)
             c={'r' 'k'};
             makePerfBiasPlot(sessions,data,c);
             title(figName);
-
+            
             subplot(3,1,2)
             for i=1:length(sessions)
-            plot(sessions(i),sessionContrasts{i},'k*','MarkerSize',10)
-            hold on
+                plot(sessions(i),sessionContrasts{i},'k*','MarkerSize',10)
+                hold on
             end
             xlim([1 max(sessions)])
             ylim([min([sessionContrasts{:}]) max([sessionContrasts{:}])]+[-1 1]*range([sessionContrasts{:}])*.1)
             title('contrasts')
-
+            
             subplot(3,1,3)
             for i=1:length(sessions)
-            plot(sessions(i),sessionXPosPcts{i},'k*','MarkerSize',10)
-            hold on
+                plot(sessions(i),sessionXPosPcts{i},'k*','MarkerSize',10)
+                hold on
             end
             xlim([1 max(sessions)])
             ylim([min([sessionXPosPcts{:}]) max([sessionXPosPcts{:}])]+[-1 1]*range([sessionXPosPcts{:}])*.1)
             title('x positions')
             xlabel('session')
-
-
+            
+            
             pth='C:\Documents and Settings\rlab\Desktop\detailedRecords';
             saveas(gcf,fullfile(pth,[subjectID '_hemifieldFlicker']),'png');
         end
-
-        function [stimulus,updateSM,resolutionIndex,preRequestStim,preResponseStim,discrimStim,postDiscrimStim,LUT,targetPorts,distractorPorts,...
-    details,interTrialLuminance,text,indexPulses,imagingTasks] =... 
-    calcStim(stimulus,trialManagerClass,allowRepeats,resolutions,displaySize,LUTbits,responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
+        
+        function [stimulus,updateSM,resolutionIndex,stimList,LUT,targetPorts,distractorPorts,...
+                details,interTrialLuminance,text,indexPulses,imagingTasks] =...
+                calcStim(stimulus,trialManagerClass,allowRepeats,resolutions,displaySize,LUTbits,responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
             % 1/3/0/09 - trialRecords now includes THIS trial
             %LUT = Screen('LoadCLUT', 0);
             %LUT=LUT/max(LUT(:));
             indexPulses=[];
             imagingTasks=[];
             [resolutionIndex height width hz]=chooseLargestResForHzsDepthRatio(resolutions,[100 60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
-
+            
             LUTBitDepth=8;
             numColors=2^LUTBitDepth; maxColorID=numColors-1; fraction=1/(maxColorID);
             ramp=[0:fraction:1];
             LUT= [ramp;ramp;ramp]';
-
+            
             text='hemifield';
             updateSM=0;
             correctionTrial=0;
-
+            
             scaleFactor = getScaleFactor(stimulus);
             interTrialLuminance = getInterTrialLuminance(stimulus);
-
+            
             details.pctCorrectionTrials=getPercentCorrectionTrials(trialManager);
             details.bias = getRequestBias(trialManager);
-
+            
             if ~isempty(trialRecords) && length(trialRecords)>=2
                 lastRec=trialRecords(end-1);
             else
@@ -248,11 +248,11 @@ classdef hemifieldFlicker<stimManager
                 otherwise
                     error('unsupported trialManagerClass');
             end
-
+            
             numTargs=length(stimulus.targetContrasts);
             details.contrasts = stimulus.targetContrasts(ceil(rand(length(targetPorts),1)*numTargs));
             details.correctionTrial=correctionTrial;
-
+            
             numDistrs=length(stimulus.distractorContrasts);
             if numDistrs>0
                 numFields=length(targetPorts)+length(distractorPorts);
@@ -263,15 +263,15 @@ classdef hemifieldFlicker<stimManager
                 distractorLocs=[];
             end
             % Set the randomly calculated frame indices
-            type{2} = round(rand(stimulus.numCalcIndices,1)*(2^numFields-1)+1); 
-
+            type{2} = round(rand(stimulus.numCalcIndices,1)*(2^numFields-1)+1);
+            
             xPosPcts = [linspace(0,1,totalPorts+2)]';
             xPosPcts = xPosPcts(2:end-1);
             details.xPosPcts = xPosPcts([targetPorts'; distractorLocs']);
-
+            
             params = [repmat([stimulus.fieldWidthPct stimulus.fieldHeightPct],numFields,1) details.contrasts repmat([stimulus.thresh],numFields,1) details.xPosPcts repmat([stimulus.yPosPct],numFields,1)];
             out(:,:,1:2^numFields)=computeFlickerFields(params,stimulus.flickerType,stimulus.mean,min(width,getMaxWidth(stimulus)),min(height,getMaxHeight(stimulus)),0);
-
+            
             %EDF: 02.08.07 -- i think this is only supposed to be for nafc but not sure...
             %was causing free drinks stim to only show up for first frame...
             %if strcmp(trialManagerClass,'nAFC')%pmm also suggests this:  && strcmp(type,'trigger')
@@ -280,15 +280,15 @@ classdef hemifieldFlicker<stimManager
             %DFP: 01.04.08 -- I needed this for both freeDrinks and nAFC, because the
             %index doesn't rotate without an empty stimulus at the end
             out(:,:,3)=stimulus.mean;
-
-
+            
+            
             discrimStim=[];
             discrimStim.stimulus=out;
             discrimStim.stimType=type;
             discrimStim.scaleFactor=scaleFactor;
             discrimStim.startFrame=0;
             discrimStim.autoTrigger=[];
-
+            
             preRequestStim=[];
             preRequestStim.stimulus=interTrialLuminance;
             preRequestStim.stimType='loop';
@@ -296,16 +296,16 @@ classdef hemifieldFlicker<stimManager
             preRequestStim.startFrame=0;
             preRequestStim.autoTrigger=[];
             preRequestStim.punishResponses=false;
-
+            
             preResponseStim=discrimStim;
             preResponseStim.punishResponses=false;
-
+            
             postDiscrimStim = [];
-
+            
         end % end function
-
+        
         function checkTargets(sm,xPosPcts,contrasts,targetPorts,distractorPorts,numPorts)
-
+            
             if size(xPosPcts,1)==size(contrasts,1)
                 if size(contrasts,1)>1
                     [junk inds]=sort(xPosPcts);
@@ -347,7 +347,7 @@ classdef hemifieldFlicker<stimManager
                     error('Invalid hemifield flicker type in display()')
             end
             d=['hemifieldFlicker (n target, m distractor fields, ' type ' type)\n'...
-                '\t\t\tnumCalcIndices:\t[' num2str(s.numCalcIndices) ... 
+                '\t\t\tnumCalcIndices:\t[' num2str(s.numCalcIndices) ...
                 ']\n\t\t\ttarget contrasts:\t[' num2str(s.targetContrasts) ...
                 ']\n\t\t\tdistractor contrasts:\t[' num2str(s.distractorContrasts) ...
                 ']\n\t\t\tfieldWidthPct:\t' num2str(s.fieldWidthPct) ...
@@ -365,20 +365,20 @@ classdef hemifieldFlicker<stimManager
                 warning('only works for nAFC trial manager')
                 out=struct;
             else
-
+                
                 try
                     stimDetails=[trialRecords.stimDetails];
-
-
+                    
+                    
                     [out.correctionTrial newLUT] = extractFieldAndEnsure(stimDetails,{'correctionTrial'},'scalar',newLUT);
                     [out.pctCorrectionTrials newLUT] = extractFieldAndEnsure(stimDetails,{'pctCorrectionTrials'},'scalar',newLUT);
                     [out.contrasts newLUT] = extractFieldAndEnsure(stimDetails,{'contrasts'},'equalLengthVects',newLUT);
                     [out.xPosPcts newLUT] = extractFieldAndEnsure(stimDetails,{'xPosPcts'},'equalLengthVects',newLUT);
-            %         out.correctionTrial=ensureScalar({stimDetails.correctionTrial});
-            %         out.pctCorrectionTrials=ensureScalar({stimDetails.pctCorrectionTrials});
-            %         out.contrasts=ensureEqualLengthVects({stimDetails.contrasts});
-            %         out.xPosPcts=ensureEqualLengthVects({stimDetails.xPosPcts});
-
+                    %         out.correctionTrial=ensureScalar({stimDetails.correctionTrial});
+                    %         out.pctCorrectionTrials=ensureScalar({stimDetails.pctCorrectionTrials});
+                    %         out.contrasts=ensureEqualLengthVects({stimDetails.contrasts});
+                    %         out.xPosPcts=ensureEqualLengthVects({stimDetails.xPosPcts});
+                    
                     checkTargets(sm,out.xPosPcts,out.contrasts,basicRecords.targetPorts,basicRecords.distractorPorts,basicRecords.numPorts);
                 catch ex
                     if strcmp(ex.message,'not all same length')
@@ -391,7 +391,7 @@ classdef hemifieldFlicker<stimManager
             end
             verifyAllFieldsNCols(out,length(trialRecords));
         end
-
+        
         function out=stimMgrOKForTrialMgr(sm,tm)
             if isa(tm,'trialManager')
                 switch class(tm)

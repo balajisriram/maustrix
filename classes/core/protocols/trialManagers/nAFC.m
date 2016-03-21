@@ -1,44 +1,21 @@
 classdef nAFC<trialManager
     
     properties
-        percentCorrectionTrials=0;
+        percentCorrectionTrials
     end
     
     methods
-        function t=nAFC(soundManager, percentCorrectionTrials, rewardManager, eyeController, frameDropCorner, dropFrames, ...
-                displayMethod, requestPort, saveDetailedFrameDrops, delayManager, responseWindowMs, showText)
+        function t=nAFC(sndMgr, reinfMgr, frameDropCorner, dropFrames, requestPort, saveDetailedFrameDrops, delayManager, responseWindowMs, showText, percentCorrTrials)
             % NAFC  class constructor.
             % t=nAFC(soundManager,percentCorrectionTrials,rewardManager,
             %         [eyeController],[frameDropCorner],[dropFrames],[displayMethod],[requestPorts],[saveDetailedFramedrops],
             %		  [delayManager],[responseWindowMs],[showText])
+            t=t@trialManager(sndMgr,reinfMgr,frameDropCorner,dropFrames,requestPort,saveDetailedFrameDrops,delayManager,responseWindowMs,showText);
             
-
-            d=sprintf(['n alternative forced choice' ...
-                '\n\t\t\tpercentCorrectionTrials:\t%g'], ...
-                percentCorrectionTrials);
-            t=t@trialManager(soundManager,rewardManager,eyeController,d,frameDropCorner,dropFrames,displayMethod,requestPort,saveDetailedFrameDrops,delayManager,responseWindowMs,showText);
-
-            
-            % percentCorrectionTrials
-            if percentCorrectionTrials>=0 && percentCorrectionTrials<=1
-                t.percentCorrectionTrials=percentCorrectionTrials;
-            else
-                error('1 >= percentCorrectionTrials >= 0')
-            end
-
-            
+            assert(isscalar(percentCorrTrials)&&(percentCorrTrials>=0)&&(percentCorrTrials<1),'nAFC:incorrectValue','percentCorrTrials (value:[%s] should a scalar >0 and <1',num2str(percentCorrTrials));
+            t.percentCorrectionTrials = percentCorrTrials;
         end
-        
-        function out = checkPorts(tm,targetPorts,distractorPorts)
-
-            if isempty(targetPorts) && isempty(distractorPorts)
-                error('targetPorts and distractorPorts cannot both be empty in nAFC');
-            end
-
-            out=true;
-
-        end % end function
-        
+      
         function out = getPercentCorrectionTrials(tm)
             out = tm.percentCorrectionTrials;
         end
@@ -227,5 +204,136 @@ classdef nAFC<trialManager
         
     end
     
+    methods (Static)
+        function out = checkPorts(targetPorts,distractorPorts)
+            
+            if isempty(targetPorts) && isempty(distractorPorts)
+                error('targetPorts and distractorPorts cannot both be empty in nAFC');
+            end
+            out=true;
+        end % end function
+    end
+    
+    methods (Access = private)
+        function [stimSpecs, startingStimSpecInd] = createStimSpecsFromParams(tm,stimList,targetPorts,distractorPorts,requestPorts,hz,indexPulses)
+            %	INPUTS:
+            %		trialManager - the trialManager object (contains the delayManager and responseWindow params)
+            %		stimList - cell array :: 
+            %             { 'stimName1', stimParam1; 
+            %               'stimName2', stimParams2;...}
+            %		targetPorts - the target ports for this trial
+            %		distractorPorts - the distractor ports for this trial
+            %		requestPorts - the request ports for this trial
+            %		hz - the refresh rate of the current trial
+            %		indexPulses - something to do w/ indexPulses, apparently only during discrim phases
+            %	OUTPUTS:
+            %		stimSpecs, startingStimSpecInd
+            
+            % there are two ways to have no pre-request/pre-response phase:
+            %	1) have calcstim return empty preRequestStim/preResponseStim structs to pass to this function!
+            %	2) the trialManager's delayManager/responseWindow params are set so that the responseWindow starts at 0
+            %		- NOTE that this cannot affect the preOnset phase (if you dont want a preOnset, you have to pass an empty out of calcstim)
+            
+            % should the stimSpecs we return be dependent on the trialManager class? - i think so...because autopilot does not have reinforcement, but for now nAFC/freeDrinks are the same...
+            
+            stimNames = stimList(:,1);
+            stimParams = stimList(:,2);
+            
+            % nAFC con only have some stims.
+            %  - preRequestStim(nonempty)
+            %  - discrimStim(nonempty)
+            %  - postDiscrimStim(can be empty)
+
+            
+            which = strcmp('preRequestStim',stimNames);
+            validateattributes(stimParams{which},{'struct'},{'nonempty'});
+            
+            which = strcmp('discrimStim',stimNames);
+            validateattributes(stimParams{which},{'struct'},{'nonempty'});
+            
+            addedPostDiscrimPhases=0;
+            which = strcmp('postDiscrimStim',stimNames);
+            if ~isempty(stimParams{which})
+                addedPostDiscrimPhases=addedPostDiscrimPhases+length(stimParams{which});
+            end
+            
+            framesUntilOnset=floor(tm.delayManager.calcAutoRequest()*hz/1000); % autorequest is in ms, convert to frames
+            responseWindow=floor(tm.responseWindowMs*hz/1000);
+            
+            % figure out the indices
+            preRequestIndex = 1;last = 1;
+            discrimIndex = last+1;last = last+1;
+            if addedPostDiscrimPhases
+                postDiscrimIndices = last+1:last+1+addedPostDiscrimPhases;
+                last = last+addedPostDiscrimPhases;
+            end
+            reinforcementIndex = last+1; last = last+1;
+            itlIndex = last+1;
+            
+            
+            % now generate our stimSpecs
+            startingStimSpecInd=1;
+            i=1;
+            
+            doNothing = [];
+            
+            % preRequest
+            assert(~isempty(requestPorts) || ~isempty(framesUntilOnset),'nAFC:createStimSpecsFromParams:incompatibleInputs','requestPorts or framesUntilOnset should be non-empty');
+            which = strcmp('preRequestStim',stimNames);
+            preRequestStim = stimParams{which};
+            if preRequestStim.punishResponses
+                criterion={doNothing,discrimIndex,requestPorts,discrimIndex,[targetPorts distractorPorts],reinforcementIndex};
+            else
+                criterion={doNothing,discrimIndex,requestPorts,discrimIndex};
+            end
+            stimSpecs{i} = stimSpec(preRequestStim.stimulus,criterion,preRequestStim.stimType,preRequestStim.startFrame,...
+                framesUntilOnset,preRequestStim.autoTrigger,preRequestStim.scaleFactor,0,hz,'pre-request','pre-request',...
+                preRequestStim.punishResponses,false,[],preRequestStim.ledON);
+            i=i+1;
+            
+            % discrim
+            criterion={doNothing,i+1,[targetPorts distractorPorts],reinforcementIndex}; 
+            % we dont know if 'i+1' is postDiscrim or reinforcement right now...but if you respond, go to reinforcement
+            which = strcmp('discrimStim',stimNames);
+            discrimStim = stimParams{which};
+            framesUntilTimeoutDiscrim=discrimStim.framesUntilTimeout;           
+            stimSpecs{i} = stimSpec(discrimStim.stimulus,criterion,discrimStim.stimType,discrimStim.startFrame,...
+                framesUntilTimeoutDiscrim,discrimStim.autoTrigger,discrimStim.scaleFactor,0,hz,'discrim','discrim',...
+                false,true,indexPulses,discrimStim.ledON); % do not punish responses here
+            i=i+1;
+            % #### what is the purpose of responseWindow in trialManager????
+            
+            % optional postDiscrim Phase
+            if addedPostDiscrimPhases
+                assert(~isinf(framesUntilTimeoutDiscrim),'nAFC:incompatbleParamValue','you are adding post-discrim phases while discrim doesn''t timeout');
+                which = strcmp('postDiscrimStim',stimNames);
+                postDiscrimStim = stimParams{which};
+                for k = 1:length(postDiscrimStim) % loop through the post discrim stims
+                    criterion={doNothing,i+1,[targetPorts distractorPorts],reinforcementIndex}; % any response in any part takes you to the reinf
+                    
+                    assert(~postDiscrimStim(k).punishResponses,'nAFC:createStimSpecsFromParams:incorrectValues','cannot punish responses in postDiscrimStim');
+                    if length(postDiscrimStim)>1
+                        postDiscrimName = sprintf('post-discrim%d',k);
+                    else
+                        postDiscrimName = 'post-discrim';
+                    end
+                    stimSpecs{i} = stimSpec(postDiscrimStim(k).stimulus,criterion,postDiscrimStim(k).stimType,postDiscrimStim(k).startFrame,...
+                        postDiscrimStim(k).framesUntilTimeout,postDiscrimStim(k).autoTrigger,postDiscrimStim(k).scaleFactor,0,hz,'post-discrim',postDiscrimName,...
+                        postDiscrimStim(k).punishResponses,false,[],postDiscrimStim(k).ledON);
+                    i=i+1;
+                end
+            end
+            
+            % required reinforcement phase
+            criterion={[],i+1};
+            stimSpecs{i} = stimSpec([],criterion,'cache',0,[],[],0,0,hz,'reinforced','reinforcement',false,false,[],false); % do not punish responses here, and LED is hardcoded to false (bad idea in general)
+            i=i+1;
+            
+            % required final ITL phase
+            criterion={[],i+1};
+            stimSpecs{i} = stimSpec(interTrialLuminance,criterion,'cache',0,interTrialStim.duration,[],0,1,hz,'itl','intertrial luminance',false,false,[],false); % do not punish responses here. itl has LED hardcoded to false
+            i=i+1; 
+        end
+    end
 end
 

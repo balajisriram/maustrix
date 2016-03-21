@@ -42,14 +42,14 @@ classdef box
             end
         end
         
-        function d=display(b)
+        function d=disp(b)
             d=['box id: ' num2str(b.id) '\tpath: ' strrep(b.path,'\','\\')];
             d=sprintf(d);
         end
         
         function subPath=getBoxPathForSubjectID(b,sID,r)
             if isa(r,'ratrix')
-                if getBoxIDForSubjectID(r,sID)==getID(b)
+                if getBoxIDForSubjectID(r,sID)==b.id
                     subPath=fullfile(getSujbectDataDir(b),sID);  %[b.path 'subjectData' filesep sID filesep];
                 else
                     error('subject not in this box')
@@ -57,10 +57,6 @@ classdef box
             else
                 error('ratrix does not contain subject')
             end
-        end
-        
-        function out = getID(b)
-            out = b.id;
         end
         
         function out=getPath(b)
@@ -82,7 +78,7 @@ classdef box
         function out = testBoxSubjectDir(box,sub)
             out=0;
             if isa(sub,'subject')
-                testDir = fullfile(getSujbectDataDir(box),getID(sub)); %['subjectData' filesep getID(sub) filesep];
+                testDir = fullfile(getSubjectDataDir(box),sub.id); %['subjectData' filesep getID(sub) filesep];
                 
                 warning('off','MATLAB:MKDIR:DirectoryExists')
                 [success,message,msgid] = mkdir(testDir);
@@ -112,7 +108,7 @@ classdef box
     end
     
     methods(Access=private)
-        function out=getSujbectDataDir(b)
+        function out=getSubjectDataDir(b)
             out=fullfile(b.path,'subjectData');
             checkPath(out);
         end

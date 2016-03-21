@@ -15,10 +15,10 @@ classdef station
             s.physicalLocation = physLoc;
         end
         
-        function out=display(boxes)
+        function out=dis(s)
             out='';
-            for i=1:length(boxes)
-                b=boxes(i);
+            for i=1:length(s)
+                b=s(i);
                 
                 d=['station id: ' b.id '\tports: ' num2str(b.numPorts) '\tresponseMethod: ' b.responseMethod '\tpath: ' strrep(b.path,'\','\\')];
                 if ~isempty(out)
@@ -85,5 +85,9 @@ classdef station
                 end
             end
         end % end function
+        
+        function out = numPorts
+            out = 0;
+        end
     end
 end

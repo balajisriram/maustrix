@@ -281,7 +281,7 @@ classdef adaptiveReinforcement<reinforcementManager
                         case 'STAIRCASE'
                             reqReward = getRequestRewardSizeULorMS(r);
                             if reqReward>0
-                                comments = ['Problem with subject ', num2str(getID(subject)), '! TrialRate (', num2str(trialRate), ') and pctCorrect (', ...
+                                comments = ['Problem with subject ', num2str(subject.id), '! TrialRate (', num2str(trialRate), ') and pctCorrect (', ...
                                     num2str(pctCorrect), ') not up to par. Maybe consider moving back a level? Leaving penalty/reward as is for now.'];
                                 gmail('sbalaji1984@gmail.com','NOTICE: from adaptiveReinforcement',comments);
                                 newPenalty = r.currentPenalty; %penalty/reward unaffected
@@ -367,7 +367,7 @@ classdef adaptiveReinforcement<reinforcementManager
             end
 
             % update all values in reinforcement manager before returning
-            history = [getID(subject),',', num2str(lastUpdateDate),',', num2str(lastUpdateTrial),',', num2str(floor(now)),',', num2str(currentTrial),',', num2str(r.currentPenalty),',', ...
+            history = [subject.id,',', num2str(lastUpdateDate),',', num2str(lastUpdateTrial),',', num2str(floor(now)),',', num2str(currentTrial),',', num2str(r.currentPenalty),',', ...
                 num2str(r.currentReward),',', num2str(newPenalty),',', num2str(newReward),',', num2str(pctCorrect),',',num2str(trialRate),',COMMENTS:', comments];
 
             r.currentReward = newReward;
@@ -383,7 +383,7 @@ classdef adaptiveReinforcement<reinforcementManager
 
             comments = 'First run, no update needed, using default values';
 
-            history = [getID(subject),',', 'NaN,', 'NaN,', num2str(floor(now)),',', num2str(currentTrial),',', num2str(r.currentPenalty),',', num2str(r.currentReward),',', ...
+            history = [subject.id,',', 'NaN,', 'NaN,', num2str(floor(now)),',', num2str(currentTrial),',', num2str(r.currentPenalty),',', num2str(r.currentReward),',', ...
                        num2str(r.currentPenalty),',', num2str(r.currentReward), ',NaN,', 'NaN,COMMENTS:', comments];
 
             % since first time, can just set history to this single element

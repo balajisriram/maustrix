@@ -30,6 +30,6 @@ else
     rx=createRatrixWithDefaultStations(machines,dataPath,'localTimed',startEyelinkIfAvail);
     permStorePath=fullfile(dataPath,'PermanentTrialRecordStore');
     mkdir(permStorePath);
-    rx=setStandAlonePath(rx,permStorePath);
+    rx.standAlonePath=permStorePath;
     fprintf('created new ratrix\n')
 end

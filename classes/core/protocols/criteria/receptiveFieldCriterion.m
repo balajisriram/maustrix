@@ -84,7 +84,7 @@ classdef receptiveFieldCriterion<criterion
             % sca
             % keyboard
             %filter={'dateRange',[now-100 now]}; % only for testing
-            [data success]=getPhysRecords(fullfile(c.dataRecordsPath,getID(subject)),filter,{'stim','analysis'},getRecordOfType);
+            [data success]=getPhysRecords(fullfile(c.dataRecordsPath,subject.id),filter,{'stim','analysis'},getRecordOfType);
             if ~success
                 warning('no analysis records found - will not be able to graduate');
             else

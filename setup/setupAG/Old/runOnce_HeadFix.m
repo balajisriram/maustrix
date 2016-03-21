@@ -15,7 +15,7 @@ machines={{'1U',mac,[1 1 1]}};
 rx=createRatrixWithDefaultLeverPressStations(machines,dataPath,'localTimed');
 permStorePath=fullfile(dataPath,'PermanentTrialRecordStore');
 mkdir(permStorePath);
-rx=setStandAlonePath(rx,permStorePath);
+rx.standAlonePath=permStorePath;
 fprintf('created new ratrix\n')
 
 pChangeDetection = @mouseTraining_Motion_Lever;

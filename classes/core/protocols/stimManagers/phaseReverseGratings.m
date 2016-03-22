@@ -221,7 +221,7 @@ classdef phaseReverseGratings<stimManager
             
             % =====================================================================================================
             
-            details.pctCorrectionTrials=getPercentCorrectionTrials(trialManager);
+            details.pctCorrectionTrials=trialManager.percentCorrectionTrials;
             details.bias = getRequestBias(trialManager);
             
             if ~isempty(trialRecords) && length(trialRecords)>=2

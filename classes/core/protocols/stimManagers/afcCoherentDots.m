@@ -416,7 +416,7 @@ classdef afcCoherentDots<stimManager
             
             interTrialDuration = getInterTrialDuration(stimulus);
             
-            details.pctCorrectionTrials=getPercentCorrectionTrials(trialManager); % need to change this to be passed in from trial manager
+            details.pctCorrectionTrials=trialManager.percentCorrectionTrials;
             details.bias = getRequestBias(trialManager);
             if ~isempty(trialRecords) && length(trialRecords)>=2
                 lastRec=trialRecords(end-1);

@@ -259,7 +259,7 @@ classdef whiteNoiseBubble<stimManager
             interTrialLuminance = getInterTrialLuminance(stimulus);
             interTrialDuration = getInterTrialDuration(stimulus);
             
-            details.pctCorrectionTrials=getPercentCorrectionTrials(trialManager);
+            details.pctCorrectionTrials=trialManager.percentCorrectionTrials;
             details.bias = getRequestBias(trialManager);
             
             if ~isempty(trialRecords) && length(trialRecords)>=2

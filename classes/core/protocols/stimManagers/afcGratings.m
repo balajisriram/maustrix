@@ -316,7 +316,7 @@ classdef afcGratings<stimManager
         end
         
         function [stimulus,updateSM,resolutionIndex,stimList,LUT,targetPorts,distractorPorts,...
-                details,interTrialLuminance,text,indexPulses,imagingTasks] =...
+                details,text,indexPulses,imagingTasks] =...
                 calcStim(stimulus,trialManager,allowRepeats,resolutions,displaySize,LUTbits,...
                 responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
             trialManagerClass = class(trialManager);
@@ -343,7 +343,7 @@ classdef afcGratings<stimManager
             interTrialLuminance = getInterTrialLuminance(stimulus);
             interTrialDuration = getInterTrialDuration(stimulus);
             
-            details.pctCorrectionTrials=getPercentCorrectionTrials(trialManager); % need to change this to be passed in from trial manager
+            details.pctCorrectionTrials=trialManager.percentCorrectionTrials;
             details.bias = getRequestBias(trialManager);
             
             if ~isempty(trialRecords) && length(trialRecords)>=2

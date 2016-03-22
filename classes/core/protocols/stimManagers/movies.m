@@ -349,7 +349,7 @@ classdef movies<stimManager
                 responsePorts=responsePorts(1:end-1); %free drinks trial will have one extra response port
             end
 
-            details.pctCorrectionTrials=getPercentCorrectionTrials(trialManager);
+            details.pctCorrectionTrials=trialManager.percentCorrectionTrials;
             details.bias = getRequestBias(trialManager);
 
 

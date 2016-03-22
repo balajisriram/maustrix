@@ -392,7 +392,7 @@ classdef images<stimManager
                 responsePorts=responsePorts(1:end-1); %free drinks trial will have one extra response port
             end
             
-            details.pctCorrectionTrials=getPercentCorrectionTrials(trialManager);
+            details.pctCorrectionTrials=trialManager.percentCorrectionTrials;
             details.bias = getRequestBias(trialManager);
             
             if ~isempty(trialRecords) && length(trialRecords)>1 % added length check because now we get trialRecords(end) (includes this trial)

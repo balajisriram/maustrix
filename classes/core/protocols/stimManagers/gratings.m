@@ -628,7 +628,7 @@ classdef gratings<stimManager
             % details.big = out; % store in 'big' so it gets written to file % 1/6/09 - unnecessary since we will no longer use cached mode
             details.stimManagerClass = class(stimulus);
             details.trialManagerClass = trialManagerClass;
-            details.percentCorrectionTrials = getPercentCorrectionTrials(trialManager);
+            details.pctCorrectionTrials=trialManager.percentCorrectionTrials;
             if strcmp(trialManagerClass,'nAFC') && details.correctionTrial
                 text='correction trial!';
             else

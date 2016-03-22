@@ -30,7 +30,7 @@ classdef nAFC<trialManager
             out=setdiff(1:totalPorts,getRequestPorts(trialManager,totalPorts)); % old: response ports are all non-request ports
             % 5/4/09 - what if we want nAFC L/R target/distractor, but no request port (using delayManager instead)
             % responsePorts then still needs to only be L/R, not all ports (since request ports is empty)
-
+            
             enableCenterPortResponseWhenNoRequestPort=false; %nAFC removes the center port
             if ~enableCenterPortResponseWhenNoRequestPort
                 if isempty(getRequestPorts(trialManager,totalPorts)) % removes center port if no requestPort defined
@@ -48,11 +48,11 @@ classdef nAFC<trialManager
         end
         
         function [tm, trialDetails, result, spec, rewardSizeULorMS, requestRewardSizeULorMS, ...
-    msPuff, msRewardSound, msPenalty, msPenaltySound, floatprecision, textures, destRect,updateRM] = ...
-    updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
-    targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
-    floatprecision, textures, destRect, ...
-    requestRewardDone, punishResponses,compiledRecords,subject)
+                msPuff, msRewardSound, msPenalty, msPenaltySound, floatprecision, textures, destRect,updateRM] = ...
+                updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
+                targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
+                floatprecision, textures, destRect, ...
+                requestRewardDone, punishResponses,compiledRecords,subject)
             % This function is a tm-specific method to update trial state before every flip.
             % Things done here include:
             %   - set trialRecords.correct and trialRecords.result as necessary
@@ -65,7 +65,7 @@ classdef nAFC<trialManager
             msPenalty=0;
             msPenaltySound=0;
             updateRM = false;
-
+            
             if isfield(trialRecords(end),'trialDetails') && isfield(trialRecords(end).trialDetails,'correct')
                 correct=trialRecords(end).trialDetails.correct;
             else

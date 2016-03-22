@@ -125,6 +125,7 @@ classdef trialManager
             % t - current training step index
             % ts - current trainingStep object
             
+            %% validateattributes
             validateattributes(st,{'station'},{'nonempty'});
             validateattributes(sm,{'stimManager'},{'nonempty'});
             validateattributes(r,{'ratrix'},{'nonempty'});
@@ -135,13 +136,14 @@ classdef trialManager
                 constants = getConstants(rn);
             end
             
+            %% initialize trialRecords
             tRInd=length(tR)+1;
             p = sub.protocol;
             t = sub.trainingStepNum;
             ts = p.trainingSteps{t};
             
             if tRInd>1
-                tR( tRInd).trialNumber=tR(tRInd-1).trialNumber+1;
+                tR(tRInd).trialNumber=tR(tRInd-1).trialNumber+1;
             else
                 tR(tRInd).trialNumber=1;
             end
@@ -175,9 +177,9 @@ classdef trialManager
             
             tR(tRInd).neuralEvents = [];
             
-            resolutions=getResolutions(st);
+            resolutions=st.getResolutions();
             
-            
+            %% calcStim
             % calcStim should return the following:
             %	newSM - a (possibly) modified stimManager object
             %	updateSM - a flag whether or not to copy newSM to ratrix
@@ -200,66 +202,21 @@ classdef trialManager
             %	OUTPUTS: stimSpecs, startingStimSpecInd
             %		- should handle creation of default phase setup for nAFC/freeDrinks, and also handle additional phases depending on delayManager and responseWindow
             %		- how then does calcStim return a set of custom phases? - it no longer can, because we are forcing calcstim to return 3 structs...to discuss later?
-            [newSM, ...
-                updateSM, ...
-                resInd, ...
-                stimList, ...
-                LUT, ...
-                tR(tRInd).targetPorts, ...
-                tR(tRInd).distractorPorts, ...
-                stimulusDetails, ...
-                tR(tRInd).interTrialLuminance, ...
-                text, ...
-                indexPulses, ...
-                imagingTasks] ...
-                = calcStim(sm, ...
-                tm, ...
-                getAllowRepeats(tm), ...
-                resolutions, ...
-                getDisplaySize(st), ...
-                getLUTbits(st), ...
-                getResponsePorts(tm,st.numPorts), ...
-                st.numPorts, ...
-                tR, ...
-                cR);
-            
-            % test must a single string now - dont bother w/ complicated stuff here
-            if ~ischar(text)
-                error('text must be a string');
-            end
+            [newSM, updateSM, resInd, stimList, LUT, targetPorts, distractorPorts, stimulusDetails, text, indexPulses, imagingTasks] = ...
+                calcStim(sm, tm, getAllowRepeats(tm), resolutions, getDisplaySize(st), getLUTbits(st), getResponsePorts(tm,st.numPorts), st.numPorts, tR, cR);
             
             [st, tR(tRInd).resolution,tR(tRInd).imagingTasks]=setResolutionAndPipeline(st,resolutions(resInd),imagingTasks);
             [newSM, updateSM, stimulusDetails]=postScreenResetCheckAndOrCache(newSM,updateSM,stimulusDetails); %enables SM to check or cache their tex's if they control that
             
             tR(tRInd).station = structize(st); %wait til now to record, so we get an updated ifi measurement in the station object
+            tR(tRInd).targetPorts = targetPorts;
+            tR(tRInd).distractorPorts = distractorPorts;
             
             refreshRate=1/st.ifi; %resolution.hz is 0 on OSX
             
-            % check port logic (depends on trialManager class)
-            if (isempty(tR(tRInd).targetPorts) || isvector(tR(tRInd).targetPorts))...
-                    && (isempty(tR(tRInd).distractorPorts) || isvector(tR(tRInd).distractorPorts))
-                
-                portUnion=[tR(tRInd).targetPorts tR(tRInd).distractorPorts];
-                if length(unique(portUnion))~=length(portUnion) ||...
-                        any(~ismember(portUnion, getResponsePorts(tm,st.numPorts)))
-                    
-                    tR(tRInd).targetPorts
-                    tR(tRInd).distractorPorts
-                    getResponsePorts(tm,getNumPorts(st))
-                    tR(tRInd).targetPorts
-                    tR(tRInd).distractorPorts
-                    getResponsePorts(tm,getNumPorts(st))
-                    sca;
-                    keyboard
-                    error('targetPorts and distractorPorts must be disjoint, contain no duplicates, and subsets of responsePorts')
-                end
-            else
-                tR(tRInd).targetPorts
-                tR(tRInd).distractorPorts
-                error('targetPorts and distractorPorts must be row vectors')
-            end
-            
-            checkPorts(tm,tR(tRInd).targetPorts,tR(tRInd).distractorPorts);
+            %% check port logic (depends on trialManager class)
+            tm.checkPortLogic(targetPorts,distractorPorts,st);
+            checkPorts(tm,targetPorts,distractorPorts);
             
             [stimSpecs, startingStimSpecInd] = createStimSpecsFromParams(tm,stimList,tR(tRInd).targetPorts,tR(tRInd).distractorPorts,tm.getRequestPorts(st.numPorts),...
                 refreshRate,indexPulses);
@@ -328,66 +285,22 @@ classdef trialManager
                 end
             end
             
-            if isfield(stimulusDetails, 'big') % edf: why did this used to also test for isstruct(stimulusDetails) ?
-                stimulusDetails = rmfield(stimulusDetails, 'big');
-                
-                %also, maybe one day these exist and need removing:
-                % phaseRecords{i}.responseDetails.expertDetails.big
-            end
-            
             tR(tRInd).stimDetails = stimulusDetails;
             
             % stopEarly could potentially be set by the datanet's handleCommands (if server tells this client to shutdown
             % while we are in doTrial)
             if ~stopEarly
-                [tm, stopEarly,...
-                    tR,...
-                    eyeData,...
-                    eyeDataFrameInds,...
-                    gaze,...
-                    st,...
-                    updateRM] ...
-                    = stimOGL( ...
-                    tm, ...
-                    stimSpecs,  ...
-                    startingStimSpecInd, ...
-                    newSM, ...
-                    LUT, ...
-                    tR(tRInd).targetPorts, ...
-                    tR(tRInd).distractorPorts, ...
-                    getRequestPorts(tm, st.numPorts), ...
-                    tR(tRInd).interTrialLuminance, ...
-                    st, ...
-                    manualOn, ...
-                    .1, ... % 10% should be ~1 ms of acceptable frametime error
+                [tm, stopEarly,tR,eyeData,eyeDataFrameInds,gaze,st,updateRM] ...
+                    = stimOGL(tm,stimSpecs,startingStimSpecInd,newSM,LUT,tR(tRInd).targetPorts,tR(tRInd).distractorPorts, ...
+                    getRequestPorts(tm, st.numPorts),tR(tRInd).interTrialLuminance,st,manualOn,.1,...
                     text,rn,sub.id,class(newSM),pStr,trialLabel,st.eyeTracker,tR,cR,sub);
-            end
-            
-            if ~isempty(st.eyeTracker)
-                %[junk junk eyeDataVarNames]=getSample(getEyeTracker(station)); %throws out a sample in order to get variable names... dirty
-                saveEyeData(st.eyeTracker,eyeData,eyeDataFrameInds,getEyeDataVarNames(st.eyeTracker),gaze,tR(tRInd).trialNumber,tR(tRInd).date)
             end
             
             tR(tRInd).trainingStepName = generateStepName(ts);
             
             verifyValvesClosed(st);
             
-            if ~ischar(tR(tRInd).result)
-                %                 resp=find(trialRecords(trialInd).result);
-                %                 if length(resp)==1
-                %                     trialRecords(trialInd).correct = ismember(resp,trialRecords(trialInd).targetPorts);
-                %                 end
-                %             elseif ischar(trialRecords(trialInd).result) && strcmp(trialRecords(trialInd).result, 'multiple ports')
-                % keep doing trials if response was 'multiple ports'
-                %             elseif ischar(trialRecords(trialInd).result) && strcmp(trialRecords(trialInd).result, 'none')
-                % temporarily continue doing trials if response = 'none'
-                % edf: how would stimOGL exit while leaving response as 'none'?  passive viewing?  (empty responseOptions)
-                % if so, why do you say 'temporarily'?  also, should verify that this really was a passive viewing.
-                %
-                % i think response is also 'none' if there is a bad error in stimOGL,
-                % like an rnet error, in which case we should not continue trials
-                % we need to flag any error with a special response so we know what's going on and don't continue
-            elseif ischar(tR(tRInd).result) && strcmp(tR(tRInd).result, 'manual flushPorts')
+            if ischar(tR(tRInd).result) && strcmp(tR(tRInd).result, 'manual flushPorts')
                 type='flushPorts';
                 typeParams=[];
                 validInputs={};
@@ -428,55 +341,7 @@ classdef trialManager
             tR(tRInd).reinforcementManager = structize(tm.reinforcementManager);
             tR(tRInd).reinforcementManagerClass = class(tm.reinforcementManager);
             
-            verifyValvesClosed(st);
-            
-            while ~isempty(rn) && commandsAvailable(rn,constants.priorities.AFTER_TRIAL_PRIORITY) && ~stopEarly
-                if ~isConnected(r)
-                    stopEarly=true;
-                end
-                com=getNextCommand(rn,constants.priorities.AFTER_TRIAL_PRIORITY);
-                if ~isempty(com)
-                    [good, cmd, args]=validateCommand(rn,com);
-                    if good
-                        switch cmd
-                            case constants.serverToStationCommands.S_SET_VALVES_CMD
-                                requestedValveState=args{1};
-                                isPrime=args{2};
-                                if isPrime
-                                    
-                                    timeout=-5;
-                                    
-                                    [stopEarly,tR(tRInd).primingValveErrorDetails(end+1),...
-                                        tR(tRInd).latencyToOpenPrimingValves(end+1),...
-                                        tR(tRInd).latencyToClosePrimingValveRecd(end+1),...
-                                        tR(tRInd).latencyToClosePrimingValves(end+1),...
-                                        tR(tRInd).actualPrimingDuration(end+1),...
-                                        ~,...
-                                        ~]...
-                                        = clientAcceptReward(...
-                                        rn,...
-                                        com,...
-                                        st,...
-                                        timeout,...
-                                        valveStart,...
-                                        requestedValveState,...
-                                        [],...
-                                        isPrime);
-                                    
-                                    
-                                    verifyValvesClosed(st);
-                                else
-                                    sendError(rn,com,constants.errors.BAD_STATE_FOR_COMMAND,'client received non-priming S_SET_VALVES_CMD outside of a trial');
-                                end
-                            otherwise
-                                stopEarly=clientHandleVerifiedCommand(rn,com,cmd,args,constants.statuses.IN_SESSION_BETWEEN_TRIALS);
-                        end
-                    end
-                end
-            end
-            
-            verifyValvesClosed(st);
-            
+            verifyValvesClosed(st);            
             if stopEarly
                 tm.soundMgr=uninit(tm.soundMgr,st);
             end
@@ -554,41 +419,39 @@ classdef trialManager
             end
             
             
-        end  % end function
-        
-        
+        end
     end
     
     methods (Access=private)
         
-        function [stimSpecs, startingStimSpecInd] = createStimSpecsFromParams(trialManager,preRequestStim,preResponseStim,discrimStim,postDiscrimStim,interTrialStim,...
-                targetPorts,distractorPorts,requestPorts,interTrialLuminance,hz,indexPulses)
-            % do nothing here. this is a place holder.
-            %	INPUTS:
-            %		trialManager - the trialManager object (contains the delayManager and responseWindow params)
-            %		preRequestStim - a struct containing params for the preOnset phase
-            %		preResponseStim - a struct containing params for the preResponse phase
-            %		discrimStim - a struct containing params for the discrim phase
-            %		targetPorts - the target ports for this trial
-            %		distractorPorts - the distractor ports for this trial
-            %		requestPorts - the request ports for this trial
-            %		interTrialLuminance - the intertrial luminance for this trial (used for the 'final' phase, so we hold the itl during intertrial period)
-            %		hz - the refresh rate of the current trial
-            %		indexPulses - something to do w/ indexPulses, apparently only during discrim phases
-            %	OUTPUTS:
-            %		stimSpecs, startingStimSpecInd
-            
-            % there are two ways to have no pre-request/pre-response phase:
-            %	1) have calcstim return empty preRequestStim/preResponseStim structs to pass to this function!
-            %	2) the trialManager's delayManager/responseWindow params are set so that the responseWindow starts at 0
-            %		- NOTE that this cannot affect the preOnset phase (if you dont want a preOnset, you have to pass an empty out of calcstim)
-            
-            % should the stimSpecs we return be dependent on the trialManager class? - i think so...because autopilot does not have reinforcement, but for now nAFC/freeDrinks are the same...
-            
-            % check for empty preRequestStim/preResponseStim and compare to values in trialManager.delayManager/responseWindow
-            % if not compatible, ERROR
-            % nAFC should not be allowed to have an empty preRequestStim (but freeDrinks can)
-            
+%         function [stimSpecs, startingStimSpecInd] = createStimSpecsFromParams(trialManager,preRequestStim,preResponseStim,discrimStim,postDiscrimStim,interTrialStim,...
+%                 targetPorts,distractorPorts,requestPorts,interTrialLuminance,hz,indexPulses)
+%             % do nothing here. this is a place holder.
+%             %	INPUTS:
+%             %		trialManager - the trialManager object (contains the delayManager and responseWindow params)
+%             %		preRequestStim - a struct containing params for the preOnset phase
+%             %		preResponseStim - a struct containing params for the preResponse phase
+%             %		discrimStim - a struct containing params for the discrim phase
+%             %		targetPorts - the target ports for this trial
+%             %		distractorPorts - the distractor ports for this trial
+%             %		requestPorts - the request ports for this trial
+%             %		interTrialLuminance - the intertrial luminance for this trial (used for the 'final' phase, so we hold the itl during intertrial period)
+%             %		hz - the refresh rate of the current trial
+%             %		indexPulses - something to do w/ indexPulses, apparently only during discrim phases
+%             %	OUTPUTS:
+%             %		stimSpecs, startingStimSpecInd
+%             
+%             % there are two ways to have no pre-request/pre-response phase:
+%             %	1) have calcstim return empty preRequestStim/preResponseStim structs to pass to this function!
+%             %	2) the trialManager's delayManager/responseWindow params are set so that the responseWindow starts at 0
+%             %		- NOTE that this cannot affect the preOnset phase (if you dont want a preOnset, you have to pass an empty out of calcstim)
+%             
+%             % should the stimSpecs we return be dependent on the trialManager class? - i think so...because autopilot does not have reinforcement, but for now nAFC/freeDrinks are the same...
+%             
+%             % check for empty preRequestStim/preResponseStim and compare to values in trialManager.delayManager/responseWindow
+%             % if not compatible, ERROR
+%             % nAFC should not be allowed to have an empty preRequestStim (but freeDrinks can)
+%             
 %             if isempty(preRequestStim) && strcmp(class(trialManager),'nAFC')
 %                 error('nAFC cannot have an empty preRequestStim'); % i suppose we could default to the ITL here, but really shouldnt
 %             end
@@ -974,7 +837,7 @@ classdef trialManager
 %             end
 %             
 %             
-        end % end function
+%         end % end function
         
         function [loop, trigger, frameIndexed, timeIndexed, indexedFrames, timedFrames, strategy, toggleStim] = determineStrategy(tm, stim, type, responseOptions, framesUntilTransition)
             
@@ -1900,12 +1763,6 @@ classdef trialManager
                     end
                     
                     lastPorts=ports;
-                    
-                    if strcmp(tm.displayMethod,'LED') && ~didLEDphase
-                        [phaseRecords, analogOutput, outputsamplesOK, numSamps] = LEDphase(tm,phaseInd,analogOutput,phaseRecords,...
-                            spec,interTrialLuminance,stim,frameIndexed,indexedFrames,loop,trigger,timeIndexed,timedFrames,station);
-                        didLEDphase=true;
-                    end
                 end
                 
                 if window>0
@@ -2750,9 +2607,21 @@ classdef trialManager
                 didPulse=1;
             end
             
-        end % end function
+        end
         
-        
+        function checkPortLogic(tm,targetPorts,distractorPorts,st)
+            if (isempty(targetPorts) || isvector(targetPorts))...
+                    && (isempty(distractorPorts) || isvector(distractorPorts))
+                
+                portUnion=[targetPorts distractorPorts];
+                if length(unique(portUnion))~=length(portUnion) ||...
+                        any(~ismember(portUnion, tm.getResponsePorts(st.numPorts)))
+                    error('targetPorts and distractorPorts must be disjoint, contain no duplicates, and subsets of responsePorts')
+                end
+            else
+                error('targetPorts and distractorPorts must be row vectors')
+            end
+        end
     end
     
     methods (Static)

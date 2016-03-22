@@ -147,7 +147,7 @@ classdef trainingStep
             manualTs=false;
             validateattributes(st,{'station'},{'nonempty'});
             validateattributes(r,{'ratrix'},{'nonempty'});
-            validateattributes(sub,{'sub'},{'nonempty'});
+            validateattributes(sub,{'subject'},{'nonempty'});
             assert((isempty(rn) || isa(rn,'rnet')),'trainingStep:doTrial:incomaptibleDataValue','if you provide a non empty rnet, it has to be an rnet')
             
             try

@@ -1,4 +1,4 @@
-function ts = createEasyAFCCoherentDots(trialManager, performanceCrit, sch, svnRev, svnCheckMode,stepName)
+function ts = createEasyAFCCoherentDots(trialManager, performanceCrit, sch, stepName)
 % makes a basic, easy drifting grating training step
 % correct response = side toward which grating drifts?
 
@@ -32,4 +32,4 @@ AFCDOTS = afcCoherentDots(numDots,bkgdNumDots, dotCoherence,bkgdCoherence, dotSp
                maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos,doPostDiscrim);
 
 % training step using other objects as passed in
-ts = trainingStep(trialManager, AFCDOTS, performanceCrit, sch, svnRev, svnCheckMode,stepName);
+ts = trainingStep(trialManager, AFCDOTS, performanceCrit, sch,stepName);

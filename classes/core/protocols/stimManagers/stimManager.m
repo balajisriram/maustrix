@@ -56,8 +56,8 @@ classdef stimManager
             out=true;
             stations=getStationsForBoxID(r,b.id);
             for i=1:length(stations)
-                if ~stationOKForStimManager(stimManager,stations(i))
-                    out=0;
+                if ~stimManager.stationOKForStimManager(stations(i))
+                    out=false;
                 end
             end
         end % end function
@@ -800,7 +800,7 @@ classdef stimManager
             %base stim manager detailed analysis does nothing
         end
         
-        function out=stationOKForStimManager()
+        function out=stationOKForStimManager(varargin)
             out=1; 
         end
     end

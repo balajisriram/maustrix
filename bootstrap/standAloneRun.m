@@ -67,18 +67,9 @@ else
         isSubjectInRatrix=getSubjectFromID(rx,subjectID);
     catch ex
         if ~isempty(strfind(ex.message,'request for subject id not contained in ratrix'))
-            if recordInOracle
-                sub =createSubjectsFromDB({subjectID});
-                if isempty(sub)
-                    subjectID
-                    error('subject not defined in oracle database')
-                else
-                    needToAddSubject=true;
-                end
-            else
-                needToCreateSubject=true;
-                needToAddSubject=true;
-            end
+            
+            needToCreateSubject=true;
+            needToAddSubject=true;
         else
             rethrow(ex)
         end
@@ -87,7 +78,7 @@ end
 
 if needToCreateSubject
     warning('creating dummy subject')
-    sub = subject(subjectID, 'rat', 'long-evans', 'male', '05/10/2005', '01/01/2006', 'unknown', 'wild caught');
+    sub = rat(subjectID, 'male', 'long-evans', datetime(2005,05,10), datetime(2006,05,10), 'unknown', 'wild caught');
 end
 auth='bas';
 
@@ -96,7 +87,7 @@ if needToAddSubject
 end
 
 if (~exist('setupFile','var') || isempty(setupFile)) && ~isa(getProtocolAndStep(getSubjectFromID(rx,subjectID)),'protocol')
-    setupFile='setProtocolDEMO';
+    setupFile='setProtocolMINBS';
 end
 
 if exist('setupFile','var') && ~isempty(setupFile)
@@ -114,11 +105,11 @@ if exist('setupFile','var') && ~isempty(setupFile)
     %http://blogs.mathworks.com/loren/2005/12/28/evading-eval/
 end
 
-[isExperimentSubject, xtraExptBackupPath, experiment] = identifySpecificExperiment(subjectID);
+%[isExperimentSubject, xtraExptBackupPath, experiment] = identifySpecificExperiment(subjectID);
 
 try
     deleteOnSuccess = true; 
-    
+    backupToServer = false;
     if backupToServer
         if isExperimentSubject
             replicationPaths={getStandAlonePath(rx),xtraServerBackupPath};
@@ -131,7 +122,7 @@ try
     else
         replicationPaths={getStandAlonePath(rx)};
     end
-
+recordInOracle = false;
     replicateTrialRecords(replicationPaths,deleteOnSuccess, recordInOracle);
 
     s=getSubjectFromID(rx,subjectID);
@@ -139,7 +130,7 @@ try
     [rx ids] = emptyAllBoxes(rx,'starting trials in standAloneRun',auth);
     boxIDs=getBoxIDs(rx);
     rx=putSubjectInBox(rx,subjectID,boxIDs(1),auth);    
-    b=getBoxIDForSubjectID(rx,getID(s));
+    b=getBoxIDForSubjectID(rx,s.id);
     st=getStationsForBoxID(rx,b);
     %struct(st(1))
     maxTrialsPerSession = 250;
@@ -209,7 +200,7 @@ catch ex
             warning('not sure which computer you are using. add that mac to this step. delete db and then continue. also deal with the other createStep functions.');
             keyboard;
     end
-    replicateTrialRecords(replicationPaths,deleteOnSuccess, recordInOracle);
+%     replicateTrialRecords(replicationPaths,deleteOnSuccess, recordInOracle);
     cleanup;
     rethrow(ex)
 end

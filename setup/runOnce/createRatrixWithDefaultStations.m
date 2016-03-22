@@ -19,5 +19,5 @@ for i=1:length(machines)
 
     boxes(i)=box(int8(i),fullfile(dataPath,'Boxes' , sprintf('box%d',i)));
     r=addBox(r,boxes(i));
-    r=addStationToBoxID(r,stations{i},getID(boxes(i)));
+    r=addStationToBoxID(r,stations{i},boxes(i).id);
 end

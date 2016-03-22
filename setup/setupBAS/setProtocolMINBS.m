@@ -53,14 +53,19 @@ constantRewards=constantReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,r
 
 dropFrames=false;
 percentCorrectionTrials = 0.5;
-
-tm=nAFC(sm,percentCorrectionTrials,constantRewards,eyeController,{'off'},dropFrames,'ptb','center');
+frameDropCorner={'off'};
+saveDetailedFrameDrops = false;
+reqPort = 'center';
+customDescription = 'trialNAFC';
+showText = 'off';
+%sndMgr, reinfMgr, frameDropCorner, dropFrames, requestPort, saveDetailedFrameDrops, delayManager, responseWindowMs, showText, percentCorrTrials
+tm=nAFC(sm,constantRewards,noDelay,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,customDescription,[1 inf],showText,percentCorrectionTrials);
 
 % ts_AFC = createEasyAFCGrating(percentCorrectionTrials,tm, easy_pc, sch, svnRev, svnCheckMode);
 % ts_ctrChDetect = createEasyChageDetectorGrating(percentCorrectionTrials,tm, pc, sch, svnRev, svnCheckMode);
 % ts_CenterSurr = createEasyAFCGratingWithOrientedSurround(svnRev, svnCheckMode, subjIDs);
 % here is the protocol
-ts_AFCOBJ = createEasyAFCCoherentDots(tm, repeatIndefinitely(),noTimeOff(), svnRev, svnCheckMode);
+ts_AFCOBJ = createEasyAFCCoherentDots(tm, repeatIndefinitely(),noTimeOff(), 'easyAFC');
 
 descriptiveString='pElementaryVision100915'; % use this in protocol call and also setProtocolAndStep and logfile
 
@@ -70,6 +75,6 @@ stepNum = 1;
 %%%%%%%%%%%%
 for i=1:length(subjIDs)
     subj=getSubjectFromID(r,subjIDs{i});
-    [subj r]=setProtocolAndStep(subj,pElementaryVision100915,true,false,true,stepNum,r,'call to setProtocolMIN','bs');
+    [subj r]=setProtocolAndStep(subj,pElementaryVision100915,true,false,true,stepNum,r,'call to setProtocolMIN','bas');
 end
 

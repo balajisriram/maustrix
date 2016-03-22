@@ -75,11 +75,11 @@ classdef ratrix
             validateattributes(s,{'subject'},{'nonempty'});
             assert(~any(ismember(lower(s.id),lower(getSubjectIDs(r)))),'ratrix:addSubject:incompatibleValue','ratrix already contains a subject with that id');
             
-            if litterCheck(r,s) && authorCheck(r,author)
+            if litterCheck(r,s) && r.authorCheck(author)
                 r.subjects{length(r.subjects)+1}=s;
                 saveDB(r,0);
                 makeSubjectServerDirectory(r,s.id);
-                recordInLog(r,s,sprintf('added subject %s\n%s',s.id,display(s)),author);
+                recordInLog(r,s,sprintf('added subject %s\n%s',s.id,disp(s)),author);
             else
                 error('litterID should be ''unknown'' or should match acquisition and birth dates of other subjects with the same litterID')
             end
@@ -126,10 +126,10 @@ classdef ratrix
             d = sprintf('ratrix\n\tdatabase:\t%s\n\tserver path:\t%s',strrep(r.dbpath,'\','\\'),strrep(r.serverDataPath,'\','\\'));
             d=sprintf('%s\n\tboxes:\n\t',d);
             for i=1:length(r.boxes)
-                d=sprintf('%s\t%s\n\t',d,strrep(display(r.boxes{i}),'\','\\'));
+                d=sprintf('%s\t%s\n\t',d,strrep(disp(r.boxes{i}),'\','\\'));
                 stns=r.getStationsForBoxID(r.boxes{i}.id);
                 for stnNum=1:length(stns)
-                    d=sprintf('%s\t\t%s\n\t',d,strrep(display(stns(stnNum)),'\','\\'));
+                    d=sprintf('%s\t\t%s\n\t',d,strrep(disp(stns(stnNum)),'\','\\'));
                 end
             end
             d=sprintf('%ssubjects:\n\t\t',d);
@@ -192,10 +192,10 @@ classdef ratrix
             
             fileStr = 'db.mat';
             r.dbpath = fullfile(pathstr, fileStr);
-            assert(checkPath(pathstr),'ratrix:estabilshDB:incorrectParamValue','could not make specified directory');
+            assert(checkPath(pathstr),'ratrix:estabilshDB:incorrectParamValue','could not make specified directory %s\%s',pathstr,fileStr);
             found=dir(r.dbpath);
             if isempty(found)
-                if ~replaceExistingDB
+                if replaceExistingDB
                     saveDB(r,1);
                 else
                     disp(r.dbpath)
@@ -389,7 +389,7 @@ classdef ratrix
         end
         
         function out=getBoxIDs(r)
-            out(length(r.boxes))=[];
+            out=[];
             for i=1:length(r.boxes)
                 out(i)=r.boxes{i}.id;
             end
@@ -485,16 +485,24 @@ classdef ratrix
         function s=getStations(r)
             s=[];
             bIDs=getBoxIDs(r);
-            s(length(bIDs)) = [];
             for i=1:length(bIDs)
-                s(i)=r.getStationsForBoxID(bIDs(i));
+                if ~isempty(r.getStationsForBoxID(bIDs(i)))
+                    s(end+1)=r.getStationsForBoxID(bIDs(i));
+                else
+                    s = [];
+                end
             end
         end
         
         function s=getStationsForBoxID(r,id)
             b=getBoxFromID(r,id);
             if ~isempty(b)
-                s=[r.assignments{id}{1}{:,1}];
+                reqSub = r.assignments{id}{1};
+                if ~isempty(reqSub)
+                    s=[reqSub{:,1}];
+                else
+                    s = [];
+                end
             else
                 error('box id not contained in ratrix')
             end
@@ -515,7 +523,7 @@ classdef ratrix
         
         function out=getSubjectIDsForStationID(r,id)
             subs=getSubjectsForStationID(r,id);
-            out{length(subs)}=[];
+            out{length(subs)}=nan;
             for i=1:length(subs)
                 out{i}=subs{i}.id;
             end
@@ -713,7 +721,7 @@ classdef ratrix
         
         function out=iterStationID(rx,curr,dir)
             s=getStations(rx);
-            n(length(s))=[];
+            n(length(s))=nan;
             for i=1:length(s)
                 n(i)=[s(i).id];
             end
@@ -844,7 +852,7 @@ classdef ratrix
             elseif getBoxIDForSubjectID(r,s)==b
                 error('subject already in that box')
             else
-                [p,~]=getProtocolAndStep(sub);
+                p = sub.protocol;
                 if isempty(p)
                     error('cannot put a subject with no protocol into a box, first assign it a protocol')
                 elseif isempty(getStationsForBoxID(r,b))
@@ -853,7 +861,7 @@ classdef ratrix
                     error('box has no stations suitable for subject''s protocol')
                 elseif ~testBoxSubjectDir(box,sub)
                     error('could not access subject''s directory in new box')
-                elseif ~authorCheck(r,author)
+                elseif ~r.authorCheck(author)
                     error('author does not authenticate')
                 else
                     r.assignments{b}{2}{end+1}=s;
@@ -972,16 +980,17 @@ classdef ratrix
         end
         
         function r=updateSubjectProtocol(r,s,comment,auth,listProtocol,listTrainingStep,listStepNum)
-            [member, index]=ismember(getID(s),getSubjectIDs(r));
-            if isa(s,'subject') && member && index>0 && ~subjectIDRunning(r,getID(s))
-                if authorCheck(r,auth)
+            [member, index]=ismember(s.id,getSubjectIDs(r));
+            if isa(s,'subject') && member && index>0 && ~subjectIDRunning(r,s.id)
+                if r.authorCheck(auth)
                     
                     r.subjects{index}=s;
                     
-                    [p, i]=getProtocolAndStep(s);
+                    p = s.protocol;
+                    i = s.trainingStepNum;
                     
                     if listProtocol
-                        protocolListing=sprintf('\n%s',display(p));
+                        protocolListing=sprintf('\n%s',disp(p));
                     else
                         protocolListing='';
                     end
@@ -993,7 +1002,7 @@ classdef ratrix
                     end
                     
                     if listStepNum
-                        newStepStr=[': setting to step ' num2str(i) '/' num2str(getNumTrainingSteps(p)) ' of protocol: ' getName(p)];
+                        newStepStr=[': setting to step ' num2str(i) '/' num2str(p.numTrainingSteps) ' of protocol: ' p.id];
                     else
                         newStepStr='';
                     end
@@ -1187,7 +1196,8 @@ classdef ratrix
                 for i=1:length(stationIDs)
                     found(i)=0;
                     for j=1:size(r.assignments{boxID}{1},1)
-                        if strcmp(stationIDs{i},getID(r.assignments{boxID}{1}{j,1}))%changed from sid's being ints and checking w/==
+                        currSt = r.assignments{boxID}{1}{j,1};
+                        if strcmp(stationIDs{i},currSt.id)%changed from sid's being ints and checking w/==
                             if found(i)
                                 error('found multiple references to station')
                             else
@@ -1211,7 +1221,7 @@ classdef ratrix
         function out=litterCheck(r,s)
             out=0;
             if isa(s,'subject')
-                lID=getLitterID(s);
+                lID=s.litterID;
                 if strcmp(lID,'unknown')
                     out=1;
                 else
@@ -1255,7 +1265,7 @@ classdef ratrix
         end
         
         function recordInLog(r,s,str,author)
-            if ~authorCheck(r,author)
+            if ~r.authorCheck(author)
                 author='unknown author';
                 warning('this is bad -- an unknown author succeeded in making a system change: %s, which means this code did not use checkAuthor() prior to making the change',str);
             end
@@ -1264,7 +1274,7 @@ classdef ratrix
                 theStr = sprintf('%s: %s: %s\n\n',datestr(now,31),author,str);
                 %disp(sprintf('appending log for subject %s:\n%s',getID(s),sprintf(theStr)));
                 
-                serverFile=fullfile(getServerDataPathForSubjectID(r,getID(s)), [getID(s) '.log.txt']);
+                serverFile=fullfile(getServerDataPathForSubjectID(r,s.id), [s.id '.log.txt']);
                 
                 
                 [fid, errmsg] = fopen(serverFile,'at');
@@ -1302,7 +1312,7 @@ classdef ratrix
             out=true;
             for i=1:length(r.boxes)
                 b=r.boxes{i};
-                sIDs=getStationIDsForBoxID(r,getID(b));
+                sIDs=getStationIDsForBoxID(r,b.id);
                 out=out && testBoxSubjectAndStationDirs(r,b,sIDs);
                 stations=getStationsForBoxID(r,getID(b));
                 
@@ -1318,7 +1328,7 @@ classdef ratrix
         function out=testBoxSubjectAndStationDirs(r,b,sIDs)
             out=1;            
             if isa(b,'box')
-                stationInds=getStationInds(r,sIDs,getID(b));
+                stationInds=getStationInds(r,sIDs,b.id);
                 if all(stationInds>0)
                     if testBoxSubjectDirs(r,b)
                         for i=1:length(stationInds)
@@ -1326,7 +1336,7 @@ classdef ratrix
                             %                     out=0;
                             %                     error('coudln''t get to station dir')
                             %                 end
-                            if ~checkPath(r.assignments{getID(b)}{1}{i,1})
+                            if ~checkPath(r.assignments{b.id}{1}{i,1})
                                 error('coudln''t get to station dir')
                             end
                         end
@@ -1343,7 +1353,7 @@ classdef ratrix
         
         function out = testBoxSubjectDirs(r,b)
             validateattributes(b,{'box'},{'nonempty'})
-            subIDs=getSubjectIDsForBoxID(r,getID(b));
+            subIDs=getSubjectIDsForBoxID(r,b.id);
             success=1;
             for i=1:length(subIDs)
                 sub=getSubjectFromID(r,subIDs(i));
@@ -1485,9 +1495,9 @@ classdef ratrix
         function out=authorCheck(author) %stupid that all functions in an object directory have to be methods (we don't need ratrix for this)
             approved={'ratrix','bas'};
             if ismember(author,approved)
-                out=1;
+                out=true;
             else
-                out=0;
+                out=false;
                 disp(char(approved));
                 warning('author (currently:%s) must be one of the above',author);
             end

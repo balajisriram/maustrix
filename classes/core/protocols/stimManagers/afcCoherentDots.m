@@ -1158,15 +1158,15 @@ classdef afcCoherentDots<stimManager
             if isa(tm,'trialManager')
                 switch class(tm)
                     case 'freeDrinks'
-                        out=0;
+                        out=false;
                     case 'nAFC'
-                        out=1;
+                        out=true;
                     case {'autopilot','reinforcedAutopilot'}
-                        out=1;
+                        out=true;
                     case 'goNoGo'
-                        out=1;
+                        out=true;
                     otherwise
-                        out=0;
+                        out=false;
                 end
             else
                 error('need a trialManager object')

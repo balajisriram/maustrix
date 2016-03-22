@@ -8,7 +8,7 @@ classdef rat < murine
             r = r@murine(id,gender,strain,birthDate,receivedDate,litterID,supplier);
         end
         
-        function disp(s,str)
+        function dispStr = disp(s,str)
             if (~exist('str','var')||isempty(str)), str = ''; end
             dispStr = sprintf('species:\t\t%s\t%s',s.species,str);
             disp@subject(s,dispStr);

@@ -23,7 +23,7 @@ classdef standardVisionBehaviorStation < station
     methods
         function s = standardVisionBehaviorStation(id, path, MAC, physLoc, decPPortAddr, valveSpec, sensorSpec)
             s = s@station(id, path, MAC, physLoc);
-            s.decPPortAddr = decPPortAddr;
+            s.decPPortAddr = hex2dec(decPPortAddr);
             [s.sensorPins, assignedSoFar]= standardVisionBehaviorStation.assignPins(sensorSpec,'read',s.decPPortAddr,[],'sensorPins');
             s.valvePins = standardVisionBehaviorStation.assignPins(valveSpec,'write',s.decPPortAddr,assignedSoFar,'valvePins');
         end
@@ -85,11 +85,11 @@ classdef standardVisionBehaviorStation < station
         end
         
         function out=disp(st)
-            out=sprintf(['station id: ' st.id '\tports: ' num2str(st.numPorts) '\tresponseMethod: ' st.responseMethod '\tpath: ' strrep(st.path,'\','\\')]);
+            out=sprintf(['station id: ' st.id '\tports: ' num2str(st.numPorts) '\tpath: ' strrep(st.path,'\','\\')]);
         end
         
         function out=get.numPorts(st)
-            out = length(st.sensorPins);
+            out = length(st.sensorPins.pinNums);
         end
         
         function securePins(st)
@@ -258,7 +258,7 @@ classdef standardVisionBehaviorStation < station
                         filter = {'lastNTrials',int32(100)};
                         
                         % Load a subset of the previous trial records based on the given filter
-                        [trialRecords, localRecordsIndex, sessionNumber, compiledRecords] = getTrialRecordsForSubjectID(r,getID(subject),filter, trustOsRecordFiles);
+                        [trialRecords, localRecordsIndex, sessionNumber, compiledRecords] = getTrialRecordsForSubjectID(r,subject.id,filter, trustOsRecordFiles);
                         
                         while keepWorking
                             trialNum=trialNum+1;

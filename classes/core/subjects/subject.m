@@ -225,8 +225,11 @@ classdef subject
             end
         end
         
-        function out = disp(s)
-            out = sprintf('id:\t\t%s\ngender:\t\t%s\n',s.id,s.gender);
+        function out = disp(s, str)
+            if ~exist('str','var')
+                str = '';
+            end
+            out = sprintf('%s\tid:\t\t%s\ngender:\t\t%s\n',str,s.id,s.gender);
             %         if strcmp(s.receivedDate,'unknown')
             %             rd=s.receivedDate;
             %         else
@@ -330,12 +333,12 @@ classdef subject
             %     [subj r]=setProtocolAndStep(subj,p,1,0,1,1,r,'first try','edf');
             validateattributes(p,{'protocol'},{'nonempty'});
             validateattributes(r,{'ratrix'},{'nonempty'});
-            assert(~isempty(getSubjectFromID(r,subject.id)),'subject not found in ratrix');
+            assert(~isempty(getSubjectFromID(r,s.id)),'subject not found in ratrix');
             assert(~r.subjectIDRunning(s.id),'subject should not be  running');
             
             assert(isPositiveIntegerValuedNumeric(i) && i<=p.numTrainingSteps,...
                 'i needs to be positive scalar < numTrainingSteps');
-            assert(r.authCheck(auth),'author check failed')
+            assert(r.authorCheck(auth),'author check failed')
             
             s.protocol=p;
             s.trainingStepNum=uint8(i);
@@ -344,7 +347,11 @@ classdef subject
                 s.protocolVersion.autoVersion=s.protocolVersion.autoVersion+1;
             else
                 s.protocolVersion.autoVersion=1;
-                s.protocolVersion.manualVersion=s.protocolVersion.manualVersion+1;
+                try
+                    s.protocolVersion.manualVersion=s.protocolVersion.manualVersion+1;
+                catch
+                    s.protocolVersion.manualVersion = 1;
+                end
             end
             s.protocolVersion.date=datevec(now);
             s.protocolVersion.author=auth;

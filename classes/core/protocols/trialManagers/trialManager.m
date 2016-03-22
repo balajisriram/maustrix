@@ -46,7 +46,7 @@ classdef trialManager
             t.reinforcementManager=reinfMgr;
             
             % customDescription
-            validateattributes(customDescription,{'string'},{'nonempty'});
+            validateattributes(customDescription,{'char'},{'nonempty'});
             t.description = customDescription;
             
             % frameDropCOrner
@@ -203,7 +203,7 @@ classdef trialManager
             %		- should handle creation of default phase setup for nAFC/freeDrinks, and also handle additional phases depending on delayManager and responseWindow
             %		- how then does calcStim return a set of custom phases? - it no longer can, because we are forcing calcstim to return 3 structs...to discuss later?
             [newSM, updateSM, resInd, stimList, LUT, targetPorts, distractorPorts, stimulusDetails, text, indexPulses, imagingTasks] = ...
-                calcStim(sm, tm, getAllowRepeats(tm), resolutions, getDisplaySize(st), getLUTbits(st), getResponsePorts(tm,st.numPorts), st.numPorts, tR, cR);
+                calcStim(sm, tm, tm.allowRepeats, resolutions, getDisplaySize(st), getLUTbits(st), getResponsePorts(tm,st.numPorts), st.numPorts, tR, cR);
             
             [st, tR(tRInd).resolution,tR(tRInd).imagingTasks]=setResolutionAndPipeline(st,resolutions(resInd),imagingTasks);
             [newSM, updateSM, stimulusDetails]=postScreenResetCheckAndOrCache(newSM,updateSM,stimulusDetails); %enables SM to check or cache their tex's if they control that
@@ -420,6 +420,11 @@ classdef trialManager
             
             
         end
+        
+        function out = get.allowRepeats(t)
+            out = true;
+        end
+        
     end
     
     methods (Access=private)
@@ -2634,7 +2639,7 @@ classdef trialManager
             out = s.numPorts>=3;
         end
         
-        function out=boxOKForTrialManager0(b,r)
+        function out=boxOKForTrialManager(b,r)
             validateattributes(b,{'box'},{'nonempty'});
             validateattributes(r,{'ratrix'},{'nonempty'});
             
@@ -2646,11 +2651,6 @@ classdef trialManager
                     out=true;
                 end
             end
-        end
-        
-        function out = getAllowRepeats()
-            % default getAllowRepeats for superclass trialManager - just return true!
-            out=true;
         end
         
         function out = checkPorts(varargin)

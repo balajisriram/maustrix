@@ -1,21 +1,20 @@
 classdef murine < subject
     properties
-        strain = '';
-        modification = '';
-        gender = '';
+        strain
+        modification
         
-        birthDate = [];
-        receivedDate = [];
+        birthDate
+        receivedDate
         
-        litterID = '';
-        supplier = '';
+        litterID
+        supplier
         
     end
     
     methods
         
         function m = murine(id,gender,strain,birthDate,receivedDate,litterID,supplier)
-            m = m@subject(id);
+            m = m@subject(id,gender);
             validateattributes(strain,{'char'},{'nonempty'});
             assert(ismember(gender,{'male','female'}),'murine:improperValue','gender has to be ''male'' or ''female''');
             validateattributes(birthDate,{'datetime'},{'nonempty'});

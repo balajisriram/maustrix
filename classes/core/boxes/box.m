@@ -26,7 +26,7 @@ classdef box
         
         function clearSubjectDataDir(b)
             %subPath = [b.path 'subjectData' filesep]; %used to have an additional filesep before subjectData?
-            subPath = getSujbectDataDir(b);
+            subPath = getSubjectDataDir(b);
             files=dir(subPath);
             
             if ~isempty(files)
@@ -50,7 +50,7 @@ classdef box
         function subPath=getBoxPathForSubjectID(b,sID,r)
             if isa(r,'ratrix')
                 if getBoxIDForSubjectID(r,sID)==b.id
-                    subPath=fullfile(getSujbectDataDir(b),sID);  %[b.path 'subjectData' filesep sID filesep];
+                    subPath=fullfile(getSubjectDataDir(b),sID);  %[b.path 'subjectData' filesep sID filesep];
                 else
                     error('subject not in this box')
                 end

@@ -5,24 +5,15 @@ classdef nAFC<trialManager
     end
     
     methods
-        function t=nAFC(sndMgr, reinfMgr, frameDropCorner, dropFrames, requestPort, saveDetailedFrameDrops, delayManager, responseWindowMs, showText, percentCorrTrials)
+        function t=nAFC(sndMgr, reinfMgr, delayManager, frameDropCorner, dropFrames, requestPort, saveDetailedFrameDrops, customDescription, responseWindowMs, showText, percentCorrTrials)
             % NAFC  class constructor.
             % t=nAFC(soundManager,percentCorrectionTrials,rewardManager,
             %         [eyeController],[frameDropCorner],[dropFrames],[displayMethod],[requestPorts],[saveDetailedFramedrops],
             %		  [delayManager],[responseWindowMs],[showText])
-            t=t@trialManager(sndMgr,reinfMgr,frameDropCorner,dropFrames,requestPort,saveDetailedFrameDrops,delayManager,responseWindowMs,showText);
+            t=t@trialManager(sndMgr,reinfMgr,delayManager, frameDropCorner,dropFrames,requestPort,saveDetailedFrameDrops, customDescription,responseWindowMs,showText);
             
             assert(isscalar(percentCorrTrials)&&(percentCorrTrials>=0)&&(percentCorrTrials<1),'nAFC:incorrectValue','percentCorrTrials (value:[%s] should a scalar >0 and <1',num2str(percentCorrTrials));
             t.percentCorrectionTrials = percentCorrTrials;
-        end
-      
-        function out = getPercentCorrectionTrials(tm)
-            out = tm.percentCorrectionTrials;
-        end
-
-        function out=getRequestRewardSizeULorMS(trialManager)
-
-            out=trialManager.requestRewardSizeULorMS;
         end
         
         function out=getResponsePorts(trialManager,totalPorts)

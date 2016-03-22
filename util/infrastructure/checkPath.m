@@ -1,15 +1,7 @@
 function out=checkPath(p)
-if ischar(p)
-    warning('off','MATLAB:MKDIR:DirectoryExists')
-    [success,message,msgid] = mkdir(p);
-    warning('on','MATLAB:MKDIR:DirectoryExists')
-    
-    if success
-        out=1;
-    else
-        error('could not make path -- specify absolute path (see mkdir help): %s, %s',message,msgid);
-    end
-else
-    error('bad path format')
-end
+out = false;
+assert(ischar(p),'checkPath:incorrectValue','bad path format');
+warning('off','MATLAB:MKDIR:DirectoryExists');
+[out,~,~] = mkdir(p);
+warning('on','MATLAB:MKDIR:DirectoryExists');
 end

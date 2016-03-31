@@ -39,49 +39,41 @@ classdef standardVisionBehaviorStation < station
             %set the valves to the requested value
             %first check to make sure the valves are in the expected state
             %if not, it logs an error
-            if strcmp(station.responseMethod,'parallelPort')
-                if ~barebones
-                    %CHECK to see if the valves are as we expect
-                    beforeValveState=getValves(station);
-                    if ~all(beforeValveState==expectedValveState)
-                        disp('VALVE ERROR: LOGGING IT')
-                        errNum=size(valveErrorDetails,2)+1;
-                        valveErrorDetails(errNum).timeSinceTrial=GetSecs()-startTime;
-                        valveErrorDetails(errNum).expected=expectedValveState;
-                        valveErrorDetails(errNum).found=beforeValveState;
-                        valveErrorDetails(errNum).description=description;
-                    else
-                        %don't update
-                        %valveErrorDetails=valveErrorDetails;
-                    end
-                end
-                
-                % DO IT
-                setValves(station, requestedValves);
-                
-                if ~barebones
-                    %return the end state of the valves
-                    %If getValves is slow we could assume they are as requested
-                    endValveState=getValves(station);
-                    if any(endValveState~=requestedValves)
-                        endValveState=endValveState
-                        requestedValves=requestedValves
-                        error('valve setting failed')
-                        %it might be porttalk isn't installed
-                        %follw instructions: http://tech.groups.yahoo.com/group/psychtoolbox/message/4825
-                        %download from here: http://www.beyondlogic.org/porttalk/porttalk.htm
-                    end
+            if ~barebones
+                %CHECK to see if the valves are as we expect
+                beforeValveState=getValves(station);
+                if ~all(beforeValveState==expectedValveState)
+                    disp('VALVE ERROR: LOGGING IT')
+                    errNum=size(valveErrorDetails,2)+1;
+                    valveErrorDetails(errNum).timeSinceTrial=GetSecs()-startTime;
+                    valveErrorDetails(errNum).expected=expectedValveState;
+                    valveErrorDetails(errNum).found=beforeValveState;
+                    valveErrorDetails(errNum).description=description;
                 else
-                    endValveState=requestedValves;
+                    %don't update
+                    %valveErrorDetails=valveErrorDetails;
                 end
-                
-                
-            else
-                if ~ismac
-                    warning('can''t check and set valves without parallel port')
-                end
-                endValveState=false(1,station.numPorts);
             end
+            
+            % DO IT
+            setValves(station, requestedValves);
+            
+            if ~barebones
+                %return the end state of the valves
+                %If getValves is slow we could assume they are as requested
+                endValveState=getValves(station);
+                if any(endValveState~=requestedValves)
+                    endValveState=endValveState
+                    requestedValves=requestedValves
+                    error('valve setting failed')
+                    %it might be porttalk isn't installed
+                    %follw instructions: http://tech.groups.yahoo.com/group/psychtoolbox/message/4825
+                    %download from here: http://www.beyondlogic.org/porttalk/porttalk.htm
+                end
+            else
+                endValveState=requestedValves;
+            end
+
         end
         
         function out=disp(st)
@@ -94,68 +86,55 @@ classdef standardVisionBehaviorStation < station
         
         function securePins(st)
             setValves(st,0*getValves(st))
-            setPuff(st,false);
+            % #### setPuff(st,false);
             setStatePins(st,'all',false);
             verifyValvesClosed(st);
         end
 
         function setStatePins(s,pinClass,state)
+            if isscalar(state)
+                state=logical(state);
+            else
+                error('state must be scalar')
+            end
             
-            if strcmp(s.responseMethod,'parallelPort')
-                if isscalar(state)
-                    state=logical(state);
-                else
-                    error('state must be scalar')
-                end
-                
-                done=false;
-                possibles={ ... %edf worries this is slow
-                    'frame',s.framePins; ...
-                    'stim',s.stimPins; ...
-                    'phase',s.phasePins; ...
-                    'index',s.indexPins;...
-                    'LED1',s.LED1Pin;...
-                    'LED2',s.LED2Pin;...
-                    'trial',s.trialPins};
-                
-                
-                for i=1:size(possibles,1)
-                    if strcmp('all',pinClass) || strcmp(pinClass,possibles{i,1}) %pmm finds this faster
-                        %if ismember(pinClass,{'all',possibles{i,1}}) %edf worries this is slow
-                        done=true;
-                        pins=possibles{i,2}; %edf worries this is slow
-                        if ~isempty(pins)
-                            thisState=state(ones(1,length(pins.pinNums)));
-                            thisState(pins.invs)=~thisState(pins.invs);
-                            lptWriteBits(pins.decAddr,pins.bitLocs,thisState);
-                        else
-                            warning('setStatePins:unavailableStatePins','station asked to set optional state pins it doesn''t have')
-                        end
+            done=true; %#### changed from false
+            possibles={ ... %edf worries this is slow ####
+%                 'frame',s.framePins; ...
+%                 'stim',s.stimPins; ...
+%                 'phase',s.phasePins; ...
+%                 'index',s.indexPins;...
+%                 'LED1',s.LED1Pin;...
+%                 'LED2',s.LED2Pin;...
+%                 'trial',s.trialPins;
+                    };
+            
+            
+            for i=1:size(possibles,1)
+                if strcmp('all',pinClass) || strcmp(pinClass,possibles{i,1}) %pmm finds this faster
+                    %if ismember(pinClass,{'all',possibles{i,1}}) %edf worries this is slow
+                    done=true;
+                    pins=possibles{i,2}; %edf worries this is slow
+                    if ~isempty(pins)
+                        thisState=state(ones(1,length(pins.pinNums)));
+                        thisState(pins.invs)=~thisState(pins.invs);
+                        lptWriteBits(pins.decAddr,pins.bitLocs,thisState);
+                    else
+                        warning('setStatePins:unavailableStatePins','station asked to set optional state pins it doesn''t have')
                     end
                 end
-                if ~done
-                    error('unrecognized pinClass')
-                end
-                
-            else
-                if ~ismac
-                    warning('setStatePins:noPPort','can''t set state pins without parallel port')
-                end
             end
+            if ~done
+                error('unrecognized pinClass')
+            end
+
+            
         end
         
         function ports=readPorts(s)
-            if strcmp(s.responseMethod,'parallelPort')
                 status=fastDec2Bin(lptread(s.sensorPins.decAddr));
                 ports=status(s.sensorPins.bitLocs)=='0'; %need to set parity in station, assumes sensors emit +5V for unbroken beams
                 ports(s.sensorPins.invs)=~ports(s.sensorPins.invs);
-            else
-                if ~ismac
-                    %s.responseMethod
-                    warning('can''t read ports without parallel port')
-                end
-                ports=false(1,s.numPorts);
-            end
         end
           
         % valves
@@ -180,19 +159,15 @@ classdef standardVisionBehaviorStation < station
         end
         
         function setValves(s, valves)
-            if strcmp(s.responseMethod,'parallelPort')
-                if length(valves)==s.numPorts
-                    valves=logical(valves);
-                    valves(s.valvePins.invs)=~valves(s.valvePins.invs);
-                    lptWriteBits(s.valvePins.decAddr,s.valvePins.bitLocs,valves);
-                else
-                    error('valves must be a vector of length numValves')
-                end
+            
+            if length(valves)==s.numPorts
+                valves=logical(valves);
+                valves(s.valvePins.invs)=~valves(s.valvePins.invs);
+                lptWriteBits(s.valvePins.decAddr,s.valvePins.bitLocs,valves);
             else
-                if ~ismac
-                    warning('can''t set valves without parallel port')
-                end
+                error('valves must be a vector of length numValves')
             end
+            
         end
         
         % display
@@ -201,7 +176,7 @@ classdef standardVisionBehaviorStation < station
             out=[a b];
         end
         
-        function out=getResolutions(s)
+        function out=get.resolutions(s)
             out=Screen('Resolutions',s.screenNum);
         end
         
@@ -274,7 +249,7 @@ classdef standardVisionBehaviorStation < station
                             % will be local if run long enough)
                             localRecordsIndex = max(1,localRecordsIndex-1);
                             % Only save the local records to the local copy!
-                            updateTrialRecordsForSubjectID(r,getID(subject),trialRecords(localRecordsIndex:end));
+                            updateTrialRecordsForSubjectID(r,subject.id,trialRecords(localRecordsIndex:end));
                             
                             if n>0 && trialNum>=n
                                 keepWorking=0;

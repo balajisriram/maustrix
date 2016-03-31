@@ -14,27 +14,27 @@ classdef reinforcedAutopilot<trialManager
             %
             % Used for the whiteNoise, bipartiteField, fullField, and gratings stims, which don't require any response to go through the trial
             % basically just play through the stims, with no sounds, no correction trials
-
+            
             d=sprintf('reinforcedAutopilot');
             t=t@trialManager(soundManager,rewardManager,eyeController,d,frameDropCorner,dropFrames,displayMethod,requestPort,saveDetailedFrameDrops,delayManager,responseWindowMs,showText);
-
- 
+            
+            
             % percentCorrectionTrials
             if percentCorrectionTrials>=0 && percentCorrectionTrials<=1
                 t.percentCorrectionTrials=percentCorrectionTrials;
             else
                 error('1 >= percentCorrectionTrials >= 0')
             end
-
+            
         end
         
         function rewardValves = forceRewards(tm,rewardValves)
             %forceRewards only sets if the valves are set to [0 0 0]
-
+            
             if ~any(rewardValves)
                 rewardValves = [0 1 0];
             end
-
+            
         end
         
         function out = getPercentCorrectionTrials(tm)
@@ -42,10 +42,10 @@ classdef reinforcedAutopilot<trialManager
         end
         
         function out=getResponsePorts(trialManager,totalPorts)
-
+            
             out=setdiff(1:totalPorts,getRequestPorts(trialManager,totalPorts));
         end
-
+        
         function out=stationOKForTrialManager(t,s)
             if isa(s,'station')
                 out = getNumPorts(s)>=3;
@@ -55,12 +55,12 @@ classdef reinforcedAutopilot<trialManager
         end
         
         function [tm, trialDetails, result, spec, rewardSizeULorMS, requestRewardSizeULorMS, ...
-    msPuff, msRewardSound, msPenalty, msPenaltySound, floatprecision, textures, destRect,updateRM] = ...
-    updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
-    targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
-    floatprecision, textures, destRect, ...
-    requestRewardDone, punishResponses,compiledRecords,subject)
-
+                msPuff, msRewardSound, msPenalty, msPenaltySound, floatprecision, textures, destRect,updateRM] = ...
+                updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
+                targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
+                floatprecision, textures, destRect, ...
+                requestRewardDone, punishResponses,compiledRecords,subject)
+            
             rewardSizeULorMS=0;
             requestRewardSizeULorMS = 0;
             msPuff=0;
@@ -75,7 +75,7 @@ classdef reinforcedAutopilot<trialManager
             % - call calcReinforcement(RM)
             % - update msRewardOwed/msAirpuffOwed as necessary (depending on correctness and TM class)
             % - call errorStim(SM), correctStim(SM) as necessary and fill in the stimSpec's stimulus field
-
+            
             if ~isempty(phaseType) && strcmp(phaseType,'reinforced') && framesInPhase==0
                 % we only check to do rewards on the first frame of the 'reinforced' phase
                 [rm, rewardSizeULorMS, ~, msPenalty, ~, msRewardSound, msPenaltySound, updateRM] =...
@@ -83,11 +83,11 @@ classdef reinforcedAutopilot<trialManager
                 if updateRM
                     tm.reinforcementManager = rm;
                 end
-
+                
                 msPuff=0;
                 msPenalty=0;
                 msPenaltySound=0;
-
+                
                 if window>0
                     if isempty(framesUntilTransition)
                         framesUntilTransition = ceil((rewardSizeULorMS/1000)/ifi);
@@ -107,11 +107,11 @@ classdef reinforcedAutopilot<trialManager
                 else
                     error('huh?')
                 end
-
+                
                 spec=setFramesUntilTransition(spec,framesUntilTransition);
                 [cStim, correctScale] = correctStim(sm,numCorrectFrames);
                 spec=setScaleFactor(spec,correctScale);
-
+                
                 strategy='noCache';
                 if window>0
                     [floatprecision cStim] = determineColorPrecision(tm, cStim, strategy);
@@ -123,19 +123,29 @@ classdef reinforcedAutopilot<trialManager
                     error('huh?')
                 end
                 spec=setStim(spec,cStim);
-
-
+                
+                
             end % end reward handling
-
+            
             if strcmp(getPhaseLabel(spec),'intertrial luminance') && ischar(result) && strcmp(result,'timeout')
                 % this should be the only allowable result in autopilot
                 result='timedout'; % so we continue to next trial
             end
-
+            
             trialDetails.correct=true;
-
-            end  % end function
+            
+        end  % end function
         
+    end
+    
+    methods (Static)
+        
+        function [targetPorts, distractorPorts, details]=assignPorts(details,~,responsePorts)
+            temp = [1,3];
+            x = randperm(length(temp));
+            targetPorts=temp(x(1));
+            distractorPorts=setdiff(responsePorts,temp);
+        end
     end
     
 end

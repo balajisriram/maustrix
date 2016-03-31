@@ -17,5 +17,13 @@ classdef freeDrinksCenterOnly<freeDrinks
         end
     end
     
+    methods(Static)
+        
+        function [targetPorts, distractorPorts, details]=assignPorts(details,~,~)
+            targetPorts = 2; % assumes the center port is port 2....confirm that this is true
+            distractorPorts=[];
+        end
+    end
+    
 end
 

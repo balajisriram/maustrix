@@ -11,12 +11,12 @@ classdef oddManOut<trialManager
             % t=oddManOut(soundManager,percentCorrectionTrials,rewardManager,
             %         [eyeController],[frameDropCorner],[dropFrames],[displayMethod],[requestPorts],[saveDetailedFramedrops],
             %		  [delayManager],[responseWindowMs],[showText])
-
+            
             d=sprintf(['n alternative forced choice' ...
-                        '\n\t\t\tpercentCorrectionTrials:\t%g'], ...
-                        percentCorrectionTrials);
+                '\n\t\t\tpercentCorrectionTrials:\t%g'], ...
+                percentCorrectionTrials);
             t=t@trialManager(soundManager,rewardManager,eyeController,d,frameDropCorner,dropFrames,displayMethod,requestPort,saveDetailedFrameDrops,delayManager,responseWindowMs,showText);
-                    
+            
             
             % percentCorrectionTrials
             if percentCorrectionTrials>=0 && percentCorrectionTrials<=1
@@ -27,31 +27,31 @@ classdef oddManOut<trialManager
         end
         
         function out = checkPorts(tm,targetPorts,distractorPorts)
-
+            
             if isempty(targetPorts) && isempty(distractorPorts)
                 error('targetPorts and distractorPorts cannot both be empty in oddManOut');
             end
-
+            
             out=true;
-
+            
         end % end function
-
+        
         function out = getPercentCorrectionTrials(tm)
             out = tm.percentCorrectionTrials;
         end
         
         function out=getRequestRewardSizeULorMS(trialManager)
-
+            
             out=trialManager.requestRewardSizeULorMS;
         end
         
         function out=getResponsePorts(trialManager,totalPorts)
-
+            
             % only differs from nAFC in that if requestPorts='none', then the center port becomes a responsePort (not a 'nothing' port)
             out=setdiff(1:totalPorts,getRequestPorts(trialManager,totalPorts));
-
+            
         end % end function
-
+        
         function out=stationOKForTrialManager(t,s)
             if isa(s,'station')
                 out = getNumPorts(s)>=3;
@@ -61,30 +61,30 @@ classdef oddManOut<trialManager
         end
         
         function [tm trialDetails result spec rewardSizeULorMS requestRewardSizeULorMS ...
-    msPuff msRewardSound msPenalty msPenaltySound floatprecision textures destRect,updateRM] = ...
-    updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
-    targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
-    floatprecision, textures, destRect, ...
-    requestRewardDone, punishResponses,compiledRecords,subject)
+                msPuff msRewardSound msPenalty msPenaltySound floatprecision textures destRect,updateRM] = ...
+                updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
+                targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
+                floatprecision, textures, destRect, ...
+                requestRewardDone, punishResponses,compiledRecords,subject)
             % This function is a tm-specific method to update trial state before every flip.
             % Things done here include:
             %   - set trialRecords.correct and trialRecords.result as necessary
             %   - call RM's calcReinforcement as necessary
             %   - update the stimSpec as necessary (with correctStim() and errorStim())
             %   - update the TM's RM if neceesary
-
+            
             rewardSizeULorMS=0;
             msPuff=0;
             msRewardSound=0;
             msPenalty=0;
             msPenaltySound=0;
-
+            
             if isfield(trialRecords(end),'trialDetails') && isfield(trialRecords(end).trialDetails,'correct')
                 correct=trialRecords(end).trialDetails.correct;
             else
                 correct=[];
             end
-
+            
             % ========================================================
             % if the result is a port vector, and we have not yet assigned correct, then the current result must be the trial response
             % because phased trial logic returns the 'result' from previous phase only if it matches a target/distractor
@@ -95,7 +95,7 @@ classdef oddManOut<trialManager
                 targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
                 floatprecision, textures, destRect, ...
                 requestRewardDone, punishResponses,compiledRecords,subject);
-            if isempty(possibleTimeout)		
+            if isempty(possibleTimeout)
                 if ~isempty(result) && ~ischar(result) && isempty(correct) && strcmp(getPhaseLabel(spec),'reinforcement')
                     resp=find(result);
                     if length(resp)==1
@@ -112,7 +112,7 @@ classdef oddManOut<trialManager
             else
                 correct=possibleTimeout.correct;
             end
-
+            
             % ========================================================
             phaseType = getPhaseType(spec);
             framesUntilTransition=getFramesUntilTransition(spec);
@@ -129,18 +129,18 @@ classdef oddManOut<trialManager
                 if updateRM2
                     tm.reinforcementManager = rm;
                 end
-
+                
                 if correct
                     msPuff=0;
                     msPenalty=0;
                     msPenaltySound=0;
-
+                    
                     if window>0
                         if isempty(framesUntilTransition)
                             framesUntilTransition = ceil((rewardSizeULorMS/1000)/ifi);
                         end
                         numCorrectFrames=ceil((rewardSizeULorMS/1000)/ifi);
-
+                        
                     elseif strcmp(getDisplayMethod(tm),'LED')
                         if isempty(framesUntilTransition)
                             framesUntilTransition=ceil(getHz(spec)*rewardSizeULorMS/1000);
@@ -170,13 +170,13 @@ classdef oddManOut<trialManager
                     rewardSizeULorMS=0;
                     msRewardSound=0;
                     msPuff=0; % for now, we don't want airpuffs to be automatic punishment, right?
-
+                    
                     if window>0
                         if isempty(framesUntilTransition)
                             framesUntilTransition = ceil((msPenalty/1000)/ifi);
                         end
                         numErrorFrames=ceil((msPenalty/1000)/ifi);
-
+                        
                     elseif strcmp(getDisplayMethod(tm),'LED')
                         if isempty(framesUntilTransition)
                             framesUntilTransition=ceil(getHz(spec)*msPenalty/1000);
@@ -203,15 +203,65 @@ classdef oddManOut<trialManager
                     end
                     spec=setStim(spec,eStim);
                 end
-
+                
             end % end reward handling
-
+            
             trialDetails.correct=correct;
             updateRM = updateRM1 || updateRM2;
-
+            
         end  % end function
-
         
+        
+        
+    end
+    
+    methods (Static)
+        function [targetPorts, distractorPorts, details]=assignPorts(details,lastTrialRec,responsePorts)
+            % figure out if this is a correction trial
+            lastResult=[];
+            lastCorrect=[];
+            lastWasCorrection=0;
+            
+            if ~isempty(lastTrialRec) % if there were previous trials
+                try
+                    lastResult=find(lastTrialRec.result);
+                catch
+                    lastResult=[];
+                end
+                if isfield(lastTrialRec,'trialDetails') && isfield(lastTrialRec.trialDetails,'correct')
+                    lastCorrect=lastTrialRec.trialDetails.correct;
+                else
+                    try
+                        lastCorrect=lastTrialRec.correct;
+                    catch
+                        lastCorrect=[];
+                    end
+                end
+                
+                if any(strcmp(fields(lastTrialRec.stimDetails),'correctionTrial'))
+                    lastWasCorrection=lastTrialRec.stimDetails.correctionTrial;
+                else
+                    lastWasCorrection=0;
+                end
+                
+                if length(lastResult)>1
+                    lastResult=lastResult(1);
+                end
+            end
+            
+            % determine correct port
+            if ~isempty(lastCorrect) && ~isempty(lastResult) && ~lastCorrect && length(lastTrialRec.targetPorts)==1 && (lastWasCorrection || rand<details.pctCorrectionTrials)
+                details.correctionTrial=1;
+                %'correction trial!'
+                targetPorts=lastTrialRec.targetPorts; % same ports are correct
+            else
+                details.correctionTrial=0;
+                targetPorts=responsePorts(ceil(rand*length(responsePorts))); %choose random response port to be correct answer
+            end
+            distractorPorts=setdiff(responsePorts,targetPorts);
+            
+            
+        end
         
     end
     

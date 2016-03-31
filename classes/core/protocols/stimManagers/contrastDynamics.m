@@ -54,12 +54,9 @@ classdef contrastDynamics<stimManager
                 s.stimSpec = stimSpec;
             end
             
-            LEDParams = LEDParams;
             if ~isempty(LEDParams)
-                s.LEDParams = LEDParams
+                s.LEDParams = LEDParams;
             end
-            
-            
             
         end
         
@@ -201,7 +198,7 @@ classdef contrastDynamics<stimManager
             end
         end
         
-        function [paramsIdentical diffIn] = compareStimRecords(stimType,params1,params2)
+        function [paramsIdentical, diffIn] = compareStimRecords(stimType,params1,params2)
             paramsList = {{'strategy'},{'spatialDim'},{'patternType'},{'distribution','type'}};
             diffIn = {};
             
@@ -237,8 +234,7 @@ classdef contrastDynamics<stimManager
             
             paramsIdentical = isempty(diffIn);
         end
-        
-        
+     
         function displayCumulativePhysAnalysis(sm,cumulativedata,parameters)
             % allows for display without recomputation
             
@@ -723,7 +719,7 @@ classdef contrastDynamics<stimManager
             
         end % end function
         
-        function [out newLUT]=extractDetailFields(sm,basicRecords,trialRecords,LUTparams)
+        function [out, newLUT]=extractDetailFields(sm,basicRecords,trialRecords,LUTparams)
             newLUT=LUTparams.compiledLUT;
             
             try
@@ -986,7 +982,6 @@ classdef contrastDynamics<stimManager
             end
             out = wnAnalysis(subject,tr,channels,dataPath,stim,c,monitor,rigState);
         end
-        
         
         function [sig CI ind]=getTemporalSignal(sm,STA,STV,numSpikes,selection)
             switch class(selection)
@@ -1501,10 +1496,7 @@ classdef contrastDynamics<stimManager
             end
             cumulativedata.lastAnalysis = analysisdata;
         end
-        
-        
-        
-        
+      
         function new=hasNewParameters(stimManager,analysisdata,stimulusDetails) %first trial through with these parameters
             new=false;
             
@@ -1529,8 +1521,7 @@ classdef contrastDynamics<stimManager
                     end
                 end
             end
-        end
-        
+        end     
         % function [cSTA cSTV cNumSpikes cSpikeWaveforms cTrialNumbers cChunkIDs cST_LFPA cST_LFPV cNumSpikesForLFP] = updateCumulative(cSTA,cSTV,...
         %     cNumSpikes,cSpikeWaveforms,cTrialNumbers,cChunkIDs,cST_LFPA,cST_LFPV,cNumSpikesForLFP,STA,STV,numSpikes,trialNumbers,chunkID,ST_LFPA,...
         %     ST_LFPV,numSpikesForLFP)
@@ -1569,8 +1560,7 @@ classdef contrastDynamics<stimManager
                 end
             end
         end
-        
-        
+       
         function cumulative = updateCumulative(cumulative,partial)
             
             fieldsInPartial = {'STA','STV','numSpikes','spikeWaveforms','trialNumber','chunkID','ST_LFPA','ST_LFPV','numSpikesForLFP','timeWindowMsStim','timeWindowMsLFP','refreshRate','std','meanLuminance'};
@@ -2288,18 +2278,12 @@ classdef contrastDynamics<stimManager
             
             % drawnow
         end
-        
-        
-        
-        
+      
         function retval = whiteVal(sm)
             %definition of white
             retval=255;
         end
-        
-        
-        
-        
+      
         function retval = worthPhysAnalysis(sm,quality,analysisExists,overwriteAll,isLastChunkInTrial)
             % returns true if worth spike sorting given the values in the quality struct
             % default method for all stims - can be overriden for specific stims
@@ -2341,12 +2325,7 @@ classdef contrastDynamics<stimManager
             warning('forcing retval to true');
             retval=true;
         end % end function
-        
-        
-        
-        
-        
-        
+
     end
     
 end

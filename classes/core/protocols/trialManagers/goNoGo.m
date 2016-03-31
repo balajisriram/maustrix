@@ -17,12 +17,8 @@ classdef goNoGo<trialManager
                 '\n\t\t\tpercentCorrectionTrials:\t%g'], ...
                 percentCorrectionTrials);
             t=t@trialManager(soundManager,rewardManager,eyeController,d,frameDropCorner,dropFrames,displayMethod,requestPort,saveDetailedFrameDrops,delayManager,responseWindowMs,showText);
-
-            
-
             t.percentCorrectionTrials=percentCorrectionTrials;
             t.responseLockoutMs=responseLockoutMs;
-
         end
         
         function out = getPercentCorrectionTrials(tm)
@@ -52,31 +48,31 @@ classdef goNoGo<trialManager
         end
         
         function [tm trialDetails result spec rewardSizeULorMS requestRewardSizeULorMS ...
-    msPuff msRewardSound msPenalty msPenaltySound floatprecision textures destRect,updateRM] = ...
-    updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
-    targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
-    floatprecision, textures, destRect, ...
-    requestRewardDone, punishResponses,compiledRecords,subject)
+                msPuff msRewardSound msPenalty msPenaltySound floatprecision textures destRect,updateRM] = ...
+                updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
+                targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
+                floatprecision, textures, destRect, ...
+                requestRewardDone, punishResponses,compiledRecords,subject)
             % This function is a tm-specific method to update trial state before every flip.
             % Things done here include:
             %   - set trialRecords.correct and trialRecords.result as necessary
             %   - call RM's calcReinforcement as necessary
             %   - update the stimSpec as necessary (with correctStim() and errorStim())
             %   - update the TM's RM if neceesary
-
+            
             rewardSizeULorMS=0;
             msPuff=0;
             msRewardSound=0;
             msPenalty=0;
             msPenaltySound=0;
             updateRM = false;
-
+            
             if isfield(trialRecords(end),'trialDetails') && isfield(trialRecords(end).trialDetails,'correct')
                 correct=trialRecords(end).trialDetails.correct;
             else
                 correct=[];
             end
-
+            
             % ========================================================
             % if the result is a port vector, and we have not yet assigned correct, then the current result must be the trial response
             % because phased trial logic returns the 'result' from previous phase only if it matches a target/distractor
@@ -104,7 +100,7 @@ classdef goNoGo<trialManager
             else
                 correct=possibleTimeout.correct;
             end
-
+            
             % ========================================================
             phaseType = getPhaseType(spec);
             framesUntilTransition=getFramesUntilTransition(spec);
@@ -121,18 +117,18 @@ classdef goNoGo<trialManager
                 if updateRM2
                     tm.reinforcementManager = rm;
                 end
-
+                
                 if correct
                     msPuff=0;
                     msPenalty=0;
                     msPenaltySound=0;
-
+                    
                     if window>0
                         if isempty(framesUntilTransition)
                             framesUntilTransition = ceil((rewardSizeULorMS/1000)/ifi);
                         end
                         numCorrectFrames=ceil((rewardSizeULorMS/1000)/ifi);
-
+                        
                     elseif strcmp(getDisplayMethod(tm),'LED')
                         if isempty(framesUntilTransition)
                             framesUntilTransition=ceil(getHz(spec)*rewardSizeULorMS/1000);
@@ -162,13 +158,13 @@ classdef goNoGo<trialManager
                     rewardSizeULorMS=0;
                     msRewardSound=0;
                     msPuff=0; % for now, we don't want airpuffs to be automatic punishment, right?
-
+                    
                     if window>0
                         if isempty(framesUntilTransition)
                             framesUntilTransition = ceil((msPenalty/1000)/ifi);
                         end
                         numErrorFrames=ceil((msPenalty/1000)/ifi);
-
+                        
                     elseif strcmp(getDisplayMethod(tm),'LED')
                         if isempty(framesUntilTransition)
                             framesUntilTransition=ceil(getHz(spec)*msPenalty/1000);
@@ -195,16 +191,69 @@ classdef goNoGo<trialManager
                     end
                     spec=setStim(spec,eStim);
                 end
-
+                
             end % end reward handling
-
+            
             trialDetails.correct=correct;
             updateRM = updateRM1 || updateRM2;
-
+            
             trialDetails
             struct(spec)
-
+            
         end  % end function
+        
+        function [targetPorts, distractorPorts, details]=assignPorts(details,lastTrialRec,responsePorts)
+            lastResult=[];
+            lastCorrect=[];
+            lastWasCorrection=0;
+            
+            if ~isempty(lastTrialRec) % if there were previous trials
+                try
+                    lastResult=find(lastTrialRec.result);
+                catch
+                    lastResult=[];
+                end
+                if isfield(lastTrialRec,'trialDetails') && isfield(lastTrialRec.trialDetails,'correct')
+                    lastCorrect=lastTrialRec.trialDetails.correct;
+                else
+                    try
+                        lastCorrect=lastTrialRec.correct;
+                    catch
+                        lastCorrect=[];
+                    end
+                end
+                
+                if any(strcmp(fields(lastTrialRec.stimDetails),'correctionTrial'))
+                    lastWasCorrection=lastTrialRec.stimDetails.correctionTrial;
+                else
+                    lastWasCorrection=0;
+                end
+                
+                if length(lastResult)>1
+                    lastResult=lastResult(1);
+                end
+            end
+            
+            % determine correct port
+            if ~isempty(lastCorrect) && ~isempty(lastResult) && ~lastCorrect && length(lastTrialRec.targetPorts)==3 && (lastWasCorrection || rand<details.pctCorrectionTrials)
+                details.correctionTrial=1;
+                %correction trials are a very strange brew for goNoGo... i
+                %doubt its what we want...
+                
+                %'correction trial!'
+                targetPorts=lastTrialRec.targetPorts; % same ports are correct
+            else
+                details.correctionTrial=0;
+                targetPorts=responsePorts; %choose all response port to be correct answer
+                %pmm:  these apear to be all "go" trials how do we get "no go" trials?
+                % i guess the idea of a "trial" is bankrupt in this mode
+                % the noGos are all the momement in time of waiting, which
+                % could be trials... as long as there is no auditory cue and/or
+                % flanker that is correlated with the noGo stimulus
+            end
+            distractorPorts=setdiff(responsePorts,targetPorts);
+            
+        end
         
     end
     

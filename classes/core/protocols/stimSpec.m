@@ -16,6 +16,7 @@ classdef stimSpec
         isStim
         indexPulses
         lockoutDuration
+        ledON = false;
         ledPulses
         punishResponses
     end
@@ -71,9 +72,7 @@ classdef stimSpec
             % isStim                    a boolean indicating whether to set the station's stim pin high during this phase (usually during discriminanda) [defaults to false]
             % indexPulses               a boolean vector same length as stimulus indicating what to output on the station's indexPin during each frame (defaults to all false)
             % ledON                     vector of booleans length = number of LEDs
-            
-            
-            
+
             % stimulus
             spec.stimulus = stimulus;
             
@@ -97,14 +96,18 @@ classdef stimSpec
             spec.startFrame=startFrame;
                 
             % framesUntilTransition
-            assert(isscalar(framesUntilTransition) && framesUntilTransition>=0,'stimSpec:stimSpec:incorrectValue','framesUntilTransition should be a positive scalar');
-            assert(~any(cellfun(@isempty,spec.transitions)),'stimSpec:stimSpec:incompatibleValue','framesUntilTransition provided without a timeout phase target');
+            assert(isscalar(framesUntilTransition) && framesUntilTransition>=0 || isempty(framesUntilTransition),'stimSpec:stimSpec:incorrectValue','framesUntilTransition should be a positive scalar');
+            if ~isinf(framesUntilTransition)
+                assert(any(cellfun(@isempty,spec.transitions)),'stimSpec:stimSpec:incompatibleValue','framesUntilTransition provided without a timeout phase target');
+            end
             spec.framesUntilTransition=framesUntilTransition;
             
             % autoTrigger
             assert(iscell(autoTrigger)||isempty(autoTrigger),'stimSpec:stimSpec:incorrectInput','autoTrigger of the wrong class');
-            if isreal(autoTrigger{1}) && autoTrigger{1} >= 0 && autoTrigger{1} < 1 && isvector(autoTrigger{2})
+            if ~isempty(autoTrigger) && isreal(autoTrigger{1}) && autoTrigger{1} >= 0 && autoTrigger{1} < 1 && isvector(autoTrigger{2})
                 spec.autoTrigger = autoTrigger;
+            else
+                spec.autoTrigger = [];
             end
 
             % scaleFactor
@@ -156,17 +159,12 @@ classdef stimSpec
             if isvector(spec.indexPulses) && islogical(spec.indexPulses) && length(spec.indexPulses)==stimLen
                 %pass
             else
+                sca;keyboard
                 error('indexPulses must be logical vector same length as stimulus')
             end
         end
         
-        
-        function out=getHz(s)
-            out=s.hz;
-        end
-        
         function out=getIndexPulse(s,i)
-            
             if exist('i','var') && ~isempty(i) && i
                 out=s.indexPulses(i);
             else
@@ -174,96 +172,8 @@ classdef stimSpec
             end
         end
         
-        function st=getIsFinalPhase(spec)
-            % stimSpec.isFinalPhase accessor function
-            % returns the isFinalPhase associated with the given stimSpec object
-
-            st = spec.isFinalPhase;
-        end
-        
-        function out = getLED(spec)
-
-            out = spec.ledON;
-        end
-        
-        function out=getLockoutDuration(spec)
-            out=spec.lockoutDuration;
-        end
-
-        function st=getPhaseLabel(spec)
-            % stimSpec.phaseLabel accessor function
-            % returns the phaseLabel associated with the given stimSpec object
-
-            st = spec.phaseLabel;
-        end
-        
-        function st=getPhaseType(spec)
-            % stimSpec.phaseType accessor function
-            % returns the phaseType associated with the given stimSpec object
-
-            st = spec.phaseType;
-        end
-        
-        function out=getPunishResponses(spec)
-            out=spec.punishResponses;
-        end
-        
-        function st=getScaleFactor(spec)
-            % stimSpec.scaleFactor accessor function
-            % returns the scaleFactor associated with the given stimSpec object
-
-            st = spec.scaleFactor;
-        end
-        
-        function i=getStartFrame(spec)
-            % stimSpec.startFrame accessor function
-            % returns the startFrame associated with the given stimSpec object
-
-            i = spec.startFrame;
-        end
-        
-        function stim=getStim(spec)
-            % stimSpec.stimulus accessor function
-            % returns the stimulus associated with the given stimSpec object
-
-            stim = spec.stimulus;
-        end
-        
-        function st=getStimType(spec)
-            % stimSpec.stimType accessor function
-            % returns the stimType associated with the given stimSpec object
-
-            st = spec.stimType;
-        end
-        
-        function transitions=getTransitions(spec)
-            % stimSpec.transitions accessor function
-            % returns the transitions associated with the given stimSpec object
-
-            transitions = spec.transitions;
-        end
-        
-        
-        function spec=setFramesUntilTransition(spec,framesUntilTransition)
-            % stimSpec.framesUntilTransition set function
-            % sets the framesUntilTransition associated with the given stimSpec object
-
-            spec.framesUntilTransition = framesUntilTransition;
-
-        end
-
-        function spec=setScaleFactor(spec,scaleFactor)
-            % stimSpec.scaleFactor set function
-            % sets the scaleFactor associated with the given stimSpec object
-
-            spec.scaleFactor = scaleFactor;
-
-        end
 
         function spec=setStim(spec,stim)
-            % stimSpec.stimulus set function
-            % sets the stimulus associated with the given stimSpec object
-
             origSize=size(spec.stimulus);
             newSize=size(stim);
             if (length(origSize)==length(newSize) && all(size(stim)==size(spec.stimulus)))
@@ -274,9 +184,7 @@ classdef stimSpec
                 struct(spec)
                 error('dont know how to dynamically make these indexPulses -- someone already made them with incompatible size');
             end
-
             spec.stimulus = stim;
-
         end
  
         

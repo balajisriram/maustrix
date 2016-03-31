@@ -89,7 +89,7 @@ classdef reinforcementManager
             msPenaltySound=getMsPenalty(r)*r.fractionPenaltySoundIsOn;
         end
         
-        function [r rewardSizeULorMS requestRewardSizeULorMS msPenalty msPuff msRewardSound msPenaltySound updateTM] = ...
+        function [r, rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound, updateTM] = ...
                 calcEarlyPenalty(r,trialRecords, subject)
             
             %currently only cuedGoNoGo+asymetricReinforcement relies on this, but in principle other tm that punish early responses could use it
@@ -101,7 +101,7 @@ classdef reinforcementManager
             %this is an early penalty and so base and base request are forced to 0
             base=0;
             baseRequest=0;
-            [rewardSizeULorMS requestRewardSizeULorMS msPenalty msPuff msRewardSound msPenaltySound] = calcCommonValues(r,base,baseRequest);
+            [rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound] = calcCommonValues(r,base,baseRequest);
 
         end
         

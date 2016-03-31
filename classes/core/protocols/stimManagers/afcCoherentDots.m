@@ -21,8 +21,7 @@ classdef afcCoherentDots<stimManager
         background = 0;                           % black background
         
         LUT =[];
-        LUTbits=0;
-        
+        LUTbits = 0;
         doCombos=true;
         ordering;
         doPostDiscrim = false;
@@ -32,7 +31,7 @@ classdef afcCoherentDots<stimManager
     
     methods
         function s=afcCoherentDots(numDots,bkgdNumDots, dotCoherence,bkgdCoherence, dotSpeed,bkgdSpeed, dotDirection,bkgdDirection,...
-                dotColor,bkgdColor, dotSize,bkgdSize, dotShape,bkgdShape, renderMode, maxDuration,background,...
+                dotColor,bkgdDotColor, dotSize,bkgdSize, dotShape,bkgdShape, renderMode, maxDuration,background,...
                 maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, doPostDiscrim)
             % AFCCOHERENTDOTS  class constructor.
             % this class is specifically designed for behavior.
@@ -65,277 +64,167 @@ classdef afcCoherentDots<stimManager
             
             
             % create object using specified values
-            s.numDots = numDots;
-            s.bkgdNumDots = bkgdNumDots;
-            s.dotCoherence = dotCoherence;
-            s.bkgdCoherence = bkgdCoherence;
-            s.dotSpeed = dotSpeed;
-            s.bkgdSpeed = bkgdSpeed;
-            s.dotDirection = dotDirection;
-            s.bkgdDirection = bkgdDirection;
-            s.dotColor = dotColor;
-            s.bkgdDotColor = bkgdColor;
-            s.dotSize = dotSize;
-            s.bkgdSize = bkgdSize;
-            s.dotShape = dotShape;
-            s.bkgdShape = bkgdShape;
-            s.renderMode = renderMode;
-            s.maxDuration = maxDuration;
-            s.background = background;
-            s.maxWidth = maxWidth;
-            s.maxHeight = maxHeight;
-            s.scaleFactor = scaleFactor;
-            s.interTrialLuminance = interTrialLuminance;
-            s.doCombos = doCombos;
-            
             
             % doCombos
-            if islogical(doCombos)
-                s.doCombos = doCombos;
-            elseif iscell(doCombos) && islogical(doCombos{1}) && iscell(doCombos{2}) && ...
-                    ischar(doCombos{2}{1}) && ismember(doCombos{2}{1}, {'default','twister'})
-                s.doCombos = doCombos{1};
-                s.ordering.method = doCombos{2}{1};
-                if length(doCombos{2})==2
-                    if isnumeric(doCombos{2}{2})
-                        s.ordering.seed = doCombos{2}{2};
-                    else
-                        error('seed should be numeric');
-                    end
-                end
-            else
-                doCombos
-                error('doCombos not in the right format');
+            validateattributes(doCombos,{'logical','cell'},{'nonempty'}); % either true or {true,{'twister',seed#}};
+            switch class(doCombos)
+                case 'logical'
+                    s.doCombos = doCombos;
+                case 'cell'
+                    s.doCombos = doCombos{1};
+                    s.ordering.method = doCombos{2}{1};
+                    s.ordering.seed = doCombos{2}{2};
             end
-            
+            %% numDots
             % numDots
-            if iscell(numDots) && length(numDots)==2 && ...
-                    isnumeric(numDots{1}) && all(numDots{1}>=0) && isnumeric(numDots{2}) && all(numDots{2}>=0)
-                s.numDots = numDots;
-                L1 = length(numDots{1});
-                L2 = length(numDots{2});
-            else
-                numDots
-                error('numDots not in the right format');
-            end
-            
+            assert(iscell(numDots) && length(numDots)==2 && isnumeric(numDots{1}) && all(numDots{1}>=0) && isnumeric(numDots{2}) && all(numDots{2}>=0),...
+                'afcCoherentDots:afcCoherentDots:incorrectValue','numDots not in the right format');
+            s.numDots = numDots;
+            L1 = length(numDots{1});
+            L2 = length(numDots{2});
+
             % bkgdNumDots
-            if iscell(bkgdNumDots) && length(bkgdNumDots)==2 && ...
-                    isnumeric(bkgdNumDots{1}) && all(bkgdNumDots{1}>=0) && isnumeric(bkgdNumDots{2}) && all(bkgdNumDots{2}>=0)
-                s.bkgdNumDots = bkgdNumDots;
-                if ~doCombos && length(bkgdNumDots{1})~=L1 && length(bkgdNumDots{2})~=L2
-                    error('the lengths don''t match. ')
-                end
-            else
-                bkgdNumDots
-                error('bkgdNumDots not in the right format');
-            end
+            assert(iscell(bkgdNumDots) && length(bkgdNumDots)==2 && isnumeric(bkgdNumDots{1}) && all(bkgdNumDots{1}>=0) && isnumeric(bkgdNumDots{2}) && all(bkgdNumDots{2}>=0),...
+                'afcCoherentDots:afcCoherentDots:incorrectValue','bkgdNumDots not in the right format');
+            assert(doCombos || length(bkgdNumDots{1})==L1 && length(bkgdNumDots{2})==L2,'afcCoherentDots:afcCoherentDots:incompatibleValues','the lengths don''t match.');
+            s.bkgdNumDots = bkgdNumDots;
             
+            %% coherence
             % dotCoherence
-            if iscell(dotCoherence) && length(dotCoherence)==2 && ...
-                    isnumeric(dotCoherence{1}) && all(dotCoherence{1}>=0) && all(dotCoherence{1}<=1) && ...
-                    isnumeric(dotCoherence{2}) && all(dotCoherence{2}>=0) && all(dotCoherence{2}<=1)
-                s.dotCoherence = dotCoherence;
-                if ~doCombos && length(dotCoherence{1})~=L1 && length(dotCoherence{2})~=L2
-                    error('the lengths don''t match. ')
-                end
-            else
-                dotCoherence
-                error('dotCoherence not in the right format');
-            end
+            assert(iscell(dotCoherence) && length(dotCoherence)==2 && ...
+                isnumeric(dotCoherence{1}) && all(dotCoherence{1}>=0) && all(dotCoherence{1}<=1) && ...
+                    isnumeric(dotCoherence{2}) && all(dotCoherence{2}>=0) && all(dotCoherence{2}<=1),...
+                'afcCoherentDots:afcCoherentDots:incorrectValue','dotCoherence not in the right format');
+            assert(doCombos || length(dotCoherence{1})==L1 && length(dotCoherence{2})==L2,'afcCoherentDots:afcCoherentDots:incompatibleValues','the lengths don''t match.');
+            s.dotCoherence = dotCoherence;
             
             % bkgdCoherence
-            if iscell(bkgdCoherence) && length(bkgdCoherence)==2 && ...
-                    isnumeric(bkgdCoherence{1}) && all(bkgdCoherence{1}>=0) && all(bkgdCoherence{1}<=1) && ...
-                    isnumeric(bkgdCoherence{2}) && all(bkgdCoherence{2}>=0) && all(bkgdCoherence{2}<=1)
-                s.bkgdCoherence = bkgdCoherence;
-                if ~doCombos && length(bkgdCoherence{1})~=L1 && length(bkgdCoherence{2})~=L2
-                    error('the lengths don''t match. ')
-                end
-            else
-                bkgdCoherence
-                error('bkgdCoherence not in the right format');
-            end
+            assert(iscell(bkgdCoherence) && length(bkgdCoherence)==2 && ...
+                isnumeric(bkgdCoherence{1}) && all(bkgdCoherence{1}>=0) && all(bkgdCoherence{1}<=1) && ...
+                    isnumeric(bkgdCoherence{2}) && all(bkgdCoherence{2}>=0) && all(bkgdCoherence{2}<=1),...
+                'afcCoherentDots:afcCoherentDots:incorrectValue','bkgdCoherence not in the right format');
+            assert(doCombos || length(bkgdCoherence{1})==L1 && length(bkgdCoherence{2})==L2,'afcCoherentDots:afcCoherentDots:incompatibleValues','the lengths don''t match.');
+            s.bkgdCoherence = bkgdCoherence;
             
+            %% speed
             % dotSpeed
-            if iscell(dotSpeed) && length(dotSpeed)==2 && ...
+            assert(iscell(dotSpeed) && length(dotSpeed)==2 && ...
                     isnumeric(dotSpeed{1}) && all(dotSpeed{1}>=0) && ...
-                    isnumeric(dotSpeed{2}) && all(dotSpeed{2}>=0)
-                s.dotSpeed = dotSpeed;
-                if ~doCombos && length(dotSpeed{1})~=L1 && length(dotSpeed{2})~=L2
-                    error('the lengths don''t match. ')
-                end
-            else
-                dotSpeed
-                error('dotSpeed not in the right format');
-            end
+                    isnumeric(dotSpeed{2}) && all(dotSpeed{2}>=0),...
+                'afcCoherentDots:afcCoherentDots:incorrectValue','dotSpeed not in the right format');
+            assert(doCombos || length(dotSpeed{1})==L1 && length(dotSpeed{2})==L2,'afcCoherentDots:afcCoherentDots:incompatibleValues','the lengths don''t match.');
+            s.dotSpeed = dotSpeed;
             
             % bkgdSpeed
-            if iscell(bkgdSpeed) && length(bkgdSpeed)==2 && ...
+            assert(iscell(bkgdSpeed) && length(bkgdSpeed)==2 && ...
                     isnumeric(bkgdSpeed{1}) && all(bkgdSpeed{1}>=0) && ...
-                    isnumeric(bkgdSpeed{2}) && all(bkgdSpeed{2}>=0)
-                s.bkgdSpeed = bkgdSpeed;
-                if ~doCombos && length(bkgdSpeed{1})~=L1 && length(bkgdSpeed{2})~=L2
-                    error('the lengths don''t match. ')
-                end
-            else
-                bkgdSpeed
-                error('bkgdSpeed not in the right format');
-            end
+                    isnumeric(bkgdSpeed{2}) && all(bkgdSpeed{2}>=0),...
+                'afcCoherentDots:afcCoherentDots:incorrectValue','bkgdSpeed not in the right format');
+            assert(doCombos || length(bkgdSpeed{1})==L1 && length(bkgdSpeed{2})==L2,'afcCoherentDots:afcCoherentDots:incompatibleValues','the lengths don''t match.');
+            s.bkgdSpeed = bkgdSpeed;
             
+            %% direction
             % dotDirection
-            if iscell(dotDirection) && length(dotDirection)==2 && ...
+            assert(iscell(dotDirection) && length(dotDirection)==2 && ...
                     isnumeric(dotDirection{1}) && ...
-                    isnumeric(dotDirection{2})
-                s.dotDirection = dotDirection;
-                if ~doCombos && length(dotDirection{1})~=L1 && length(dotDirection{2})~=L2
-                    error('the lengths don''t match. ')
-                end
-            else
-                dotDirection
-                error('dotDirection not in the right format');
-            end
+                    isnumeric(dotDirection{2}),...
+                'afcCoherentDots:afcCoherentDots:incorrectValue','dotDirection not in the right format');
+            assert(doCombos || length(dotDirection{1})==L1 && length(dotDirection{2})==L2,'afcCoherentDots:afcCoherentDots:incompatibleValues','the lengths don''t match.');
+            s.dotDirection = dotDirection;
             
             % bkgdDirection
-            if iscell(bkgdDirection) && length(bkgdDirection)==2 && ...
-                    isnumeric(bkgdDirection{1}) &&  ...
-                    isnumeric(bkgdDirection{2})
-                s.bkgdDirection = bkgdDirection;
-                if ~doCombos && length(bkgdDirection{1})~=L1 && length(bkgdDirection{2})~=L2
-                    error('the lengths don''t match. ')
-                end
-            else
-                bkgdDirection
-                error('bkgdDirection not in the right format');
-            end
+            assert(iscell(bkgdDirection) && length(bkgdDirection)==2 && ...
+                    isnumeric(bkgdDirection{1}) && ...
+                    isnumeric(bkgdDirection{2}),...
+                'afcCoherentDots:afcCoherentDots:incorrectValue','bkgdDirection not in the right format');
+            assert(doCombos || length(bkgdDirection{1})==L1 && length(bkgdDirection{2})==L2,'afcCoherentDots:afcCoherentDots:incompatibleValues','the lengths don''t match.');
+            s.bkgdDirection = bkgdDirection;
             
+            %% color
             % dotColor
-            if iscell(dotColor) && length(dotColor)==2 && ...
-                    isnumeric(dotColor{1}) &&  length(size(dotColor{1}))<=2 && ... % a 2-D array
-                    all(all(dotColor{1}>=0)) && all(all(dotColor{1}<=1)) && ... % of the right values
-                    ismember(size(dotColor{1},2),[1,3,4]) && ...  % and the right size (a column of gray values, a column of RGB values or a column of RGBA values)
-                    isnumeric(dotColor{2}) &&  length(size(dotColor{2}))<=2 && ... % a 2-D array
-                    all(all(dotColor{2}>=0)) && all(all(dotColor{2}<=1)) && ... % of the right values
-                    ismember(size(dotColor{2},2),[1,3,4]) % and the right size (a column of gray values, a column of RGB values or a column of RGBA values)
-                s.dotColor = dotColor;
-                if ~doCombos && size(dotColor{1},1)~=L1 && size(dotColor{2},1)~=L2
-                    error('the lengths don''t match. ')
-                end
-            else
-                dotColor
-                error('dotColor not in the right format');
-            end
+            assert(iscell(dotColor) && length(dotColor)==2 && ...
+                isnumeric(dotColor{1}) &&  length(size(dotColor{1}))<=2 && ... % a 2-D array
+                all(all(dotColor{1}>=0)) && all(all(dotColor{1}<=1)) && ... % of the right values
+                ismember(size(dotColor{1},2),[1,3,4]) && ...  % and the right size (a column of gray values, a column of RGB values or a column of RGBA values)
+                isnumeric(dotColor{2}) &&  length(size(dotColor{2}))<=2 && ... % a 2-D array
+                all(all(dotColor{2}>=0)) && all(all(dotColor{2}<=1)) && ... % of the right values
+                ismember(size(dotColor{2},2),[1,3,4]),... % and the right size (a column of gray values, a column of RGB values or a column of RGBA values)
+                'afcCoherentDots:afcCoherentDots:incorrectValue','dotColor not in right format');
+            assert(doCombos || size(dotColor{1},1)==L1 && size(dotColor{2},1)==L2,'afcCoherentDots:afcCoherentDots:incompatibleValues','the lengths don''t match.');
+            s.dotColor = dotColor;
+            
             
             % bkgdDotColor
-            if iscell(s.bkgdDotColor) && length(s.bkgdDotColor)==2 && ...
-                    isnumeric(s.bkgdDotColor{1}) &&  length(size(s.bkgdDotColor{1}))<=2 && ... % a 2-D array
-                    all(all(s.bkgdDotColor{1}>=0)) && all(all(s.bkgdDotColor{1}<=1)) && ... % of the right values
-                    ismember(size(s.bkgdDotColor{1},2),[1,3,4]) && ...  % and the right size (a column of gray values, a column of RGB values or a column of RGBA values)
-                    isnumeric(s.bkgdDotColor{2}) &&  length(size(s.bkgdDotColor{2}))<=2 && ... % a 2-D array
-                    all(all(s.bkgdDotColor{2}>=0)) && all(all(s.bkgdDotColor{2}<=1)) && ... % of the right values
-                    ismember(size(s.bkgdDotColor{2},2),[1,3,4])  % and the right size (a column of gray values, a column of RGB values or a column of RGBA values)
-                s.bkgdDotColor = s.bkgdDotColor;
-                if ~doCombos && size(s.bkgdDotColor{1},1)~=L1 && size(s.bkgdDotColor{2},1)~=L2
-                    error('the lengths don''t match. ')
-                end
-            else
-                s.bkgdDotColor
-                error('bkgdDotColor not in the right format');
-            end
+            assert(iscell(bkgdDotColor) && length(bkgdDotColor)==2 && ...
+                isnumeric(bkgdDotColor{1}) &&  length(size(bkgdDotColor{1}))<=2 && ... % a 2-D array
+                all(all(bkgdDotColor{1}>=0)) && all(all(bkgdDotColor{1}<=1)) && ... % of the right values
+                ismember(size(bkgdDotColor{1},2),[1,3,4]) && ...  % and the right size (a column of gray values, a column of RGB values or a column of RGBA values)
+                isnumeric(bkgdDotColor{2}) &&  length(size(bkgdDotColor{2}))<=2 && ... % a 2-D array
+                all(all(bkgdDotColor{2}>=0)) && all(all(bkgdDotColor{2}<=1)) && ... % of the right values
+                ismember(size(bkgdDotColor{2},2),[1,3,4]),... % and the right size (a column of gray values, a column of RGB values or a column of RGBA values)
+                'afcCoherentDots:afcCoherentDots:incorrectValue','bkgdColor not in right format');
+            assert(doCombos || size(bkgdDotColor{1},1)==L1 && size(bkgdDotColor{2},1)==L2,'afcCoherentDots:afcCoherentDots:incompatibleValues','the lengths don''t match.');
+            s.bkgdDotColor = bkgdDotColor;
             
-            
+            %% size
             % dotSize
-            if iscell(dotSize) && length(dotSize)==2 && ...
-                    isnumeric(dotSize{1}) && all(dotSize{1}>0) && ...
-                    isnumeric(dotSize{2}) && all(dotSize{2}>0)
-                s.dotSize = dotSize;
-                if ~doCombos && length(dotSize{1})~=L1 && length(dotSize{2})~=L2
-                    error('the lengths don''t match. ')
-                end
-            else
-                dotSize
-                error('dotSize not in the right format');
-            end
+            assert(iscell(dotSize) && length(dotSize)==2 && ...
+                isnumeric(dotSize{1}) && all(dotSize{1}>0) && ...
+                isnumeric(dotSize{2}) && all(dotSize{2}>0),...
+                'afcCoherentDots:afcCoherentDots:incorrectValue','dotSize not in the right format'); 
+            assert(doCombos || length(dotSize{1})==L1 && length(dotSize{2})==L2,'afcCoherentDots:afcCoherentDots:incompatibleValues','the lengths don''t match.');
+            s.dotSize = dotSize;
             
             % bkgdSize
-            if iscell(bkgdSize) && length(bkgdSize)==2 && ...
-                    isnumeric(bkgdSize{1}) && all(bkgdSize{1}>0) && ...
-                    isnumeric(bkgdSize{2}) && all(bkgdSize{2}>0)
-                s.bkgdSize = bkgdSize;
-                if ~doCombos && length(bkgdSize{1})~=L1 && length(bkgdSize{2})~=L2
-                    error('the lengths don''t match. ')
-                end
-            else
-                bkgdSize
-                error('bkgdSize not in the right format');
-            end
+            assert(iscell(bkgdSize) && length(bkgdSize)==2 && ...
+                isnumeric(bkgdSize{1}) && all(bkgdSize{1}>0) && ...
+                isnumeric(bkgdSize{2}) && all(bkgdSize{2}>0),...
+                'afcCoherentDots:afcCoherentDots:incorrectValue','bkgdSize not in the right format'); 
+            assert(doCombos || length(bkgdSize{1})==L1 && length(bkgdSize{2})==L2,'afcCoherentDots:afcCoherentDots:incompatibleValues','the lengths don''t match.');
+            s.bkgdSize = bkgdSize;
             
-            
+            %% shape
             % dotShape
-            if iscell(dotShape) && length(dotShape)==2 && ...
-                    iscell(dotShape{1}) && all(ismember(dotShape{1}, {'circle','square'})) && ...
-                    iscell(dotShape{2}) && all(ismember(dotShape{2}, {'circle','square'}))
-                s.dotShape = dotShape;
-                if ~doCombos && length(dotShape{1})~=L1 && length(dotShape{2})~=L2
-                    error('the lengths don''t match. ')
-                end
-            else
-                dotShape
-                error('dotShape not in the right format');
-            end
+            assert(iscell(dotShape) && length(dotShape)==2 && ...
+                iscell(dotShape{1}) && all(ismember(dotShape{1}, {'circle','square'})) && ...
+                iscell(dotShape{2}) && all(ismember(dotShape{2}, {'circle','square'})),...
+                'afcCoherentDots:afcCoherentDots:incorrectValue','dotShape not in the right format');
+            assert(doCombos || length(dotShape{1})==L1 && length(dotShape{2})==L2,'afcCoherentDots:afcCoherentDots:incompatibleValues','the lengths don''t match.');
+            s.dotShape = dotShape;
             
             % bkgdShape
-            if iscell(bkgdShape) && length(bkgdShape)==2 && ...
-                    iscell(bkgdShape{1}) && all(ismember(bkgdShape{1}, {'circle','square'})) && ...
-                    iscell(bkgdShape{2}) && all(ismember(bkgdShape{2}, {'circle','square'}))
-                s.bkgdShape = bkgdShape;
-                if ~doCombos && length(bkgdShape{1})~=L1 && length(bkgdShape{2})~=L2
-                    error('the lengths don''t match. ')
-                end
-            else
-                bkgdShape
-                error('bkgdShape not in the right format');
-            end
-            
+            assert(iscell(bkgdShape) && length(bkgdShape)==2 && ...
+                iscell(bkgdShape{1}) && all(ismember(bkgdShape{1}, {'circle','square'})) && ...
+                iscell(bkgdShape{2}) && all(ismember(bkgdShape{2}, {'circle','square'})),...
+                'afcCoherentDots:afcCoherentDots:incorrectValue','bkgdShape not in the right format');
+            assert(doCombos || length(bkgdShape{1})==L1 && length(bkgdShape{2})==L2,'afcCoherentDots:afcCoherentDots:incompatibleValues','the lengths don''t match.');
+            s.bkgdShape = bkgdShape;
+            %% other
             % renderMode
-            if iscell(renderMode) && ischar(renderMode{1}) && ismember(renderMode{1},{'flat','perspective'})
-                s.renderMode = renderMode{1};
-                switch renderMode{1}
-                    case 'flat'
-                        s.renderDistance = NaN;
-                    case 'perspective'
-                        if length(renderMode)==2 && isnumeric(renderMode{2}) && length(renderMode{2})==2 && all(renderMode{2}>0)
-                            s.renderDistance = renderMode{2};
-                        else
-                            renderMode
-                            error('for ''perspective'', renderMode{2} should be a 2 numeric positive number');
-                        end
-                end
-            else
-                renderMode
-                error('renderMode not in the right format');
+            assert(iscell(renderMode) && ischar(renderMode{1}) && ismember(renderMode{1},{'flat','perspective'}),...
+                'afcCoherentDots:afcCoherentDots:incorrectValue','renderMode not in the right format');
+            s.renderMode = renderMode{1};
+            switch renderMode{1}
+                case 'flat'
+                    s.renderDistance = NaN;
+                case 'perspective'
+                    assert(length(renderMode)==2 && isnumeric(renderMode{2}) && length(renderMode{2})==2 && all(renderMode{2}>0),...
+                        'afcCoherentDots:afcCoherentDots:incorrectValue','for ''perspective'', renderMode{2} should be a 2 numeric positive number');
+                    s.renderDistance = renderMode{2};
             end
             
             % maxDuration
-            if iscell(maxDuration) && length(maxDuration)==2 && ...
-                    isnumeric(maxDuration{1}) && all(maxDuration{1}>0) && ...
-                    isnumeric(maxDuration{2}) && all(maxDuration{2}>0)
-                s.maxDuration = maxDuration;
-                if ~doCombos && length(maxDuration{1})~=L1 && length(maxDuration{2})~=L2
-                    error('the lengths don''t match. ')
-                end
-            else
-                maxDuration
-                error('maxDuration not in the right format');
-            end
+            assert(iscell(maxDuration) && length(maxDuration)==2 && ...
+                isnumeric(maxDuration{1}) && all(maxDuration{1}>0) && ...
+                isnumeric(maxDuration{2}) && all(maxDuration{2}>0),...
+                'afcCoherentDots:afcCoherentDots:incorrectValue','maxDuration not in the right format');
+            assert(doCombos || length(maxDuration{1})==L1 && length(maxDuration{2})==L2,'afcCoherentDots:afcCoherentDots:incompatibleValues','the lengths don''t match.');
+            s.maxDuration = maxDuration;
             
             % background
-            if isnumeric(background)
-                s.background = background;
-            else
-                background
-                error('background not in the right format');
-            end
+            assert(isnumeric(background),'afcCoherentDots:afcCoherentDots:incorrectValue','background not in the right format');
+            s.background = background;
+            
             
             % doPostDiscrim
             if doPostDiscrim
@@ -384,76 +273,45 @@ classdef afcCoherentDots<stimManager
             end
             
         end
-        
-        function [stimulus,updateSM,resolutionIndex,stimList,LUT,targetPorts,distractorPorts,...
-                details,interTrialLuminance,text,indexPulses,imagingTasks] =...
-                calcStim(stimulus,trialManager,allowRepeats,resolutions,displaySize,LUTbits,...
-                responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
-            trialManagerClass = class(trialManager);
+
+        function [sm,updateSM,resInd,stimList,LUT,targetPorts,distractorPorts,details,text,indexPulses,imagingTasks,ITL] =...
+                calcStim(sm,tm,st,tR,~) % cR not used
+            resolutions = st.resolutions;
+            displaySize = st.getDisplaySize();
+            LUTbits = st.getLUTbits();
+            responsePorts = tm.getResponsePorts(st.numPorts);
             % 1/30/09 - trialRecords now includes THIS trial
             indexPulses=[];
             imagingTasks=[];
-            [LUT stimulus updateSM]=getLUT(stimulus,LUTbits);
+            [LUT, sm, updateSM]=getLUT(sm,LUTbits);
             
-            [junk, mac] = getMACaddress();
-            sca;
+            [resInd, height, width, hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(sm),getMaxHeight(sm));
             
-            switch mac
-                case {'A41F7278B4DE','A41F729213E2','A41F726EC11C' } %gLab-Behavior rigs 1,2,3
-                    [resolutionIndex height width hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
-                case {'7845C4256F4C', '7845C42558DF','A41F729211B1'} %gLab-Behavior rigs 4,5,6
-                    [resolutionIndex height width hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
-                otherwise
-                    [resolutionIndex height width hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
+            if isnan(resInd)
+                resInd=1;
             end
             
-            if isnan(resolutionIndex)
-                resolutionIndex=1;
-            end
+            scaleFactor=getScaleFactor(sm); % dummy value since we are phased anyways; the real scaleFactor is stored in each phase's stimSpec
             
-            scaleFactor=getScaleFactor(stimulus); % dummy value since we are phased anyways; the real scaleFactor is stored in each phase's stimSpec
-            interTrialLuminance = getInterTrialLuminance(stimulus);
             
-            interTrialDuration = getInterTrialDuration(stimulus);
-            
-            details.pctCorrectionTrials=trialManager.percentCorrectionTrials;
-            details.bias = getRequestBias(trialManager);
-            if ~isempty(trialRecords) && length(trialRecords)>=2
-                lastRec=trialRecords(end-1);
+            details.pctCorrectionTrials=tm.percentCorrectionTrials;
+            if ~isempty(tR) && length(tR)>=2
+                lastRec=tR(end-1);
             else
                 lastRec=[];
             end
-            [targetPorts, distractorPorts, details]=assignPorts(details,lastRec,responsePorts,trialManagerClass,allowRepeats);
+            [targetPorts, distractorPorts, details]=tm.assignPorts(details,lastRec,responsePorts);
             
             
             toggleStim=true; type='expert';
             dynamicMode = true; %false %true
             
             % set up params for computeGabors
-            height = min(height,getMaxHeight(stimulus));
-            width = min(width,getMaxWidth(stimulus));
+            height = min(height,getMaxHeight(sm));
+            width = min(width,getMaxWidth(sm));
             
             % lets save some of the details for later
-            possibleStims.numDots        = stimulus.numDots;
-            possibleStims.bkgdNumDots    = stimulus.bkgdNumDots;
-            possibleStims.dotCoherence   = stimulus.dotCoherence;
-            possibleStims.bkgdCoherence  = stimulus.bkgdCoherence;
-            possibleStims.dotSpeed       = stimulus.dotSpeed;
-            possibleStims.bkgdSpeed      = stimulus.bkgdSpeed;
-            possibleStims.dotDirection   = stimulus.dotDirection;
-            possibleStims.bkgdDirection  = stimulus.bkgdDirection;
-            possibleStims.dotColor       = stimulus.dotColor;
-            possibleStims.bkgdDotColor   = stimulus.bkgdDotColor;
-            possibleStims.dotSize        = stimulus.dotSize;
-            possibleStims.bkgdSize       = stimulus.bkgdSize;
-            possibleStims.dotShape       = stimulus.dotShape;
-            possibleStims.bkgdShape      = stimulus.bkgdShape;
-            possibleStims.renderMode     = stimulus.renderMode;
-            possibleStims.maxDuration    = stimulus.maxDuration;
-            possibleStims.background     = stimulus.background;
-            possibleStims.doCombos       = stimulus.doCombos;
-            details.possibleStims        = possibleStims;
-            details.afcCoherentDotsType  = getType(stimulus,structize(stimulus));
+            details.afcCoherentDotsType  = getType(sm,structize(sm));
             
             % whats the chosen stim?
             if targetPorts==1
@@ -469,129 +327,88 @@ classdef afcCoherentDots<stimManager
             
             stim.height = height;
             stim.width = width;
-            stim.rngMethod = stimulus.ordering.method;
-            if isempty(stimulus.ordering.seed)
+            stim.rngMethod = sm.ordering.method;
+            if isempty(sm.ordering.seed)
                 stim.seedVal = sum(100*clock);
             end
             
-            if stimulus.doCombos
-                % numDots
-                tempVar = randperm(length(stimulus.numDots{chosenStimIndex}));
-                stim.numDots = stimulus.numDots{chosenStimIndex}(tempVar(1));
-                
-                % bkgdNumDots
-                tempVar = randperm(length(stimulus.bkgdNumDots{chosenStimIndex}));
-                stim.bkgdNumDots = stimulus.bkgdNumDots{chosenStimIndex}(tempVar(1));
-                
-                % dotCoherence
-                tempVar = randperm(length(stimulus.dotCoherence{chosenStimIndex}));
-                stim.dotCoherence = stimulus.dotCoherence{chosenStimIndex}(tempVar(1));
-                
-                % bkgdCoherence
-                tempVar = randperm(length(stimulus.bkgdCoherence{chosenStimIndex}));
-                stim.bkgdCoherence = stimulus.bkgdCoherence{chosenStimIndex}(tempVar(1));
-                
-                % dotSpeed
-                tempVar = randperm(length(stimulus.dotSpeed{chosenStimIndex}));
-                stim.dotSpeed = stimulus.dotSpeed{chosenStimIndex}(tempVar(1));
-                
-                % bkgdSpeed
-                tempVar = randperm(length(stimulus.bkgdSpeed{chosenStimIndex}));
-                stim.bkgdSpeed = stimulus.bkgdSpeed{chosenStimIndex}(tempVar(1));
-                
-                % dotDirection
-                tempVar = randperm(length(stimulus.dotDirection{chosenStimIndex}));
-                stim.dotDirection = stimulus.dotDirection{chosenStimIndex}(tempVar(1));
-                
-                % bkgdDirection
-                tempVar = randperm(length(stimulus.bkgdDirection{chosenStimIndex}));
-                stim.bkgdDirection = stimulus.bkgdDirection{chosenStimIndex}(tempVar(1));
-                
-                % dotColor
-                tempVar = randperm(size(stimulus.dotColor{chosenStimIndex},1));
-                stim.dotColor = stimulus.dotColor{chosenStimIndex}(tempVar(1),:);
-                
-                % bkgdDotColor
-                tempVar = randperm(size(stimulus.bkgdDotColor{chosenStimIndex},1));
-                stim.bkgdDotColor = stimulus.bkgdDotColor{chosenStimIndex}(tempVar(1),:);
-                
-                % dotSize
-                tempVar = randperm(length(stimulus.dotSize{chosenStimIndex}));
-                stim.dotSize = stimulus.dotSize{chosenStimIndex}(tempVar(1));
-                
-                % bkgdSize
-                tempVar = randperm(length(stimulus.bkgdSize{chosenStimIndex}));
-                stim.bkgdSize = stimulus.bkgdSize{chosenStimIndex}(tempVar(1));
-                
-                % dotShape
-                tempVar = randperm(length(stimulus.dotShape{chosenStimIndex}));
-                stim.dotShape = stimulus.dotShape{chosenStimIndex}(tempVar(1));
-                
-                % bkgdShape
-                tempVar = randperm(length(stimulus.bkgdShape{chosenStimIndex}));
-                stim.bkgdShape = stimulus.bkgdShape{chosenStimIndex}(tempVar(1));
+            if sm.doCombos
+                stim.numDots = chooseFrom(sm.numDots{chosenStimIndex});
+                stim.bkgdNumDots = chooseFrom(sm.bkgdNumDots{chosenStimIndex});
+                stim.dotCoherence = chooseFrom(sm.dotCoherence{chosenStimIndex});
+                stim.bkgdCoherence = chooseFrom(sm.bkgdCoherence{chosenStimIndex});
+                stim.dotSpeed = chooseFrom(sm.dotSpeed{chosenStimIndex});
+                stim.bkgdSpeed = chooseFrom(sm.bkgdSpeed{chosenStimIndex});
+                stim.dotDirection = chooseFrom(sm.dotDirection{chosenStimIndex});
+                stim.bkgdDirection = chooseFrom(sm.bkgdDirection{chosenStimIndex});
+                stim.dotColor = chooseFrom(sm.dotColor{chosenStimIndex});
+                stim.bkgdDotColor = chooseFrom(sm.bkgdDotColor{chosenStimIndex});
+                stim.dotSize = chooseFrom(sm.dotSize{chosenStimIndex});
+                stim.bkgdSize = chooseFrom(sm.bkgdSize{chosenStimIndex});
+                stim.dotShape = chooseFrom(sm.dotShape{chosenStimIndex});
+                stim.bkgdShape = chooseFrom(sm.bkgdShape{chosenStimIndex});
                 
                 % renderMode
-                stim.renderMode = stimulus.renderMode;
+                stim.renderMode = sm.renderMode;
                 
                 % maxDuration
-                tempVar = randperm(length(stimulus.maxDuration{chosenStimIndex}));
+                tempVar = randperm(length(sm.maxDuration{chosenStimIndex}));
                 if ~ismac
-                    stim.maxDuration = round(stimulus.maxDuration{chosenStimIndex}(tempVar(1))*hz);
+                    stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(tempVar(1))*hz);
                 elseif ismac && hz==0
                     % macs are weird and return a hz of 0 when they really
                     % shouldnt. assume hz = 60 (hack)
-                    stim.maxDuration = round(stimulus.maxDuration{chosenStimIndex}(tempVar(1))*60);
+                    stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(tempVar(1))*60);
                 end
                 
                 % background
-                stim.background = stimulus.background;
+                stim.background = sm.background;
                 
                 % doCombos
-                stim.doCombos = stimulus.doCombos;
+                stim.doCombos = sm.doCombos;
                 
             else
                 % numDots
-                tempVar = randperm(length(stimulus.numDots{chosenStimIndex}));
+                tempVar = randperm(length(sm.numDots{chosenStimIndex}));
                 which = tempVar(1);
                 
-                stim.numDots = stimulus.numDots{chosenStimIndex}(which);
-                stim.bkgdNumDots = stimulus.bkgdNumDots{chosenStimIndex}(which);
-                stim.dotCoherence = stimulus.dotCoherence{chosenStimIndex}(which);
-                stim.bkgdCoherence = stimulus.bkgdCoherence{chosenStimIndex}(which);
-                stim.dotSpeed = stimulus.dotSpeed{chosenStimIndex}(which);
-                stim.bkgdSpeed = stimulus.bkgdSpeed{chosenStimIndex}(which);
-                stim.dotDirection = stimulus.dotDirection{chosenStimIndex}(which);
-                stim.bkgdDirection = stimulus.bkgdDirection{chosenStimIndex}(which);
-                stim.dotColor = stimulus.dotColor{chosenStimIndex}(which,:);
-                stim.bkgdDotColor = stimulus.bkgdDotColor{chosenStimIndex}(which,:);
-                stim.dotSize = stimulus.dotSize{chosenStimIndex}(which);
-                stim.bkgdSize = stimulus.bkgdSize{chosenStimIndex}(which);
-                stim.dotShape = stimulus.dotShape{chosenStimIndex}(which);
-                stim.bkgdShape = stimulus.bkgdShape{chosenStimIndex}(which);
+                stim.numDots = sm.numDots{chosenStimIndex}(which);
+                stim.bkgdNumDots = sm.bkgdNumDots{chosenStimIndex}(which);
+                stim.dotCoherence = sm.dotCoherence{chosenStimIndex}(which);
+                stim.bkgdCoherence = sm.bkgdCoherence{chosenStimIndex}(which);
+                stim.dotSpeed = sm.dotSpeed{chosenStimIndex}(which);
+                stim.bkgdSpeed = sm.bkgdSpeed{chosenStimIndex}(which);
+                stim.dotDirection = sm.dotDirection{chosenStimIndex}(which);
+                stim.bkgdDirection = sm.bkgdDirection{chosenStimIndex}(which);
+                stim.dotColor = sm.dotColor{chosenStimIndex}(which,:);
+                stim.bkgdDotColor = sm.bkgdDotColor{chosenStimIndex}(which,:);
+                stim.dotSize = sm.dotSize{chosenStimIndex}(which);
+                stim.bkgdSize = sm.bkgdSize{chosenStimIndex}(which);
+                stim.dotShape = sm.dotShape{chosenStimIndex}(which);
+                stim.bkgdShape = sm.bkgdShape{chosenStimIndex}(which);
                 
                 % waveform
-                stim.renderMode = stimulus.renderMode;
+                stim.renderMode = sm.renderMode;
                 
                 if ~ismac
-                    stim.maxDuration = round(stimulus.maxDuration{chosenStimIndex}(which)*hz);
+                    stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(which)*hz);
                 elseif ismac && hz==0
                     % macs are weird and return a hz of 0 when they really
                     % shouldnt. assume hz = 60 (hack)
-                    stim.maxDuration = round(stimulus.maxDuration{chosenStimIndex}(which)*60);
+                    stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(which)*60);
                 end
                 
                 % background
-                stim.background = stimulus.background;
+                stim.background = sm.background;
                 
                 % doCombos
-                stim.doCombos = stimulus.doCombos;
+                stim.doCombos = sm.doCombos;
                 
             end
             
             
             % have a version in ''details''
-            details.doCombos       = stimulus.doCombos;
+            details.doCombos       = sm.doCombos;
             details.numDots        = stim.numDots;
             details.bkgdNumDots    = stim.bkgdNumDots;
             details.dotCoherence   = stim.dotCoherence;
@@ -616,7 +433,7 @@ classdef afcCoherentDots<stimManager
             
             
             if isinf(stim.maxDuration)
-                timeout=[];
+                timeout=inf;
             else
                 timeout=stim.maxDuration;
             end
@@ -624,8 +441,8 @@ classdef afcCoherentDots<stimManager
             switch stim.renderMode
                 case 'perspective'
                     % lets make the render distances work here
-                    stim.dotsRenderDistance = stimulus.renderDistance(1) + rand(stim.numDots,1)*(stimulus.renderDistance(2) - stimulus.renderDistance(1));
-                    stim.bkgdRenderDistance = stimulus.renderDistance(1) + rand(stim.bkgdNumDots,1)*(stimulus.renderDistance(2) - stimulus.renderDistance(1));
+                    stim.dotsRenderDistance = sm.renderDistance(1) + rand(stim.numDots,1)*(sm.renderDistance(2) - sm.renderDistance(1));
+                    stim.bkgdRenderDistance = sm.renderDistance(1) + rand(stim.bkgdNumDots,1)*(sm.renderDistance(2) - sm.renderDistance(1));
                     
                     details.dotsRenderDistance = stim.dotsRenderDistance;
                     details.bkgdRenderDistance = stim.bkgdRenderDistance;
@@ -639,7 +456,7 @@ classdef afcCoherentDots<stimManager
             end
             
             % LEDParams
-            [details, stim] = setupLED(details, stim, stimulus.LEDParams,arduinoCONN);
+%            [details, stim] = setupLED(details, stim, sm.LEDParams,arduinoCONN);
             
             
             discrimStim=[];
@@ -648,39 +465,47 @@ classdef afcCoherentDots<stimManager
             discrimStim.scaleFactor=scaleFactor;
             discrimStim.startFrame=0;
             discrimStim.autoTrigger=[];
-            if isnan(timeout)
-                sca;
-                keyboard;
-            end
+            discrimStim.punishResponses=false;
             discrimStim.framesUntilTimeout=timeout;
+            discrimStim.ledON = false; %% presetting here
             
             preRequestStim=[];
-            preRequestStim.stimulus=interTrialLuminance;
+            preRequestStim.stimulus=sm.getInterTrialLuminance();
             preRequestStim.stimType='loop';
             preRequestStim.scaleFactor=0;
             preRequestStim.startFrame=0;
             preRequestStim.autoTrigger=[];
             preRequestStim.punishResponses=false;
+            preRequestStim.ledON = false; %% presetting here
             
-            preResponseStim = [];
-            
-            if stimulus.doPostDiscrim
+           
+            if sm.doPostDiscrim
                 postDiscrimStim = preRequestStim;
             else
                 postDiscrimStim = [];
             end
             
-            interTrialStim.duration = interTrialDuration;
-            details.interTrialDuration = interTrialDuration;
-            details.stimManagerClass = class(stimulus);
-            details.trialManagerClass = trialManagerClass;
+           
+            interTrialStim.interTrialLuminance = sm.getInterTrialLuminance();            
+            interTrialStim.duration = sm.getInterTrialDuration();
+            ITL = sm.getInterTrialLuminance();
+            
+            details.interTrialDuration = sm.getInterTrialDuration();
+            details.stimManagerClass = class(sm);
+            details.trialManagerClass = class(tm);
             details.scaleFactor = scaleFactor;
             
-            if strcmp(trialManagerClass,'nAFC') && details.correctionTrial
+            if strcmp(class(tm),'nAFC') && details.correctionTrial
                 text='correction trial!';
             else
                 text=sprintf('coh: %g',stim.dotCoherence);
             end
+            
+            stimList = {...
+                'preRequestStim',preRequestStim;...
+                'discrimStim',discrimStim;...
+                'postDiscrimStim',postDiscrimStim;...
+                'interTrialStim',interTrialStim};
         end
         
         function [doFramePulse, expertCache, dynamicDetails, textLabel, i, dontclear, indexPulse] = ...
@@ -779,8 +604,8 @@ classdef afcCoherentDots<stimManager
                 bkgdSize = stim.bkgdSize./stim.bkgdRenderDistance;
                 
                 % find dotColor
-                dotColor = repmat(stim.dotColor,stim.numDots,1);
-                bkgdColor = repmat(stim.bkgdDotColor, stim.bkgdNumDots,1);
+                dotColor = repmat(stim.dotColor,stim.numDots,3);
+                bkgdColor = repmat(stim.bkgdDotColor, stim.bkgdNumDots,3);
                 
                 % fill up the background to start with
                 Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -843,7 +668,7 @@ classdef afcCoherentDots<stimManager
             
         end % end function
         
-        function [out newLUT]=extractDetailFields(sm,basicRecords,trialRecords,LUTparams)
+        function [out, newLUT]=extractDetailFields(sm,~,trialRecords,LUTparams)
             newLUT=LUTparams.compiledLUT;
             
             try
@@ -915,19 +740,19 @@ classdef afcCoherentDots<stimManager
                             stimDetails(i).maxDuration = nan;
                         end
                     end
-                    [out.correctionTrial newLUT] = extractFieldAndEnsure(stimDetails,{'correctionTrial'},'scalar',newLUT);
-                    [out.pctCorrectionTrials newLUT] = extractFieldAndEnsure(stimDetails,{'pctCorrectionTrials'},'scalar',newLUT);
-                    [out.doCombos newLUT] = extractFieldAndEnsure(stimDetails,{'doCombos'},'scalar',newLUT);
+                    [out.correctionTrial, newLUT] = extractFieldAndEnsure(stimDetails,{'correctionTrial'},'scalar',newLUT);
+                    [out.pctCorrectionTrials, newLUT] = extractFieldAndEnsure(stimDetails,{'pctCorrectionTrials'},'scalar',newLUT);
+                    [out.doCombos, newLUT] = extractFieldAndEnsure(stimDetails,{'doCombos'},'scalar',newLUT);
                     
-                    [out.pixPerCycsCenter newLUT] = extractFieldAndEnsure(stimDetails,{'pixPerCycs'},'scalar',newLUT);
-                    [out.driftfrequenciesCenter newLUT] = extractFieldAndEnsure(stimDetails,{'driftfrequencies'},'scalar',newLUT);
-                    [out.orientationsCenter newLUT] = extractFieldAndEnsure(stimDetails,{'orientations'},'scalar',newLUT);
-                    [out.phasesCenter newLUT] = extractFieldAndEnsure(stimDetails,{'phases'},'scalar',newLUT);
-                    [out.contrastsCenter newLUT] = extractFieldAndEnsure(stimDetails,{'contrasts'},'scalar',newLUT);
-                    [out.radiiCenter newLUT] = extractFieldAndEnsure(stimDetails,{'radii'},'scalar',newLUT);
+                    [out.pixPerCycsCenter, newLUT] = extractFieldAndEnsure(stimDetails,{'pixPerCycs'},'scalar',newLUT);
+                    [out.driftfrequenciesCenter, newLUT] = extractFieldAndEnsure(stimDetails,{'driftfrequencies'},'scalar',newLUT);
+                    [out.orientationsCenter, newLUT] = extractFieldAndEnsure(stimDetails,{'orientations'},'scalar',newLUT);
+                    [out.phasesCenter, newLUT] = extractFieldAndEnsure(stimDetails,{'phases'},'scalar',newLUT);
+                    [out.contrastsCenter, newLUT] = extractFieldAndEnsure(stimDetails,{'contrasts'},'scalar',newLUT);
+                    [out.radiiCenter, newLUT] = extractFieldAndEnsure(stimDetails,{'radii'},'scalar',newLUT);
                     
-                    [out.maxDuration newLUT] = extractFieldAndEnsure(stimDetails,{'maxDuration'},'scalar',newLUT);
-                    [out.afcGratingType newLUT] = extractFieldAndEnsure(stimDetails,{'afcGratingType'},'scalarLUT',newLUT);
+                    [out.maxDuration, newLUT] = extractFieldAndEnsure(stimDetails,{'maxDuration'},'scalar',newLUT);
+                    [out.afcGratingType, newLUT] = extractFieldAndEnsure(stimDetails,{'afcGratingType'},'scalarLUT',newLUT);
                 else
                     out=handleExtractDetailFieldsException(sm,ex,trialRecords);
                     verifyAllFieldsNCols(out,length(trialRecords));
@@ -938,7 +763,7 @@ classdef afcCoherentDots<stimManager
             verifyAllFieldsNCols(out,length(trialRecords));
         end
         
-        function s=fillLUT(s,method,linearizedRange,plotOn);
+        function s=fillLUT(s,method,linearizedRange,plotOn)
             %function s=fillLUT(s,method,linearizedRange [,plotOn]);
             %stim=fillLUT(stim,'linearizedDefault');
             %note: this calculates and fits gamma with finminsearch each time
@@ -1035,54 +860,11 @@ classdef afcCoherentDots<stimManager
             %method to flush the look up table, see fillLUT
             
             s.LUT=[];
-            s.LUTbits=0;
         end
         
-        function out = getDetails(sm,stim,what)
-            switch what
-                case 'sweptParameters'
-                    if stim.doCombos
-                        sweepnames={'numDots','dotCoherence','dotSpeed','dotDirection','dotSize','dotShape','maxDuration'};
-                        
-                        which = [false false false false false false false];
-                        for i = 1:length(sweepnames)
-                            if length(stim.(sweepnames{i}){1})>1 || length(stim.(sweepnames{i}){2})>1
-                                which(i) = true;
-                            end
-                        end
-                        out1=sweepnames(which);
-                        
-                        if stim.bkgdNumDots{1}>0 || stim.bkgdNumDots{2}>0
-                            sweepnames={'bkgdNumDots','bkgdCoherence','bkgdSpeed','bkgdDirection','bkgdSize','bkgdShape'};
-                            which = [false false false false false false];
-                            for i = 1:length(sweepnames)
-                                if length(stim.(sweepnames{i}){1})>1 || length(stim.(sweepnames{i}){2})>1
-                                    which(i) = true;
-                                end
-                            end
-                            out2=sweepnames(which);
-                        else
-                            out2 = {};
-                        end
-                        
-                        out = {out1{:},out2{:}};
-                        
-                        if size(stim.dotColor{1},1)>1 || size(stim.dotColor{2},1)>1
-                            out{end+1} = 'dotColor';
-                        end
-                        
-                        if size(stim.bkgdDotColor{1},1)>1 || size(stim.bkgdDotColor{2},1)>1
-                            out{end+1} = 'bkgdDotColor';
-                        end
-                    else
-                        error('unsupported');
-                    end
-                otherwise
-                    error('unknown what');
-            end
-        end
         
-        function [out s updateSM]=getLUT(s,bits)
+        
+        function [out, s, updateSM]=getLUT(s,bits)
             if isempty(s.LUT) || s.LUTbits~=bits
                 updateSM=true;
                 s.LUTbits=bits;
@@ -1102,7 +884,7 @@ classdef afcCoherentDots<stimManager
         end
         
         function out = getType(sm,stim)
-            sweptParameters = getDetails(sm,stim,'sweptParameters');
+            sweptParameters = sm.getDetails(stim,'sweptParameters');
             n= length(sweptParameters);
             switch n
                 case 0
@@ -1154,26 +936,66 @@ classdef afcCoherentDots<stimManager
             end
         end
         
-        function out=stimMgrOKForTrialMgr(sm,tm)
-            if isa(tm,'trialManager')
-                switch class(tm)
-                    case 'freeDrinks'
-                        out=false;
-                    case 'nAFC'
-                        out=true;
-                    case {'autopilot','reinforcedAutopilot'}
-                        out=true;
-                    case 'goNoGo'
-                        out=true;
-                    otherwise
-                        out=false;
-                end
-            else
-                error('need a trialManager object')
+        
+        
+        
+        
+    end
+    
+    methods(Static)
+        function out=stimMgrOKForTrialMgr(tm)
+            assert(isa(tm,'trialManager'),'afcCoherentDots:stimMgrOKForTrialMgr:incorrectType','need a trialManager object')
+            switch class(tm)
+                case {'goNoGo','nAFC','autopilot','reinforcedAutopilot'}
+                    out=true;
+                otherwise
+                    out=false;
             end
         end
         
-        
+        function out = getDetails(stim,what)
+            switch what
+                case 'sweptParameters'
+                    if stim.doCombos
+                        sweepnames={'numDots','dotCoherence','dotSpeed','dotDirection','dotSize','dotShape','maxDuration'};
+                        
+                        which = [false false false false false false false];
+                        for i = 1:length(sweepnames)
+                            if length(stim.(sweepnames{i}){1})>1 || length(stim.(sweepnames{i}){2})>1
+                                which(i) = true;
+                            end
+                        end
+                        out1=sweepnames(which);
+                        
+                        if stim.bkgdNumDots{1}>0 || stim.bkgdNumDots{2}>0
+                            sweepnames={'bkgdNumDots','bkgdCoherence','bkgdSpeed','bkgdDirection','bkgdSize','bkgdShape'};
+                            which = [false false false false false false];
+                            for i = 1:length(sweepnames)
+                                if length(stim.(sweepnames{i}){1})>1 || length(stim.(sweepnames{i}){2})>1
+                                    which(i) = true;
+                                end
+                            end
+                            out2=sweepnames(which);
+                        else
+                            out2 = {};
+                        end
+                        
+                        out = {out1{:},out2{:}};
+                        
+                        if size(stim.dotColor{1},1)>1 || size(stim.dotColor{2},1)>1
+                            out{end+1} = 'dotColor';
+                        end
+                        
+                        if size(stim.bkgdDotColor{1},1)>1 || size(stim.bkgdDotColor{2},1)>1
+                            out{end+1} = 'bkgdDotColor';
+                        end
+                    else
+                        error('unsupported');
+                    end
+                otherwise
+                    error('unknown what');
+            end
+        end
     end
     
 end

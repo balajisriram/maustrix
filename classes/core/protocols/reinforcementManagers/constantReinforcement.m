@@ -6,30 +6,30 @@ classdef constantReinforcement<reinforcementManager
     
     methods
         function r=constantReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,requestMode,...
-               msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
+                msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
             % ||constantReinforcement||  class constructor.
             % r=constantReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,requestMode,...
             %   msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
             r=r@reinforcementManager(msPenalty,msPuff,scalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestRewardSizeULorMS,requestMode);
-  
+            
             r = setRewardSizeULorMS(r,rewardSizeULorMS);
-          
+            
         end
         
         function [r, rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM] = ...
-    calcReinforcement(r,trialRecords,compiledRecord, subject)
-
+                calcReinforcement(r,trialRecords,compiledRecord, subject)
+            
             [rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound] = ...
                 calcCommonValues(r,r.rewardSizeULorMS,getRequestRewardSizeULorMS(r));
-
+            
             updateRM=0;
         end
         
-        function d=display(r)
+        function d=disp(r)
             d=[sprintf('\n\t\t\trewardSizeULorMS:\t\t%3.3g',r.rewardSizeULorMS) ...
-               ];
-
-           %add on the superclass 
+                ];
+            
+            %add on the superclass
             d=[d sprintf('\n\t\treinforcementManager:\t') display(r.reinforcementManager)];
         end
         

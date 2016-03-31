@@ -882,7 +882,7 @@ classdef ratrix
                 error('cannot remove a currently running subject, first call stop() on the subject')
             elseif getBoxIDForSubjectID(r,s)~=b
                 error('that subject is not in that box')
-            elseif ~authorCheck(r,author)
+            elseif ~r.authorCheck(author)
                 error('author does not authenticate')
             elseif ~testBoxSubjectDir(box,sub)
                 error('cannot access subject''s directory in box')
@@ -996,7 +996,7 @@ classdef ratrix
                     end
                     
                     if listTrainingStep
-                        stepListing=sprintf('\n%s',display(getTrainingStep(p,i)));
+                        stepListing=sprintf('\n%s',disp(p.trainingSteps{i}));
                     else
                         stepListing='';
                     end

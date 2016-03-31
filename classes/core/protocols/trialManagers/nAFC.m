@@ -17,7 +17,7 @@ classdef nAFC<trialManager
         end
         
         function out=getResponsePorts(trialManager,totalPorts)
-
+            
             out=setdiff(1:totalPorts,getRequestPorts(trialManager,totalPorts)); % old: response ports are all non-request ports
             % 5/4/09 - what if we want nAFC L/R target/distractor, but no request port (using delayManager instead)
             % responsePorts then still needs to only be L/R, not all ports (since request ports is empty)
@@ -29,15 +29,7 @@ classdef nAFC<trialManager
                 end
             end
         end
-        
-        function out=stationOKForTrialManager(t,s)
-            if isa(s,'station')
-                out = s.numPorts>=3;
-            else
-                error('need a station object')
-            end
-        end
-        
+
         function [tm, trialDetails, result, spec, rewardSizeULorMS, requestRewardSizeULorMS, ...
                 msPuff, msRewardSound, msPenalty, msPenaltySound, floatprecision, textures, destRect,updateRM] = ...
                 updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
@@ -62,8 +54,8 @@ classdef nAFC<trialManager
             else
                 correct=[];
             end
-
-
+            
+            
             % ========================================================
             % if the result is a port vector, and we have not yet assigned correct, then the current result must be the trial response
             % because phased trial logic returns the 'result' from previous phase only if it matches a target/distractor
@@ -74,9 +66,9 @@ classdef nAFC<trialManager
                 targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
                 floatprecision, textures, destRect, ...
                 requestRewardDone, punishResponses,compiledRecords,subject);
-
-            if isempty(possibleTimeout)		
-                if ~isempty(result) && ~ischar(result) && isempty(correct) && strcmp(getPhaseLabel(spec),'reinforcement')
+            
+            if isempty(possibleTimeout)
+                if ~isempty(result) && ~ischar(result) && isempty(correct) && strcmp(spec.phaseLabel,'reinforcement')
                     resp=find(result);
                     if length(resp)==1
                         correct = ismember(resp,targetPorts);
@@ -92,10 +84,10 @@ classdef nAFC<trialManager
             else
                 correct=possibleTimeout.correct;
             end
-
+            
             % ========================================================
-            phaseType = getPhaseType(spec);
-            framesUntilTransition=getFramesUntilTransition(spec);
+            phaseType = spec.phaseType;
+            framesUntilTransition=spec.framesUntilTransition;
             % now, if phaseType is 'reinforced', use correct and call updateRewards(tm,correct)
             % this trialManager-specific method should do the following:
             % - call calcReinforcement(RM)
@@ -103,94 +95,59 @@ classdef nAFC<trialManager
             % - call errorStim(SM), correctStim(SM) as necessary and fill in the stimSpec's stimulus field
             updateRM2 = false;
             if ~isempty(phaseType) && strcmp(phaseType,'reinforced') && ~isempty(correct) && framesInPhase==0
-
+                
                 % we only check to do rewards on the first frame of the 'reinforced' phase
-
+                
                 [rm, rewardSizeULorMS, ~, msPenalty, ~, msRewardSound, msPenaltySound, updateRM2] =...
-                    calcReinforcement(getReinforcementManager(tm),trialRecords,compiledRecords, []);
+                    calcReinforcement(tm.reinforcementManager,trialRecords,compiledRecords, []);
                 if updateRM2
                     tm.reinforcementManager = rm;
                 end
-
+                
                 if correct
                     msPuff=0;
                     msPenalty=0;
                     msPenaltySound=0;
-
-                    if window>0
-                        if isempty(framesUntilTransition)
-                            framesUntilTransition = ceil((rewardSizeULorMS/1000)/ifi);
-                        end
-                        numCorrectFrames=ceil((rewardSizeULorMS/1000)/ifi);
-
-                    elseif strcmp(getDisplayMethod(tm),'LED')
-                        if isempty(framesUntilTransition)
-                            framesUntilTransition=ceil(getHz(spec)*rewardSizeULorMS/1000);
-                        else
-                            framesUntilTransition
-                            error('LED needs framesUntilTransition empty for reward')
-                        end
-                        numCorrectFrames=ceil(getHz(spec)*rewardSizeULorMS/1000);
-                    else
-                        error('huh?')
+                    
+                    if isempty(framesUntilTransition)
+                        framesUntilTransition = ceil((rewardSizeULorMS/1000)/ifi);
                     end
-                    spec=setFramesUntilTransition(spec,framesUntilTransition);
+                    numCorrectFrames=ceil((rewardSizeULorMS/1000)/ifi);
+                    
+                    spec.framesUntilTransition=framesUntilTransition;
                     [cStim, correctScale] = correctStim(sm,numCorrectFrames);
-                    spec=setScaleFactor(spec,correctScale);
+                    spec.scaleFactor = correctScale;
                     strategy='noCache';
-                    if window>0
-                        [floatprecision, cStim] = determineColorPrecision(tm, cStim, strategy);
-                        textures = cacheTextures(tm,strategy,cStim,window,floatprecision);
-                        destRect = determineDestRect(tm, window, correctScale, cStim, strategy);
-                    elseif strcmp(getDisplayMethod(tm),'LED')
-                        floatprecision=[];
-                    else
-                        error('huh?')
-                    end
+                    [floatprecision, cStim] = tm.determineColorPrecision(cStim, strategy);
+                    textures = tm.cacheTextures(strategy,cStim,window,floatprecision);
+                    destRect = tm.determineDestRect(window, correctScale, cStim, strategy);
+                    
                     spec=setStim(spec,cStim);
                 else
                     rewardSizeULorMS=0;
                     msRewardSound=0;
                     msPuff=0; % for now, we don't want airpuffs to be automatic punishment, right?
-
-                    if window>0
-                        if isempty(framesUntilTransition)
-                            framesUntilTransition = ceil((msPenalty/1000)/ifi);
-                        end
-                        numErrorFrames=ceil((msPenalty/1000)/ifi);
-
-                    elseif strcmp(getDisplayMethod(tm),'LED')
-                        if isempty(framesUntilTransition)
-                            framesUntilTransition=ceil(getHz(spec)*msPenalty/1000);
-                        else
-                            framesUntilTransition
-                            error('LED needs framesUntilTransition empty for reward')
-                        end
-                        numErrorFrames=ceil(getHz(spec)*msPenalty/1000);
-                    else
-                        error('huh?')
+                    
+                    if isempty(framesUntilTransition)
+                        framesUntilTransition = ceil((msPenalty/1000)/ifi);
                     end
-                    spec=setFramesUntilTransition(spec,framesUntilTransition);
+                    numErrorFrames=ceil((msPenalty/1000)/ifi);
+                    
+                    spec.framesUntilTransition=framesUntilTransition;
                     [eStim, errorScale] = errorStim(sm,numErrorFrames);
-                    spec=setScaleFactor(spec,errorScale);
+                    spec.scaleFactor=errorScale;
                     strategy='noCache';
-                    if window>0
-                        [floatprecision, eStim] = determineColorPrecision(tm, eStim, strategy);
-                        textures = cacheTextures(tm,strategy,eStim,window,floatprecision);
-                        destRect=Screen('Rect',window);
-                    elseif strcmp(getDisplayMethod(tm),'LED')
-                        floatprecision=[];
-                    else
-                        error('huh?')
-                    end
+                    [floatprecision, eStim] = tm.determineColorPrecision(eStim, strategy);
+                    textures = tm.cacheTextures(strategy,eStim,window,floatprecision);
+                    destRect=Screen('Rect',window);
                     spec=setStim(spec,eStim);
                 end
-
+                
             end % end reward handling
-
+            
             trialDetails.correct=correct;
             updateRM = updateRM1 || updateRM2;
-
+            
         end  % end function
         
     end
@@ -203,14 +160,69 @@ classdef nAFC<trialManager
             end
             out=true;
         end % end function
+        
+        function [targetPorts, distractorPorts, details]=assignPorts(details,lastTrialRec,responsePorts)
+            % figure out if this is a correction trial
+            lastResult=[];
+            lastCorrect=[];
+            lastWasCorrection=0;
+            
+            if ~isempty(lastTrialRec) % if there were previous trials
+                try
+                    lastResult=find(lastTrialRec.result);
+                catch
+                    lastResult=[];
+                end
+                if isfield(lastTrialRec,'trialDetails') && isfield(lastTrialRec.trialDetails,'correct')
+                    lastCorrect=lastTrialRec.trialDetails.correct;
+                else
+                    try
+                        lastCorrect=lastTrialRec.correct;
+                    catch
+                        lastCorrect=[];
+                    end
+                end
+                
+                if any(strcmp(fields(lastTrialRec.stimDetails),'correctionTrial'))
+                    lastWasCorrection=lastTrialRec.stimDetails.correctionTrial;
+                else
+                    lastWasCorrection=0;
+                end
+                
+                if length(lastResult)>1
+                    lastResult=lastResult(1);
+                end
+            end
+            
+            % determine correct port
+            if ~isempty(lastCorrect) && ~isempty(lastResult) && ~lastCorrect && length(lastTrialRec.targetPorts)==1 && (lastWasCorrection || rand<details.pctCorrectionTrials)
+                details.correctionTrial=1;
+                %'correction trial!'
+                targetPorts=lastTrialRec.targetPorts; % same ports are correct
+            else
+                details.correctionTrial=0;
+                targetPorts=responsePorts(ceil(rand*length(responsePorts))); %choose random response port to be correct answer
+            end
+            distractorPorts=setdiff(responsePorts,targetPorts);
+            
+            
+        end
+        
+        function out=stationOKForTrialManager(s)
+            if isa(s,'station')
+                out = s.numPorts>=3;
+            else
+                error('need a station object')
+            end
+        end
     end
     
-    methods (Access = private)
+    methods (Access = ?trialManager)
         function [stimSpecs, startingStimSpecInd] = createStimSpecsFromParams(tm,stimList,targetPorts,distractorPorts,requestPorts,hz,indexPulses)
             %	INPUTS:
             %		trialManager - the trialManager object (contains the delayManager and responseWindow params)
-            %		stimList - cell array :: 
-            %             { 'stimName1', stimParam1; 
+            %		stimList - cell array ::
+            %             { 'stimName1', stimParam1;
             %               'stimName2', stimParams2;...}
             %		targetPorts - the target ports for this trial
             %		distractorPorts - the distractor ports for this trial
@@ -234,7 +246,7 @@ classdef nAFC<trialManager
             %  - preRequestStim(nonempty)
             %  - discrimStim(nonempty)
             %  - postDiscrimStim(can be empty)
-
+            
             
             which = strcmp('preRequestStim',stimNames);
             validateattributes(stimParams{which},{'struct'},{'nonempty'});
@@ -278,18 +290,18 @@ classdef nAFC<trialManager
                 criterion={doNothing,discrimIndex,requestPorts,discrimIndex};
             end
             stimSpecs{i} = stimSpec(preRequestStim.stimulus,criterion,preRequestStim.stimType,preRequestStim.startFrame,...
-                framesUntilOnset,preRequestStim.autoTrigger,preRequestStim.scaleFactor,0,hz,'pre-request','pre-request',...
+                framesUntilOnset,preRequestStim.autoTrigger,preRequestStim.scaleFactor,false,hz,'pre-request','pre-request',...
                 preRequestStim.punishResponses,false,[],preRequestStim.ledON);
             i=i+1;
             
             % discrim
-            criterion={doNothing,i+1,[targetPorts distractorPorts],reinforcementIndex}; 
+            criterion={doNothing,i+1,[targetPorts distractorPorts],reinforcementIndex};
             % we dont know if 'i+1' is postDiscrim or reinforcement right now...but if you respond, go to reinforcement
             which = strcmp('discrimStim',stimNames);
             discrimStim = stimParams{which};
-            framesUntilTimeoutDiscrim=discrimStim.framesUntilTimeout;           
+            framesUntilTimeoutDiscrim=discrimStim.framesUntilTimeout;
             stimSpecs{i} = stimSpec(discrimStim.stimulus,criterion,discrimStim.stimType,discrimStim.startFrame,...
-                framesUntilTimeoutDiscrim,discrimStim.autoTrigger,discrimStim.scaleFactor,0,hz,'discrim','discrim',...
+                framesUntilTimeoutDiscrim,discrimStim.autoTrigger,discrimStim.scaleFactor,false,hz,'discrim','discrim',...
                 false,true,indexPulses,discrimStim.ledON); % do not punish responses here
             i=i+1;
             % #### what is the purpose of responseWindow in trialManager????
@@ -309,21 +321,23 @@ classdef nAFC<trialManager
                         postDiscrimName = 'post-discrim';
                     end
                     stimSpecs{i} = stimSpec(postDiscrimStim(k).stimulus,criterion,postDiscrimStim(k).stimType,postDiscrimStim(k).startFrame,...
-                        postDiscrimStim(k).framesUntilTimeout,postDiscrimStim(k).autoTrigger,postDiscrimStim(k).scaleFactor,0,hz,'post-discrim',postDiscrimName,...
+                        postDiscrimStim(k).framesUntilTimeout,postDiscrimStim(k).autoTrigger,postDiscrimStim(k).scaleFactor,false,hz,'post-discrim',postDiscrimName,...
                         postDiscrimStim(k).punishResponses,false,[],postDiscrimStim(k).ledON);
                     i=i+1;
                 end
             end
-            
+
             % required reinforcement phase
             criterion={[],i+1};
-            stimSpecs{i} = stimSpec([],criterion,'cache',0,[],[],0,0,hz,'reinforced','reinforcement',false,false,[],false); % do not punish responses here, and LED is hardcoded to false (bad idea in general)
+            stimSpecs{i} = stimSpec([],criterion,'cache',0,[],[],0,false,hz,'reinforced','reinforcement',false,false,[],false); % do not punish responses here, and LED is hardcoded to false (bad idea in general)
             i=i+1;
             
             % required final ITL phase
+            which = strcmp('interTrialStim',stimNames);
+            interTrialStim = stimParams{which};
             criterion={[],i+1};
-            stimSpecs{i} = stimSpec(interTrialLuminance,criterion,'cache',0,interTrialStim.duration,[],0,1,hz,'itl','intertrial luminance',false,false,[],false); % do not punish responses here. itl has LED hardcoded to false
-            i=i+1; 
+            stimSpecs{i} = stimSpec(interTrialStim.interTrialLuminance,criterion,'cache',0,interTrialStim.duration,[],0,true,hz,'itl','intertrial luminance',false,false,[],false); % do not punish responses here. itl has LED hardcoded to false
+            i=i+1;
         end
     end
 end

@@ -1,10 +1,9 @@
 classdef autopilot<trialManager
     
-    properties
-    end
+
     
     methods
-        function t=autopilot(pctCorrectionTrials, soundManager, rewardManager, eyeController, frameDropCorner, dropFrames, ...
+        function t=autopilot(soundManager, rewardManager, eyeController, frameDropCorner, dropFrames, ...
                 displayMethod, requestPort, saveDetailedFrameDrops, delayManager, responseWindowMs, showText)
             % AUTOPILOT  class constructor.
             % t=autopilot(percentCorrectionTrials,soundManager,...
@@ -13,22 +12,11 @@ classdef autopilot<trialManager
             %
             % Used for the whiteNoise, bipartiteField, fullField, and gratings stims, which don't require any response to go through the trial
             % basically just play through the stims, with no sounds, no correction trials
+            
+            % requestPorts
+            assert(ismember(requestPort,{'none'}),'autopilot:autopilot:incompatibleValue','requestPort has to be ''none''');
             d=sprintf('autopilot');
             t=t@trialManager(soundManager,rewardManager,eyeController,d,frameDropCorner,dropFrames,displayMethod,requestPort,saveDetailedFrameDrops,delayManager,responseWindowMs,showText);
-
-            
-            % percentCorrectionTrials
-            if pctCorrectionTrials>=0 && pctCorrectionTrials<=1
-                t.percentCorrectionTrials=pctCorrectionTrials;
-            else
-                error('1 >= percentCorrectionTrials >= 0')
-            end
-
-            % requestPorts
-            if isempty(requestPort)
-                requestPort='none'; % default autopilot requestPorts should be 'none'
-            end
-
         end
         
         function out = getPercentCorrectionTrials(tm)
@@ -49,13 +37,13 @@ classdef autopilot<trialManager
         end
         
         function [tm, trialDetails, result, spec, rewardSizeULorMS, requestRewardSizeULorMS, ...
-    msPuff, msRewardSound, msPenalty, msPenaltySound, floatprecision, textures, destRect, updateRM] = ...
-    updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
-    targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
-    floatprecision, textures, destRect, ...
-    requestRewardDone, punishResponses,compiledRecords,subject)
+                msPuff, msRewardSound, msPenalty, msPenaltySound, floatprecision, textures, destRect, updateRM] = ...
+                updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
+                targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
+                floatprecision, textures, destRect, ...
+                requestRewardDone, punishResponses,compiledRecords,subject)
             % autopilot updateTrialState does nothing!
-
+            
             rewardSizeULorMS=0;
             requestRewardSizeULorMS=0;
             msPuff=0;
@@ -72,6 +60,16 @@ classdef autopilot<trialManager
         end  % end function
 
         
+    end
+    
+    methods(Static)
+        
+        function [targetPorts, distractorPorts, details]=assignPorts(details,~,responsePorts)
+            temp = [1,3];
+            x = randperm(length(temp));
+            targetPorts=temp(x(1));
+            distractorPorts=setdiff(responsePorts,temp);
+        end
     end
     
 end

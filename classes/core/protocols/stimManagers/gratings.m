@@ -272,17 +272,19 @@ classdef gratings<stimManager
         
         function [stimulus,updateSM,resolutionIndex,stimList,LUT,targetPorts,distractorPorts,...
                 details,interTrialLuminance,text,indexPulses,imagingTasks] =...
-                calcStim(stimulus,trialManager,allowRepeats,resolutions,displaySize,LUTbits,...
-                responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
+                calcStim(stimulus,trialManager,station,trialRecords,compiledRecords)
+            resolutions = station.resolutions;
+            LUTbits = st.getLUTbits();
+            responsePorts = trialManager.getResponsePorts(station.numPorts); 
             % see ratrixPath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
             % 1/3/0/09 - trialRecords now includes THIS trial
             indexPulses=[];
             imagingTasks=[];
-            LUTbits
+            
             displaySize
-            [LUT stimulus updateSM]=getLUT(stimulus,LUTbits);
+            [LUT, stimulus, updateSM]=getLUT(stimulus,LUTbits);
             % [resolutionIndex height width hz]=chooseLargestResForHzsDepthRatio(resolutions,[100 60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
-            [resolutionIndex height width hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
+            [resolutionIndex, height, width, hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
             trialManagerClass = class(trialManager);
             OLED=false;
             if OLED
@@ -305,26 +307,20 @@ classdef gratings<stimManager
                 resolutionIndex=1;
             end
             
-            scaleFactor=getScaleFactor(stimulus); % dummy value since we are phased anyways; the real scaleFactor is stored in each phase's stimSpec
+            scaleFactor=stimulus.scaleFactor;
             interTrialLuminance = getInterTrialLuminance(stimulus);
             interTrialDuration = getInterTrialDuration(stimulus);
-            toggleStim=true;
             type='expert';
             
-            dynamicMode = true; % do things dynamically as in driftdemo2
-            % dynamicMode=false;
             
             % =====================================================================================================
-            
-            details.pctCorrectionTrials=.5; % need to change this to be passed in from trial manager
-            details.bias = getRequestBias(trialManager);
             
             if ~isempty(trialRecords) && length(trialRecords)>=2
                 lastRec=trialRecords(end-1);
             else
                 lastRec=[];
             end
-            [targetPorts distractorPorts details]=assignPorts(details,lastRec,responsePorts,trialManagerClass,allowRepeats);
+            [targetPorts, distractorPorts, details]=trialManager.assignPorts(details,lastRec,responsePorts);
             
             % =====================================================================================================
             
@@ -1336,7 +1332,7 @@ classdef gratings<stimManager
             
         end % end function
         
-        function [out newLUT]=extractDetailFields(sm,basicRecords,trialRecords,LUTparams)
+        function [out, newLUT]=extractDetailFields(sm,basicRecords,trialRecords,LUTparams)
             newLUT=LUTparams.compiledLUT;
             
             try
@@ -1523,7 +1519,7 @@ classdef gratings<stimManager
             end
         end
         
-        function [out s updateSM]=getLUT(s,bits);
+        function [out, s, updateSM]=getLUT(s,bits)
             if isempty(s.LUT) || s.LUTbits~=bits
                 updateSM=true;
                 s.LUTbits=bits;
@@ -1593,7 +1589,7 @@ classdef gratings<stimManager
             end
         end
         
-        function [analysisdata cumulativedata] = physAnalysis(stimManager,spikeRecord,stimulusDetails,plotParameters,parameters,cumulativedata,eyeData,LFPRecord)
+        function [analysisdata, cumulativedata] = physAnalysis(stimManager,spikeRecord,stimulusDetails,plotParameters,parameters,cumulativedata,eyeData,LFPRecord)
             
             %% processed clusters and spikes
             theseSpikes = logical(spikeRecord.processedClusters);
@@ -1841,7 +1837,7 @@ classdef gratings<stimManager
             
         end
         
-        function [analysisdata cumulativedata] = physAnalysisDev(stimManager,spikeRecord,stimulusDetails,plotParameters,parameters,cumulativedata,eyeData,LFPRecord)
+        function [analysisdata, cumulativedata] = physAnalysisDev(stimManager,spikeRecord,stimulusDetails,plotParameters,parameters,cumulativedata,eyeData,LFPRecord)
             
             %% processed clusters and spikes
             theseSpikes = logical(spikeRecord.processedClusters);

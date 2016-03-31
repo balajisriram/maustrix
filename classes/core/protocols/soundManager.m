@@ -65,7 +65,7 @@ classdef soundManager
             end
         end
 
-        function [sm updateCache]=cacheSounds(sm,station)
+        function [sm, updateCache]=cacheSounds(sm,station)
             if isa(station,'station')
 
                 updateCache=false;
@@ -162,11 +162,6 @@ classdef soundManager
             end
         end
         
-        function sm=close(sm)
-            error('does anyone call this?')
-            PsychPortAudio('Close');
-        end
-        
         function s=decache(s)
 
             for i=1:length(s.clips)
@@ -179,14 +174,13 @@ classdef soundManager
             s.clipDurs=zeros(1,length(s.clips));
         end
         
-        function d=display(s)
+        function d=disp(s)
             d=[];
             for i=1:length(s.clips)
-                d=[d '\n\t\t\t\t' display(s.clips{i})];
+                d=[d '\n\t\t\t\t' disp(s.clips{i})];
 
             end
             
-            %d=sprintf(d); ##### doesnt do anything anyways
         end
         
         function [clip, sampleRate, sm, updateSMCache] = getSound(sm,soundName)

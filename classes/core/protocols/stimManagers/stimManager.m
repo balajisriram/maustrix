@@ -1,11 +1,11 @@
 classdef stimManager
     
     properties
-        maxWidth=0;
-        maxHeight=0;
-        scaleFactor=[];
-        interTrialLuminance=0;
-        interTrialDuration=1;
+        maxWidth
+        maxHeight
+        scaleFactor
+        interTrialLuminance
+        interTrialDuration
     end
     
     methods
@@ -374,20 +374,6 @@ classdef stimManager
             
         end
         
-        %this needs to have access class 'protected' (subclasses need to use it,
-        %but others should not be allowed to access it).  but have to upgrade to
-        %matlab's new OOP architecture to get protected members.
-        function i=getInterTrialDuration(s)
-            i=s.interTrialDuration;
-        end
-        
-        %this needs to have access class 'protected' (subclasses need to use it,
-        %but others should not be allowed to access it).  but have to upgrade to
-        %matlab's new OOP architecture to get protected members.
-        function i=getInterTrialLuminance(s)
-            i=s.interTrialLuminance;
-        end
-        
         function out = getLEDParams(sm)
             out = sm.LEDParams;
         end
@@ -528,12 +514,6 @@ classdef stimManager
             
             value = false;
         end
-        
-        function [analysisdata cumulativedata] = physAnalysis(stimManager,spikeRecord,stimData,plotParameters,parameters,cumulativedata,eyeData,LFPRecord)
-            % default function returns unchanged analysisdata
-            warning('using default physAnalysis that does nothing');
-            analysisdata=[];
-        end % end function
         
         function [stimulus, updateSM, stimulusDetails]=postScreenResetCheckAndOrCache(stimulus,updateSM,stimulusDetails);
             %by default, this method does nothing.  some stims can check or cache
@@ -802,6 +782,23 @@ classdef stimManager
         
         function out=stationOKForStimManager(varargin)
             out=1; 
+        end
+        
+        function [analysisdata, cumulativedata] = physAnalysis(stimManager,spikeRecord,stimData,plotParameters,parameters,cumulativedata,eyeData,LFPRecord)
+            % default function returns unchanged analysisdata
+            warning('using default physAnalysis that does nothing');
+            analysisdata=[];
+        end % end function
+        
+        
+    end
+    
+    methods (Access = protected)
+        function i=getInterTrialDuration(s)
+            i=s.interTrialDuration;
+        end
+        function i=getInterTrialLuminance(s)
+            i=s.interTrialLuminance;
         end
     end
 end

@@ -10,36 +10,26 @@ classdef changeDetectorTM<trialManager
             % t=changeDetectorTM(soundManager,percentCatchTrials,rewardManager,
             %         [eyeController],[frameDropCorner],[dropFrames],[displayMethod],[requestPorts],[saveDetailedFramedrops],
             %		  [delayManager],[responseWindowMs],[showText])
-
- 
-                    d=sprintf(['n changeDetectorTM' ...
-                        '\n\t\t\tpercentCatchTrials:\t%g'], ...
-                        percentCatchTrials);
-                    t=t@trialManager(soundManager,rewardManager,eyeController,d,frameDropCorner,dropFrames,displayMethod,requestPort,saveDetailedFrameDrops,delayManager,responseWindowMs,showText);
-
-                    % percentCorrectionTrials
-                    if percentCatchTrials>=0 && percentCatchTrials<=1
-                        t.percentCatchTrials=percentCatchTrials;
-                    else
-                        error('1 >= percentCatchTrials >= 0')
-                    end
-
-                   
-
+            
+            
+            d=sprintf(['n changeDetectorTM' ...
+                '\n\t\t\tpercentCatchTrials:\t%g'], ...
+                percentCatchTrials);
+            t=t@trialManager(soundManager,rewardManager,eyeController,d,frameDropCorner,dropFrames,displayMethod,requestPort,saveDetailedFrameDrops,delayManager,responseWindowMs,showText);
+            
+            % percentCorrectionTrials
+            if percentCatchTrials>=0 && percentCatchTrials<=1
+                t.percentCatchTrials=percentCatchTrials;
+            else
+                error('1 >= percentCatchTrials >= 0')
+            end
+            
+            
+            
         end
         
-        function out = checkPorts(tm,targetPorts,distractorPorts)
-
-            if isempty(targetPorts) && isempty(distractorPorts)
-                error('targetPorts and distractorPorts cannot both be empty in nAFC');
-            end
-
-            out=true;
-
-        end % end function
-        
         function [stimSpecs, startingStimSpecInd] = createStimSpecsFromParams(trialManager,preRequestStim,preResponseStim,discrimStim,postDiscrimStim,...
-    targetPorts,distractorPorts,requestPorts,interTrialLuminance,hz,indexPulses)
+                targetPorts,distractorPorts,requestPorts,interTrialLuminance,hz,indexPulses)
             %	INPUTS:
             %		trialManager - the trialManager object (contains the delayManager and responseWindow params)
             %		preRequestStim - a struct containing params for the preOnset phase
@@ -53,14 +43,14 @@ classdef changeDetectorTM<trialManager
             %		indexPulses - something to do w/ indexPulses, apparently only during discrim phases
             %	OUTPUTS:
             %		stimSpecs, startingStimSpecInd
-
+            
             % there are two ways to have no pre-request/pre-response phase:
             %	1) have calcstim return empty preRequestStim/preResponseStim structs to pass to this function!
             %	2) the trialManager's delayManager/responseWindow params are set so that the responseWindow starts at 0
             %		- NOTE that this cannot affect the preOnset phase (if you dont want a preOnset, you have to pass an empty out of calcstim)
-
+            
             % should the stimSpecs we return be dependent on the trialManager class? - i think so...because autopilot does not have reinforcement, but for now nAFC/freeDrinks are the same...
-
+            
             % check for empty preRequestStim/preResponseStim and compare to values in trialManager.delayManager/responseWindow
             % if not compatible, ERROR
             % nAFC should not be allowed to have an empty preRequestStim (but freeDrinks can)
@@ -71,34 +61,34 @@ classdef changeDetectorTM<trialManager
             if isempty(preResponseStim) && responseWindowMs(1)~=0
                 error('cannot have nonzero start of responseWindow with no preResponseStim');
             end
-
+            
             % get an optional autorequest from the delayManager
-            dm = trialManager.delayManager; 
+            dm = trialManager.delayManager;
             framesUntilOnset=floor(trialManager.delayManager.calcAutoRequest*hz/1000);
             
             % get responseWindow
             responseWindow=floor(responseWindowMs*hz/1000); % can you floor inf?
-
+            
             % now generate our stimSpecs
             startingStimSpecInd=1;
             i=1;
             addedPreResponsePhase=0;
             addedPostDiscrimPhase=0;
             addedDiscrimPhase = 0;
-
+            
             if ~isempty(preResponseStim) && responseWindow(1)~=0
                 addedPreResponsePhase=addedPreResponsePhase+1;
             end
-
+            
             if ~isempty(postDiscrimStim)
                 addedPostDiscrimPhase=addedPostDiscrimPhase+1;
             end
-
+            
             if ~isempty(discrimStim)
                 addedDiscrimPhase=addedDiscrimPhase+1;
             end
-
-
+            
+            
             % optional preOnset phase
             if ~isempty(preRequestStim) % only some classes have the pre-request phase if no delayManager in 'nAFC' class
                 if preRequestStim.punishResponses
@@ -113,7 +103,7 @@ classdef changeDetectorTM<trialManager
                     error('cannot have empty requestPorts with no auto-request!');
                 end
             end
-
+            
             % required preResponse phase
             if isempty(preResponseStim)
                 error('cannot have changeDetectorTM and have empty preResponseStim');
@@ -128,10 +118,10 @@ classdef changeDetectorTM<trialManager
             stimSpecs{i} = stimSpec(preResponseStim.stimulus,criterion,preResponseStim.stimType,preResponseStim.startFrame,...
                 preResponseStim.framesUntilTimeout,preResponseStim.autoTrigger,preResponseStim.scaleFactor,0,hz,'pre-response','pre-response',preResponseStim.punishResponses,false);
             i=i+1;
-
+            
             % for changeDetectorTM, discrim stim may be optional (for catch
             % trials)
-
+            
             criterion={[],i+1,[targetPorts distractorPorts],i+1+addedPostDiscrimPhase};
             if isinf(responseWindow(2))
                 framesUntilTimeout=[];
@@ -145,16 +135,16 @@ classdef changeDetectorTM<trialManager
                     framesUntilTimeout=discrimStim.framesUntilTimeout;
                 end
             end
-
+            
             stimSpecs{i} = stimSpec(discrimStim.stimulus,criterion,discrimStim.stimType,discrimStim.startFrame,...
                 framesUntilTimeout,discrimStim.autoTrigger,discrimStim.scaleFactor,0,hz,'discrim','discrim',false,true,indexPulses); % do not punish responses here
             i=i+1;
-
+            
             % optional postDiscrim Phase
             if ~isempty(postDiscrimStim) % currently just check for existence. lets figure out a more complicated set of requirements later
                 % criterion is the similar as for discrim
                 criterion={[],i+1,[targetPorts distractorPorts],i+1};
-
+                
                 % cannot punish responses in postDiscrimStim
                 if postDiscrimStim.punishResponses
                     error('cannot punish responses in postDiscrimStim');
@@ -172,8 +162,8 @@ classdef changeDetectorTM<trialManager
                     framesUntilTimeoutPostDiscrim,postDiscrimStim.autoTrigger,postDiscrimStim.scaleFactor,0,hz,'post-discrim','post-discrim',postDiscrimStim.punishResponses,false);
                 i=i+1;
             end
-
-
+            
+            
             % required reinforcement phase
             criterion={[],i+1};
             stimSpecs{i} = stimSpec([],criterion,'cache',0,[],[],0,0,hz,'reinforced','reinforcement',false,false); % do not punish responses here
@@ -182,7 +172,7 @@ classdef changeDetectorTM<trialManager
             criterion={[],i+1};
             stimSpecs{i} = stimSpec(interTrialLuminance,criterion,'cache',0,1,[],0,1,hz,'itl','intertrial luminance',false,false); % do not punish responses here
             i=i+1;
-
+            
         end
         
         function out = getPercentCatchTrials(tm)
@@ -191,16 +181,16 @@ classdef changeDetectorTM<trialManager
         
         
         function out=getRequestRewardSizeULorMS(trialManager)
-
+            
             out=trialManager.requestRewardSizeULorMS;
         end
         
         function out=getResponsePorts(trialManager,totalPorts)
-
+            
             out=setdiff(1:totalPorts,getRequestPorts(trialManager,totalPorts)); % old: response ports are all non-request ports
             % 5/4/09 - what if we want nAFC L/R target/distractor, but no request port (using delayManager instead)
             % responsePorts then still needs to only be L/R, not all ports (since request ports is empty)
-
+            
             enableCenterPortResponseWhenNoRequestPort=false; %nAFC removes the center port
             if ~enableCenterPortResponseWhenNoRequestPort
                 if isempty(getRequestPorts(trialManager,totalPorts)) % removes center port if no requestPort defined
@@ -218,11 +208,11 @@ classdef changeDetectorTM<trialManager
         end
         
         function [tm trialDetails result spec rewardSizeULorMS requestRewardSizeULorMS ...
-    msPuff msRewardSound msPenalty msPenaltySound floatprecision textures destRect, updateRM] = ...
-    updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
-    targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
-    floatprecision, textures, destRect, ...
-    requestRewardDone, punishResponses,compiledRecords,subject)
+                msPuff msRewardSound msPenalty msPenaltySound floatprecision textures destRect, updateRM] = ...
+                updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
+                targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
+                floatprecision, textures, destRect, ...
+                requestRewardDone, punishResponses,compiledRecords,subject)
             % This function is a tm-specific method to update trial state before every flip.
             % Things done here include:
             %   - set trialRecords.correct and trialRecords.result as necessary
@@ -235,13 +225,13 @@ classdef changeDetectorTM<trialManager
             msRewardSound=0;
             msPenalty=0;
             msPenaltySound=0;
-
+            
             if isfield(trialRecords(end),'trialDetails') && isfield(trialRecords(end).trialDetails,'correct')
                 correct=trialRecords(end).trialDetails.correct;
             else
                 correct=[];
             end
-
+            
             % ========================================================
             % if the result is a port vector, and we have not yet assigned correct, then the current result must be the trial response
             % because phased trial logic returns the 'result' from previous phase only if it matches a target/distractor
@@ -252,7 +242,7 @@ classdef changeDetectorTM<trialManager
                 targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
                 floatprecision, textures, destRect, ...
                 requestRewardDone, punishResponses,compiledRecords,subject);
-            if isempty(possibleTimeout)		
+            if isempty(possibleTimeout)
                 if ~isempty(result) && ~ischar(result) && isempty(correct) && strcmp(spec.phaseLabel,'reinforcement')
                     resp=find(result);
                     if length(resp)==1
@@ -269,7 +259,7 @@ classdef changeDetectorTM<trialManager
             else
                 correct=possibleTimeout.correct;
             end
-
+            
             % ========================================================
             phaseType = spec.phaseType;
             framesUntilTransition=spec.framesUntilTransition;
@@ -286,18 +276,18 @@ classdef changeDetectorTM<trialManager
                 if updateRM2
                     tm.reinforcementManager = rm;
                 end
-
+                
                 if correct
                     msPuff=0;
                     msPenalty=0;
                     msPenaltySound=0;
-
+                    
                     if window>0
                         if isempty(framesUntilTransition)
                             framesUntilTransition = ceil((rewardSizeULorMS/1000)/ifi);
                         end
                         numCorrectFrames=ceil((rewardSizeULorMS/1000)/ifi);
-
+                        
                     elseif strcmp(getDisplayMethod(tm),'LED')
                         if isempty(framesUntilTransition)
                             framesUntilTransition=ceil(spec.hz*rewardSizeULorMS/1000);
@@ -327,13 +317,13 @@ classdef changeDetectorTM<trialManager
                     rewardSizeULorMS=0;
                     msRewardSound=0;
                     msPuff=0; % for now, we don't want airpuffs to be automatic punishment, right?
-
+                    
                     if window>0
                         if isempty(framesUntilTransition)
                             framesUntilTransition = ceil((msPenalty/1000)/ifi);
                         end
                         numErrorFrames=ceil((msPenalty/1000)/ifi);
-
+                        
                     elseif strcmp(getDisplayMethod(tm),'LED')
                         if isempty(framesUntilTransition)
                             framesUntilTransition=ceil(spec.hz*msPenalty/1000);
@@ -360,17 +350,28 @@ classdef changeDetectorTM<trialManager
                     end
                     spec.stimulus=eStim;
                 end
-
+                
             end % end reward handling
-
+            
             trialDetails.correct=correct;
             updateRM = updateRM1 || updateRM2;
-
-
+            
+            
         end  % end function
-
-
+   
+    end
+    
+    methods(Static)
+        function [targetPorts, distractorPorts, details]=assignPorts(details)
+            targetPorts = 1;
+            distractorPorts = [3];
+        end
         
+        function out = checkPorts(targetPorts,distractorPorts)
+            assert(~isempty(targetPorts)||~isempty(distractorPorts),'changeDetectorTM:checkPorts:incompatibleValue','targetPorts and distractorPorts cannot both be empty in changeDetectorTM');
+            out=true; 
+        end
+    
     end
     
 end

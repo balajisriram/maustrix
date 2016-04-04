@@ -4,7 +4,7 @@ function pMouseTraining_ChangeDetection = mouseTraining_ChangeDetection(subID)
 % 2. earned free drinks
 % 3. object recognition 1
 
-% define ratrix version to use
+% define BCore version to use
 svnRev={''};
 svnCheckMode='none';
 

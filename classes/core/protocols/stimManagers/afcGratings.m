@@ -829,7 +829,7 @@ classdef afcGratings<stimManager
                     error('that method for getting a LUT is not defined');
                 case 'linearizedDefault'
                     
-                    %WARNING:  need to get gamma from measurements of ratrix workstation with NEC monitor and new graphics card
+                    %WARNING:  need to get gamma from measurements of BCore workstation with NEC monitor and new graphics card
                     
                     
                     LUTBitDepth=8;
@@ -859,7 +859,7 @@ classdef afcGratings<stimManager
                     
                 case 'localCalibStore'
                     try
-                        temp = load(fullfile(getRatrixPath,'monitorCalibration','tempCLUT.mat'));
+                        temp = load(fullfile(getBCorePath,'monitorCalibration','tempCLUT.mat'));
                         uncorrected = temp.linearizedCLUT;
                         useUncorrected=1;
                     catch ex

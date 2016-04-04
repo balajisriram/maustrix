@@ -224,7 +224,7 @@ classdef movies<stimManager
         function [stimulus,updateSM,resolutionIndex,preRequestStim,preResponseStim,discrimStim,LUT,targetPorts,distractorPorts,...
     details,interTrialLuminance,text,indexPulses,imagingTasks] =... 
     calcStim(stimulus,trialManagerClass,allowRepeats,resolutions,displaySize,LUTbits,responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
-            % see ratrixPath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
+            % see BCorePath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
 
             LUT=makeStandardLUT(LUTbits);
             [resolutionIndex height width hz]=chooseLargestResForHzsDepthRatio(resolutions,[100 60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
@@ -774,7 +774,7 @@ classdef movies<stimManager
                         error('exceeded maxAttempts')
                     end
 
-                    beep %feedback when ptb screen is up -- ratrix can appear to be dead for long periods without this -- better would be screen output, but that requries some rearchitecting
+                    beep %feedback when ptb screen is up -- BCore can appear to be dead for long periods without this -- better would be screen output, but that requries some rearchitecting
                     pause(pauseDur);
                 end
 
@@ -940,7 +940,7 @@ end
                             bestBigger={};
                             bestSmaller={};
                             while abs(delta)>tolerance && m<maxLoops
-                                beep %feedback when ptb screen is up -- ratrix can appear to be dead for long periods without this -- better would be screen output, but that requries some rearchitecting
+                                beep %feedback when ptb screen is up -- BCore can appear to be dead for long periods without this -- better would be screen output, but that requries some rearchitecting
                                 
                                 factor=mean(factorRange);
 

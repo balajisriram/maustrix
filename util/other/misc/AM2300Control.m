@@ -41,7 +41,7 @@ PulseNEGATIVE = '00000101';
 % http://www.grasstechnologies.com/products/stimulators/stimulators.html
 %
 % to output TTL signals from matlab:
-% navigate to ratrix trunk\classes\util\parallelPort
+% navigate to BCore trunk\classes\util\parallelPort
 
 addr='0378'; %find parallel port address in device manager
 % addr = 'D088';

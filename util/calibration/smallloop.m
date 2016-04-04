@@ -5,14 +5,14 @@ if 1
     screen clear all; clear classes; close all
     clc; format short g
 end
-rootPath='C:\pmeier\Ratrix\';
+rootPath='C:\pmeier\BCore\';
 pathSep='\';
 screenNum = 0;
 soundOn = 1;
 
 %% addPaths
 warning('off','MATLAB:dispatcher:nameConflict')
-addpath(genpath([rootPath 'Server' pathSep]))% Everything in the ratrix
+addpath(genpath([rootPath 'Server' pathSep]))% Everything in the BCore
 addpath(genpath(['c:\pmeier\newStimTest\']))% A few extra things in this project
 warning('on','MATLAB:dispatcher:nameConflict')
 

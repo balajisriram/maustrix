@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%% send email
 setpref('Internet','SMTP_Server','smtp.ucsd.edu')
-setpref('Internet','E_mail','ratrix@ucsd.edu')
+setpref('Internet','E_mail','BCore@ucsd.edu')
 oldDir=pwd
 cd([matlabroot filesep 'toolbox' filesep 'matlab' filesep 'iofun' filesep ])
 sendmail('6125015207@tmomail.net','test','hi') 

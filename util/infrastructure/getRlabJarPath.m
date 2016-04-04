@@ -1,2 +1,2 @@
 function out=getRlabJarPath()
-out=fullfile(getRatrixPath,'classes','rnet','rlabnet.jar');
+out=fullfile(getBCorePath,'classes','rnet','rlabnet.jar');

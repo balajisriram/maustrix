@@ -2,7 +2,7 @@ function completed=inspectRatResponses(subject,loadPath,whichPlots,handles,subpl
 %inspectRatResponses('rat_113') %gets the last smallData file for the rat
 %inspectRatResponses('rat_113',[1 1 1 0 0 1 1 0 0 0 0],[1:9],subplotParams) %gets the last smallData file for the rat
 %inspectRatResponses=('rat_107',particularSmallDataFile)
-%d=load(smallData_rat102)  source of saved file: getRatrixDataFromStation
+%d=load(smallData_rat102)  source of saved file: getBCoreDataFromStation
 %subject='rat_107'
 
 %by default, plot performance.

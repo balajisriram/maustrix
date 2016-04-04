@@ -224,7 +224,7 @@ classdef dbConn
             % 12/4/08
             % include_test_rats allows analysis to exclude test rats
             if ~exist('include_test_rats','var')
-                include_test_rats=1; % default is to include test rats (used in other ratrix code)
+                include_test_rats=1; % default is to include test rats (used in other BCore code)
             end
 
             if ~exist('heat_names','var') || isempty(heat_names)
@@ -243,7 +243,7 @@ classdef dbConn
             for j=1:length(heat_names)
                 heat_name=heat_names{j};
                 selectAssignmentQuery = ...
-                    sprintf('SELECT LOWER(subjects.display_uin), rack_id, station_id, heats.name, researchers.username, experiments.name, heat_assignments.note FROM heat_assignments,subjects,racks,stations,heats,researchers,experiments,ratrixservers WHERE heat_assignments.subject_uin=subjects.uin AND heat_assignments.station_uin=stations.uin AND subjects.owner_uin=researchers.uin(+) AND stations.rack_uin=racks.uin AND heat_assignments.experiment_uin=experiments.uin(+) AND heat_assignments.heat_uin=heats.uin AND stations.server_uin=ratrixservers.uin AND ratrixservers.name=''%s'' AND heats.name=''%s'' AND (subjects.test_subject=%d OR subjects.test_subject is null OR subjects.test_subject=0) ORDER BY rack_id,station_id',server_name,heat_name,include_test_rats);
+                    sprintf('SELECT LOWER(subjects.display_uin), rack_id, station_id, heats.name, researchers.username, experiments.name, heat_assignments.note FROM heat_assignments,subjects,racks,stations,heats,researchers,experiments,BCoreservers WHERE heat_assignments.subject_uin=subjects.uin AND heat_assignments.station_uin=stations.uin AND subjects.owner_uin=researchers.uin(+) AND stations.rack_uin=racks.uin AND heat_assignments.experiment_uin=experiments.uin(+) AND heat_assignments.heat_uin=heats.uin AND stations.server_uin=BCoreservers.uin AND BCoreservers.name=''%s'' AND heats.name=''%s'' AND (subjects.test_subject=%d OR subjects.test_subject is null OR subjects.test_subject=0) ORDER BY rack_id,station_id',server_name,heat_name,include_test_rats);
 
                 results=query(conn,selectAssignmentQuery);
 
@@ -420,7 +420,7 @@ classdef dbConn
         function assignments=getCoachAssignmentsForServer(conn,server_name,heat_name)
             assignments = {};
             selectAssignmentQuery = ...
-                sprintf('SELECT LOWER(subjects.display_uin), researchers.username FROM heat_assignments,subjects,racks,stations,heats,researchers,experiments,ratrixservers WHERE heat_assignments.subject_uin=subjects.uin AND heat_assignments.station_uin=stations.uin AND subjects.coach_uin=researchers.uin(+) AND stations.rack_uin=racks.uin AND heat_assignments.experiment_uin=experiments.uin(+) AND heat_assignments.heat_uin=heats.uin AND stations.server_uin=ratrixservers.uin AND ratrixservers.name=''%s'' AND heats.name=''%s''ORDER BY rack_id,station_id',server_name,heat_name);
+                sprintf('SELECT LOWER(subjects.display_uin), researchers.username FROM heat_assignments,subjects,racks,stations,heats,researchers,experiments,BCoreservers WHERE heat_assignments.subject_uin=subjects.uin AND heat_assignments.station_uin=stations.uin AND subjects.coach_uin=researchers.uin(+) AND stations.rack_uin=racks.uin AND heat_assignments.experiment_uin=experiments.uin(+) AND heat_assignments.heat_uin=heats.uin AND stations.server_uin=BCoreservers.uin AND BCoreservers.name=''%s'' AND heats.name=''%s''ORDER BY rack_id,station_id',server_name,heat_name);
 
             results=query(conn,selectAssignmentQuery);
 
@@ -508,7 +508,7 @@ classdef dbConn
         function rrs=getRacksAndRoomsFromServerName(conn, server_name)
             rrs = {};
             selectRackIDQuery = ...
-                sprintf('SELECT DISTINCT rack_id, room from RACKS, STATIONS, RATRIXSERVERS where racks.uin=stations.rack_uin AND stations.server_uin=ratrixservers.uin AND ratrixservers.name=''%s'' order by rack_id', server_name); 
+                sprintf('SELECT DISTINCT rack_id, room from RACKS, STATIONS, BCORESERVERS where racks.uin=stations.rack_uin AND stations.server_uin=BCoreservers.uin AND BCoreservers.name=''%s'' order by rack_id', server_name); 
 
             results=query(conn,selectRackIDQuery);
 
@@ -527,7 +527,7 @@ classdef dbConn
         function servers=getServers(conn)
             servers = {};
             selectServerQuery = ...
-                'SELECT address, name from ratrixservers ORDER BY name'; 
+                'SELECT address, name from BCoreservers ORDER BY name'; 
 
             results=query(conn,selectServerQuery);
 
@@ -546,7 +546,7 @@ classdef dbConn
         function station=getStation(conn,rack_id,station_id)
             station = [];
             selectStationQuery = ...
-                sprintf('SELECT mac, station_id,rack_id,row_num,col_num,ratrixservers.address FROM stations,racks,ratrixservers WHERE stations.rack_uin=racks.uin AND stations.server_uin=ratrixservers.uin AND rack_id=%d AND station_id=''%s'' ORDER BY rack_id,station_id',rack_id,station_id); 
+                sprintf('SELECT mac, station_id,rack_id,row_num,col_num,BCoreservers.address FROM stations,racks,BCoreservers WHERE stations.rack_uin=racks.uin AND stations.server_uin=BCoreservers.uin AND rack_id=%d AND station_id=''%s'' ORDER BY rack_id,station_id',rack_id,station_id); 
 
             results=query(conn,selectStationQuery);
 
@@ -570,7 +570,7 @@ classdef dbConn
         function station=getStationFromMac(conn,mac)
             station = [];
             selectStationQuery = ...
-                sprintf('SELECT mac, station_id,rack_id,row_num,col_num,ratrixservers.address FROM stations,racks,ratrixservers WHERE stations.rack_uin=racks.uin AND stations.server_uin=ratrixservers.uin AND mac=''%s'' ORDER BY rack_id,station_id',mac); 
+                sprintf('SELECT mac, station_id,rack_id,row_num,col_num,BCoreservers.address FROM stations,racks,BCoreservers WHERE stations.rack_uin=racks.uin AND stations.server_uin=BCoreservers.uin AND mac=''%s'' ORDER BY rack_id,station_id',mac); 
 
             results=query(conn,selectStationQuery);
 
@@ -594,7 +594,7 @@ classdef dbConn
         function stations=getStations(conn)
             stations = {};
             selectStationQuery = ...
-                'SELECT mac, station_id,rack_id,row_num,col_num,ratrixservers.address FROM stations,racks,ratrixservers WHERE stations.rack_uin=racks.uin AND stations.server_uin=ratrixservers.uin ORDER BY rack_id,station_id'; 
+                'SELECT mac, station_id,rack_id,row_num,col_num,BCoreservers.address FROM stations,racks,BCoreservers WHERE stations.rack_uin=racks.uin AND stations.server_uin=BCoreservers.uin ORDER BY rack_id,station_id'; 
 
             results=query(conn,selectStationQuery);
 
@@ -617,7 +617,7 @@ classdef dbConn
         function stations=getStationsByRoom(conn)
             stations = {};
             selectStationQuery = ...
-                sprintf('SELECT mac, station_id,rack_id,row_num,col_num,ratrixservers.address FROM stations,racks,ratrixservers WHERE stations.rack_uin=racks.uin AND stations.server_uin=ratrixservers.uin ORDER BY room,rack_id,station_id'); 
+                sprintf('SELECT mac, station_id,rack_id,row_num,col_num,BCoreservers.address FROM stations,racks,BCoreservers WHERE stations.rack_uin=racks.uin AND stations.server_uin=BCoreservers.uin ORDER BY room,rack_id,station_id'); 
 
             results=query(conn,selectStationQuery);
 
@@ -640,7 +640,7 @@ classdef dbConn
         function stations=getStationsForServer(conn,server_name)
             stations = {};
             selectStationQuery = ...
-                sprintf('SELECT mac, station_id,rack_id,row_num,col_num,ratrixservers.address FROM stations,racks,ratrixservers WHERE stations.rack_uin=racks.uin AND stations.server_uin=ratrixservers.uin AND ratrixservers.name=''%s'' ORDER BY rack_id,station_id',server_name); 
+                sprintf('SELECT mac, station_id,rack_id,row_num,col_num,BCoreservers.address FROM stations,racks,BCoreservers WHERE stations.rack_uin=racks.uin AND stations.server_uin=BCoreservers.uin AND BCoreservers.name=''%s'' ORDER BY rack_id,station_id',server_name); 
 
             results=query(conn,selectStationQuery);
 
@@ -663,7 +663,7 @@ classdef dbConn
         function stations=getStationsOnRack(conn,rack)
             stations = {};
             selectStationQuery = ...
-                sprintf('SELECT mac, station_id,rack_id,row_num,col_num,ratrixservers.address FROM stations,racks,ratrixservers WHERE stations.rack_uin=racks.uin AND stations.server_uin=ratrixservers.uin AND rack_id=%d ORDER BY rack_id,station_id',rack); 
+                sprintf('SELECT mac, station_id,rack_id,row_num,col_num,BCoreservers.address FROM stations,racks,BCoreservers WHERE stations.rack_uin=racks.uin AND stations.server_uin=BCoreservers.uin AND rack_id=%d ORDER BY rack_id,station_id',rack); 
 
             results=query(conn,selectStationQuery);
 
@@ -729,7 +729,7 @@ classdef dbConn
             % Returns a cell array of subjectIDs.
 
             subjectIDs={};
-            getSubIDsQuery = sprintf('select LOWER(display_uin) from subjects, heat_assignments, stations, ratrixservers where subjects.uin=heat_assignments.subject_uin AND stations.server_uin=ratrixservers.uin AND ratrixservers.name=''%s'' AND heat_assignments.station_uin=stations.uin', server_name);
+            getSubIDsQuery = sprintf('select LOWER(display_uin) from subjects, heat_assignments, stations, BCoreservers where subjects.uin=heat_assignments.subject_uin AND stations.server_uin=BCoreservers.uin AND BCoreservers.name=''%s'' AND heat_assignments.station_uin=stations.uin', server_name);
             results=query(conn,getSubIDsQuery);
 
             if ~isempty(results)

@@ -115,7 +115,7 @@ for i=1:length(files)
         nAttempts = nAttempts+1;
         try
 %             tmpFile='C:\temp.mat';
-            % 9/29/08 - changed to be cross-platform; use top-level ratrixData folder for temp.mat
+            % 9/29/08 - changed to be cross-platform; use top-level BCoreData folder for temp.mat
             tmpFile = fullfile(fileparts(serverDataPath), 'temp.mat');
             [success message messageid]=copyfile(fullfile(subjPath,files(i).name),tmpFile);
             if ~success

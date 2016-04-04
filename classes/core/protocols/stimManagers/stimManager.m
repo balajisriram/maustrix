@@ -51,7 +51,7 @@ classdef stimManager
         
         function out = boxOKForStimManager(stimManager,b,r)
             validateattributes(b,{'box'},{'nonempty'});
-            validateattributes(r,{'ratrix'},{'nonempty'});
+            validateattributes(r,{'BCore'},{'nonempty'});
             
             out=true;
             stations=getStationsForBoxID(r,b.id);

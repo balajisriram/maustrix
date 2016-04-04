@@ -1,4 +1,4 @@
-% compile with mcc -a 'C:\Documents and Settings\rlab\Desktop\ratrix\db\classes12_g.jar' -m -I 'C:\Documents and Settings\rlab\Desktop\ratrix\db' analysis.m
+% compile with mcc -a 'C:\Documents and Settings\rlab\Desktop\BCore\db\classes12_g.jar' -m -I 'C:\Documents and Settings\rlab\Desktop\BCore\db' analysis.m
 
 function analysis
 if ~isdeployed
@@ -16,12 +16,12 @@ format long g
 
 if ~isdeployed
 warning('off','MATLAB:dispatcher:nameConflict')
-addpath(RemoveSVNPaths(genpath(getRatrixPath)));
+addpath(RemoveSVNPaths(genpath(getBCorePath)));
 warning('on','MATLAB:dispatcher:nameConflict')
 end
 
 if isdeployed
-    javaaddpath('analysis_mcr/Documents and Settings/rlab/Desktop/ratrix/db/classes12_g.jar')
+    javaaddpath('analysis_mcr/Documents and Settings/rlab/Desktop/BCore/db/classes12_g.jar')
 end
 
 
@@ -35,7 +35,7 @@ show_test_subjects=1;
 % set apath to be empty if we have an oracle connection, otherwise use the default standalone path
 
 % 10.3.08 - apath is now subject specific, so initialize to null
-apath = fullfile(fileparts(fileparts(getRatrixPath())),'ratrixData','compiledTrialRecords',filesep);
+apath = fullfile(fileparts(fileparts(getBCorePath())),'BCoreData','compiledTrialRecords',filesep);
 % 12/15/08 - set apath to be the local compiled directory if in standalone mode
 % but this will never work here, because we need a dbConn() to do the rest of analysis below....
 % hmm...
@@ -45,7 +45,7 @@ try
     closeConn(conn);
 catch
     disp('no network connection detected - using local compiled directory only');
-    apath = fullfile(fileparts(fileparts(getRatrixPath())),'ratrixData','compiledTrialRecords');
+    apath = fullfile(fileparts(fileparts(getBCorePath())),'BCoreData','compiledTrialRecords');
     standAlone = true;
     bySubject = true;
 end
@@ -181,7 +181,7 @@ if ~standAlone
     subjectStrs=remoteSubjectStrs;
 end
 
-% also get info from local ratrixData
+% also get info from local BCoreData
 serverStrs{end+1}='local';
 if isempty(heatStrs)
     heatStrs{end+1}='n/a';
@@ -232,7 +232,7 @@ eWidth=50;
 
 fWidth=10*margin+7*ddWidth+eWidth+bWidth;
 fHeight=margin+oneRowHeight+margin;
-f = figure('Visible','off','MenuBar','none','Name','ratrix analysis','NumberTitle','off','Resize','off','Units','pixels','Position',[50 50 fWidth fHeight]);
+f = figure('Visible','off','MenuBar','none','Name','BCore analysis','NumberTitle','off','Resize','off','Units','pixels','Position',[50 50 fWidth fHeight]);
 
 serverM = uicontrol(f,'Style','popupmenu',...
     'String',serverStrs,...
@@ -285,7 +285,7 @@ serverM = uicontrol(f,'Style','popupmenu',...
                 set(subjectM,'String',localSubjectStrs);
                 selection.subjects={};
                 selection.subjects{1,1,1}=localSubjectStrs{get(subjectM,'Value')};
-                apath=fullfile(fileparts(fileparts(getRatrixPath())),'ratrixData','compiledTrialRecords');
+                apath=fullfile(fileparts(fileparts(getBCorePath())),'BCoreData','compiledTrialRecords');
             end
             set(typeM,'String',typeStrs);
             set(typeM,'Value',1);

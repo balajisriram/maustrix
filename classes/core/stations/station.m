@@ -30,7 +30,7 @@ classdef station
         end
 
         function sub=getCurrentSubject(s,r)
-            validateattributes(r,{'ratrix'},{'nonempty'})
+            validateattributes(r,{'BCore'},{'nonempty'})
             subs=getSubjectsForStationID(r,s.id);
             if length(subs)==1
                 sub=subs{1};

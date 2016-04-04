@@ -22,7 +22,7 @@ function compileTrialRecords(server_name,fieldNames,recompile,subjectIDs,source,
 % end
 
 % =============================
-% this field (subjectIDs) needs to be given now b/c this is retreived from ratrix object that we don't have access to here
+% this field (subjectIDs) needs to be given now b/c this is retreived from BCore object that we don't have access to here
 % if ~exist('subjectIDs','var') || isempty(subjectIDs)
 %     subjectIDs='all'; 
 % end
@@ -289,8 +289,8 @@ for i=1:length(subjectFiles)
                     dispStr=sprintf('could not load compiledTrialRecord for subject %s after %d tries...skipping',names{i},numTries);
                     disp(dispStr);
                     setpref('Internet','SMTP_Server','smtp.ucsd.edu')
-                    setpref('Internet','E_mail','ratrix@ucsd.edu')
-                    emailStr=sprintf('RATRIX: Corrupt compiledRecords subject %s', names{i});
+                    setpref('Internet','E_mail','BCore@ucsd.edu')
+                    emailStr=sprintf('BCore: Corrupt compiledRecords subject %s', names{i});
                     % in older version of PTB, the ptb sendmail function
                     % supercedes the matlab i/o sendmail function, which is
                     % why we need to cd to correct path

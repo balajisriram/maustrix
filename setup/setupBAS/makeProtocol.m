@@ -1,7 +1,7 @@
 function p=makeProtocol(name,subIDs,istest)
 %%%%%%%%%% stochastic free drinks
 
-svnRev={'svn://132.239.158.177/projects/ratrix/trunk'};
+svnRev={'svn://132.239.158.177/projects/BCore/trunk'};
 
 if istest
     gc = rateCriterion(3,1); 

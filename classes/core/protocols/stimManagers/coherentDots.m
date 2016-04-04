@@ -640,7 +640,7 @@ classdef coherentDots<stimManager
                     
                 case 'linearizedDefault' %
                     
-                    %WARNING:  need to get gamma from measurements of ratrix workstation with NEC monitor and new graphics card
+                    %WARNING:  need to get gamma from measurements of BCore workstation with NEC monitor and new graphics card
                     LUTBitDepth=8;
                     
                     %sample from lower left of triniton, pmm 070106
@@ -688,10 +688,10 @@ classdef coherentDots<stimManager
                         checkLocal = true;
                         downloadCLUT = true;
                         if checkLocal
-                            a = dir(getRatrixPath);
+                            a = dir(getBCorePath);
                             if any(ismember({a.name},'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat')) && ...
                                     datenum(a(ismember({a.name},'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat')).date)>floor(now)
-                                temp = load(fullfile(getRatrixPath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat'));
+                                temp = load(fullfile(getBCorePath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat'));
                                 uncorrected = temp.cal.linearizedCLUT;
                                 useUncorrected=1; % its already corrected
                                 downloadCLUT = false;
@@ -704,14 +704,14 @@ classdef coherentDots<stimManager
                             uncorrected = cal.linearizedCLUT;
                             useUncorrected=1; % its already corrected
                             % now save cal
-                            filename = fullfile(getRatrixPath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat');
+                            filename = fullfile(getBCorePath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat');
                             save(filename,'cal');
                         end
                     end
                     
                 case 'localCalibStore'
                     try
-                        temp = load(fullfile(getRatrixPath,'monitorCalibration','tempCLUT.mat'));
+                        temp = load(fullfile(getBCorePath,'monitorCalibration','tempCLUT.mat'));
                         uncorrected = temp.linearizedCLUT;
                         useUncorrected=1;
                     catch ex
@@ -739,10 +739,10 @@ classdef coherentDots<stimManager
                         checkLocal = true;
                         downloadCLUT = true;
                         if checkLocal
-                            a = dir(getRatrixPath);
+                            a = dir(getBCorePath);
                             if any(ismember({a.name},'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat')) && ...
                                     datenum(a(ismember({a.name},'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat')).date)>floor(now)
-                                temp = load(fullfile(getRatrixPath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat'));
+                                temp = load(fullfile(getBCorePath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat'));
                                 uncorrected = temp.cal.linearizedCLUT;
                                 useUncorrected=1; % its already corrected
                                 downloadCLUT = false;
@@ -755,7 +755,7 @@ classdef coherentDots<stimManager
                             uncorrected = cal.linearizedCLUT;
                             useUncorrected=1; % its already corrected
                             % now save cal
-                            filename = fullfile(getRatrixPath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat');
+                            filename = fullfile(getBCorePath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat');
                             save(filename,'cal');
                         end
                     end

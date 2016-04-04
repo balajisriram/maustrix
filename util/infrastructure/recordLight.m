@@ -1,7 +1,7 @@
 function recordLight
 clc
 
-file='C:\Documents and Settings\rlab\Desktop\ratrixData\lightSamps.mat';
+file='C:\Documents and Settings\rlab\Desktop\BCoreData\lightSamps.mat';
 waitTime=2;
 doPlot=true;
 

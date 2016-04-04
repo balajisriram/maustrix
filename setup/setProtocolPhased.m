@@ -3,12 +3,12 @@ function r = setProtocolPhased(r,subjIDs)
 
 % ====================================================================================================================
 % error test initial
-if ~isa(r,'ratrix')
-    error('need a ratrix')
+if ~isa(r,'BCore')
+    error('need a BCore')
 end
 
 if ~all(ismember(subjIDs,getSubjectIDs(r)))
-    error('not all those subject IDs are in that ratrix')
+    error('not all those subject IDs are in that BCore')
 end
 % ====================================================================================================================
 % variables for reinforcement and trial managers
@@ -52,7 +52,7 @@ discrimStim = examplePhased(maxWidth,maxHeight,scaleFactor,interTrialLuminance);
 
 % ====================================================================================================================
 % training steps
-svnRev={'svn://132.239.158.177/projects/ratrix/trunk'};
+svnRev={'svn://132.239.158.177/projects/BCore/trunk'};
 
 ts1 = trainingStep(phased, discrimStim, repeatIndefinitely(), noTimeOff(), svnRev);   %stochastic free drinks
 

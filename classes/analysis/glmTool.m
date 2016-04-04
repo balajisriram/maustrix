@@ -406,7 +406,7 @@ classdef glmTool
                     load('physAnalysis_485-20100604T200707')
                     %how to get or make this data:
                     %   source: datanetOutput\231\analysis\475-485\485-20100604T200707\
-                    %   make:  spikeSortFiddler in RatrixTrunk@svnRev.2954
+                    %   make:  spikeSortFiddler in BCoreTrunk@svnRev.2954
                     %   subjectID = '231';
                     %   path='\\132.239.158.179\datanetOutput'  %on the G drive remote
                     %   channels={1};

@@ -3,7 +3,7 @@ function bootstrap
 setupEnvironment;
 addJavaComponents();  %might conflict with dbconn
 
-dataPath=fullfile(fileparts(fileparts(getRatrixPath)),'ratrixData',filesep);
+dataPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData',filesep);
 
 diary off
 warning('off','MATLAB:MKDIR:DirectoryExists')
@@ -30,7 +30,7 @@ try
     
     tries=0;
     while true
-        initRatrixPorts;
+        initBCorePorts;
         try
             clearJavaComponents();
             checkForUpdate;
@@ -80,7 +80,7 @@ try
                 else
                     com=getNextCommand(r);
                     if ~isempty(com)
-                        quit=clientHandleCommand(r,com,constants.statuses.NO_RATRIX);
+                        quit=clientHandleCommand(r,com,constants.statuses.NO_BCORE);
                     else
                         pause(0.1);
                     end

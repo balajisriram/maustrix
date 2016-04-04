@@ -28,7 +28,7 @@ bWidth=50;
 
 fWidth=4*margin+2*ddWidth+bWidth;
 fHeight=margin+oneRowHeight+margin;
-f = figure('Visible','off','MenuBar','none','Name','ratrix analysis','NumberTitle','off','Resize','off','Units','pixels','Position',[50 50 fWidth fHeight]);
+f = figure('Visible','off','MenuBar','none','Name','BCore analysis','NumberTitle','off','Resize','off','Units','pixels','Position',[50 50 fWidth fHeight]);
 
 subM = uicontrol(f,'Style','popupmenu',...
     'String',subStrs,...

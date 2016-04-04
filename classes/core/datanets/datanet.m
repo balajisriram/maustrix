@@ -144,13 +144,13 @@ classdef datanet
         
         function [datanet, quit, retval] = handleCommands(datanet,params)
             % This function gets called by the client's bootstrap function, and also at the doTrial/runRealTimeLoop level to handle any available
-            % server commands. also gets called during physiologyServer's doServerIteration (to handle any commands sent from ratrix side)
+            % server commands. also gets called during physiologyServer's doServerIteration (to handle any commands sent from BCore side)
             % INPUTS:
             %	datanet - a datanet object (either stim or data)
             %   params - a struct containing additional information that may be needed to process commands
             %       for now, this is a timestamp that was taken during 'trial start' and passed to 'trial end' for serverHandleCommand
             % OUTPUTS:
-            %	quit - a quit flag (not sure if this will be doTrial's stopEarly or realtimeloop's quit), but something to tell ratrix to stop running trials!
+            %	quit - a quit flag (not sure if this will be doTrial's stopEarly or realtimeloop's quit), but something to tell BCore to stop running trials!
             %	retval - some return value (in the case of doServerIteration, should be an event to add to events_data), may be other stuff....
             
             quit = false;
@@ -250,7 +250,7 @@ classdef datanet
             % (this may be useful for waiting for the omni-message END_OF_DOTRIALS)
             
             
-            % 4/3 to do - remove trialData? - for now, just handle simple acks. this function should work from both the ratrix and data sides...
+            % 4/3 to do - remove trialData? - for now, just handle simple acks. this function should work from both the BCore and data sides...
             MAXSIZE = 1024*1024;
             CMDSIZE = 1;
             trialData = [];
@@ -434,7 +434,7 @@ classdef datanet
                         retval(end).stimManagerClass=cparams.stimManagerClass;
                         retval(end).stepName=cparams.stepName;
                         retval(end).stepNumber=cparams.stepNumber;
-                        fprintf('got trial start command from ratrix\n')
+                        fprintf('got trial start command from BCore\n')
                     case constants.stimToDataCommands.S_TRIAL_END_EVENT_CMD
                         % mark end of trial - how do we add an event to events_data, which is all the way out in physiologyServer?
                         response=constants.dataToStimResponses.D_TRIAL_END_EVENT_ACK;
@@ -468,7 +468,7 @@ classdef datanet
                         retval(end).datablock = params.datablock;
                         retval(end).ai = params.ai;
                         
-                        fprintf('got trial end command from ratrix\n')
+                        fprintf('got trial end command from BCore\n')
                     case constants.stimToDataCommands.S_ERROR_RECOVERY_METHOD
                         % whether client pressed 'Restart' or 'Quit'
                         response=constants.dataToStimResponses.D_ERROR_METHOD_RECEIVED;
@@ -566,7 +566,7 @@ classdef datanet
             % INPUTS:
             %	datanet - the server-side datanet object; should have a valid pnet connection with parameters (timeout) already set
             %	subjectID - the ID string of the subject to start
-            %		(pass to station.doTrials or whoever sets quit on ratrix side - just to make sure this is the correct subject to stop)
+            %		(pass to station.doTrials or whoever sets quit on BCore side - just to make sure this is the correct subject to stop)
             %   params - the struct of params that includes the ai object so we can get the last trial's data
             % OUTPUTS:
             %	gotAck - true if we get an ack from the client

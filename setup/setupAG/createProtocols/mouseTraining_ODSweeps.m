@@ -8,7 +8,7 @@ function pMouseTraining_ODSweeps = mouseTraining_ODSweeps(subID)
 % details for each subject are internally modifiable. 
 % define subjects
 
-% define ratrix version to use
+% define BCore version to use
 svnRev={''};
 svnCheckMode='none';
 

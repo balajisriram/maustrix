@@ -5,11 +5,11 @@ if 1
     screen clear all; clear classes; close all
     clc; format short g
 end
-rootPath='C:\pmeier\Ratrix\';
+rootPath='C:\pmeier\BCore\';
 
 %% addPaths
 warning('off','MATLAB:dispatcher:nameConflict')
-addpath(genpath(fullfile(rootPath, 'classes')))% Ratrix classes
+addpath(genpath(fullfile(rootPath, 'classes')))% BCore classes
 addpath(genpath(fullfile(rootPath, 'advancedCalibration')))% A few extra things in this project
 warning('on','MATLAB:dispatcher:nameConflict')
 

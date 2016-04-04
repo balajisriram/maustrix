@@ -3,7 +3,7 @@ diary off
 clc
 diary(['diary.' num2str(now) '.txt'])
 
-permanentStore='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\ratrixAdmin\subjects';
+permanentStore='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\BCoreAdmin\subjects';
 
 subjectDirs=dir(permanentStore);
 subjectDirs

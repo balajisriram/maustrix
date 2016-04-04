@@ -106,7 +106,7 @@ if ismember('result', fields(d))
     goods(d.result~=1 & ~isnan(d.result))=0;
     %many trials in the past may have nan for result, so thats still an
     %acceptable answer for now... maybe we can remove this if every rat
-    %ever on the ratrix is recompiled. (including non-active ones)
+    %ever on the BCore is recompiled. (including non-active ones)
 end
 
 

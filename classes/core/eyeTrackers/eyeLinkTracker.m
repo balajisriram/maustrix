@@ -343,7 +343,7 @@ classdef eyeLinkTracker
             %b=getBoxFromID(getBoxIDForStationID(r,s.id));
             %eyeDataPath=fullfile(getBoxPathForSubjectID(b,subjectID,r),?subjectID?,'') %store by subject or by box?
 
-            % eyeDataPath= fullfile(fileParts(fileParts(getRatrixPath)),'ratrixData','eyeData',subjectID); 
+            % eyeDataPath= fullfile(fileParts(fileParts(getBCorePath)),'BCoreData','eyeData',subjectID); 
             % eyeDataPath = fullfile('\\Reinagel-lab.AD.ucsd.edu\RLAB\Rodent-Data\Fan\datanet', subjectID, 'eyeRecords'); % 10/23/08 - to be replaced by oracle lookup
             % eyeDataPath = fullfile('\\132.239.158.179','datanet_storage', subjectID, 'eyeRecords');  %should be where the neural data is, how do we get this is EyeTracker is on but datanet is not...
             [suc msg]=mkdir(eyeDataPath);
@@ -375,10 +375,10 @@ classdef eyeLinkTracker
             %    (also available in local install at Psychtoolbox\ProgrammingTips.html)
             %   Psychtoolbox\PsychHardware\EyelinkToolbox\EyelinkDemos\Short demos\EyelinkExample.m
             %   discussion thread:  http://tech.groups.yahoo.com/group/psychtoolbox/message/4993
-            %   old function examples not in ratrix:  fixationSoundDemo.m, eyeTrackerExperiment.m
+            %   old function examples not in BCore:  fixationSoundDemo.m, eyeTrackerExperiment.m
             %   check eyeLink website or CD for: Manuals/EyeLink API Specification.pdf
 
-            %pmm 06.28.08 added to ratrix
+            %pmm 06.28.08 added to BCore
             %  using the code in Pyschtoolbox... for more: "help eyelink"
             %  for hardware information http://www.eyelinkinfo.com/index.php
 

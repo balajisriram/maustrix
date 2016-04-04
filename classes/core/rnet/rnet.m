@@ -25,9 +25,9 @@ classdef rnet
             %r.constants.serverToStationCommands.S_GET_TRIAL_RECORDS_CMD = 3;
             %r.constants.serverToStationCommands.S_CLEAR_TRIAL_RECORDS_CMD = 4;
             r.constants.serverToStationCommands.S_GET_STATUS_CMD = 5;
-            r.constants.serverToStationCommands.S_GET_RATRIX_CMD = 6;
-            r.constants.serverToStationCommands.S_GET_RATRIX_BACKUPS_CMD = 7;
-            r.constants.serverToStationCommands.S_CLEAR_RATRIX_BACKUPS_CMD = 8;
+            r.constants.serverToStationCommands.S_GET_BCORE_CMD = 6;
+            r.constants.serverToStationCommands.S_GET_BCORE_BACKUPS_CMD = 7;
+            r.constants.serverToStationCommands.S_CLEAR_BCORE_BACKUPS_CMD = 8;
             r.constants.serverToStationCommands.S_GET_QUICK_REPORT_CMD = 9;
             r.constants.serverToStationCommands.S_SET_VALVES_CMD = 10;
             r.constants.serverToStationCommands.S_SHUTDOWN_STATION_CMD = 11;
@@ -44,8 +44,8 @@ classdef rnet
             r.constants.stationToServerCommands.C_CMD_ACK = 101;
             r.constants.stationToServerCommands.C_CMD_ERR = 102;
             %r.constants.stationToServerCommands.C_RECV_TRIAL_RECORDS_CMD = 103;
-            r.constants.stationToServerCommands.C_RECV_RATRIX_CMD = 104;
-            r.constants.stationToServerCommands.C_RECV_RATRIX_BACKUPS_CMD = 105;
+            r.constants.stationToServerCommands.C_RECV_BCORE_CMD = 104;
+            r.constants.stationToServerCommands.C_RECV_BCORE_BACKUPS_CMD = 105;
             r.constants.stationToServerCommands.C_RECV_STATUS_CMD = 106;
             r.constants.stationToServerCommands.C_RECV_REPORT_CMD = 107;
             r.constants.stationToServerCommands.C_RECV_VALVE_STATES_CMD = 108;
@@ -72,7 +72,7 @@ classdef rnet
             r.constants.statuses.MID_TRIAL = 1;
             r.constants.statuses.IN_SESSION_BETWEEN_TRIALS = 2;
             r.constants.statuses.BETWEEN_SESSIONS = 3;
-            r.constants.statuses.NO_RATRIX = 4;
+            r.constants.statuses.NO_BCORE = 4;
 
             %Command Error Response Types
             r.constants.errors.UNRECOGNIZED_COMMAND = 1;
@@ -455,8 +455,8 @@ classdef rnet
             quit=false;
             constants = getConstants(r);
 
-            ratrixDataPath=fullfile(fileparts(fileparts(getRatrixPath)),'testdata',filesep);
-            %ratrixDataPath='C:\Documents and Settings\rlab\Desktop\testdata\'; 
+            BCoreDataPath=fullfile(fileparts(fileparts(getBCorePath)),'testdata',filesep);
+            %BCoreDataPath='C:\Documents and Settings\rlab\Desktop\testdata\'; 
             %figure out where to store this
             %actually, this is an ok place -- there's nothing persistent
             %that the client/bootstrap can use to know where it sticks ratrices
@@ -469,15 +469,15 @@ classdef rnet
             %server and data directories.
 
             switch cmd
-                %commands that require status=NO_RATRIX
+                %commands that require status=NO_BCORE
                 case constants.serverToStationCommands.S_START_TRIALS_CMD
-                    if stat==constants.statuses.NO_RATRIX
-                        fprintf('Got a ratrix to begin trials with\n');
+                    if stat==constants.statuses.NO_BCORE
+                        fprintf('Got a BCore to begin trials with\n');
                         rx = args{1};
-                        if isGoodNonpersistedSingleStationRatrix(rx)
-                            fprintf('Ratrix is in good state to begin trials with\n');
+                        if isGoodNonpersistedSingleStationBCore(rx)
+                            fprintf('BCore is in good state to begin trials with\n');
 
-                            rx=establishDB(rx,fullfile(ratrixDataPath, 'ServerData'),1); %THIS DOESN'T WORK THE FIRST TIME, BUT DOES ONCE THE DIRS ARE CREATED
+                            rx=establishDB(rx,fullfile(BCoreDataPath, 'ServerData'),1); %THIS DOESN'T WORK THE FIRST TIME, BUT DOES ONCE THE DIRS ARE CREATED
                             quit=sendAcknowledge(r,com);
 
                             ids=getSubjectIDs(rx);
@@ -487,62 +487,62 @@ classdef rnet
 
                             %see commandBoxIDStationIDs() (need to add stuff for updating logs, keeping track of running, etc.)
 
-                            fprintf('About to run trials on new ratrix\n');
+                            fprintf('About to run trials on new BCore\n');
                             rx=doTrials(st(1),rx,0,r); %0 means repeat forever
                             quit=sendToServer(r,getClientId(r),constants.priorities.IMMEDIATE_PRIORITY,constants.stationToServerCommands.C_STOPPED_TRIALS,{rx});
                         else
-                            quit=sendError(r,com,constants.errors.CORRUPT_STATE_SENT,'ratrix is not good nonpersisted single station ratrix');
-                            fprintf('Ratrix is not in a good persistant state\n');
+                            quit=sendError(r,com,constants.errors.CORRUPT_STATE_SENT,'BCore is not good nonpersisted single station BCore');
+                            fprintf('BCore is not in a good persistant state\n');
                         end
                     else
-                        quit=sendError(r,com,constants.errors.BAD_STATE_FOR_COMMAND,'client status is not NO_RATRIX - must call S_STOP_TRIALS_CMD before S_START_TRIALS_CMD');
+                        quit=sendError(r,com,constants.errors.BAD_STATE_FOR_COMMAND,'client status is not NO_BCORE - must call S_STOP_TRIALS_CMD before S_START_TRIALS_CMD');
                     end
                 case constants.serverToStationCommands.S_SHUTDOWN_STATION_CMD
                     fprintf('handling shutdown from server\n')
-                    if stat==constants.statuses.NO_RATRIX
+                    if stat==constants.statuses.NO_BCORE
                         if ~commandsAvailable(r)
                             quit=true;
                             sendAcknowledge(r,com);
-                            %sendRatrixToServer(ratrixDataPath,r,constants);
+                            %sendBCoreToServer(BCoreDataPath,r,constants);
                         else
                             quit=sendError(r,com,constants.errors.BAD_STATE_FOR_COMMAND,'client has commands in queue - must allow them to complete or remove each using S_CLEAR_COMMAND_CMD before S_SHUTDOWN_STATION_CMD');
                         end
                     else
-                        quit=sendError(r,com,constants.errors.BAD_STATE_FOR_COMMAND,'client status is not NO_RATRIX - must call S_STOP_TRIALS_CMD before S_SHUTDOWN_STATION_CMD');
+                        quit=sendError(r,com,constants.errors.BAD_STATE_FOR_COMMAND,'client status is not NO_BCORE - must call S_STOP_TRIALS_CMD before S_SHUTDOWN_STATION_CMD');
                     end
                 case constants.serverToStationCommands.S_UPDATE_SOFTWARE_CMD
-                    if stat==constants.statuses.NO_RATRIX
-                        quit=updateRatrixRevisionIfNecessary(args);
+                    if stat==constants.statuses.NO_BCORE
+                        quit=updateBCoreRevisionIfNecessary(args);
 
                         quitOnError=sendToServer(r,getClientId(r),constants.priorities.IMMEDIATE_PRIORITY,constants.stationToServerCommands.C_RECV_UPDATING_SOFTWARE_CMD,{quit});
                         if quitOnError || quit
                             quit=true;
                         end
                     else
-                        quit=sendError(r,com,constants.errors.BAD_STATE_FOR_COMMAND,'client status is not NO_RATRIX - must call S_STOP_TRIALS_CMD before S_UPDATE_SOFTWARE_CMD');
+                        quit=sendError(r,com,constants.errors.BAD_STATE_FOR_COMMAND,'client status is not NO_BCORE - must call S_STOP_TRIALS_CMD before S_UPDATE_SOFTWARE_CMD');
                     end
 
 
 
 
 
-                    %commands that require a ratrix
+                    %commands that require a BCore
 
                 case constants.serverToStationCommands.S_GET_QUICK_REPORT_CMD
-                    if stat==constants.statuses.NO_RATRIX
-                        quit=sendError(r,com,constants.errors.BAD_STATE_FOR_COMMAND,'client status is NO_RATRIX - must call S_START_TRIALS_CMD(ratrix) before S_GET_QUICK_REPORT_CMD');
+                    if stat==constants.statuses.NO_BCORE
+                        quit=sendError(r,com,constants.errors.BAD_STATE_FOR_COMMAND,'client status is NO_BCORE - must call S_START_TRIALS_CMD(BCore) before S_GET_QUICK_REPORT_CMD');
                     else
                         %C_RECV_REPORT_CMD
                     end
                 case constants.serverToStationCommands.S_STOP_TRIALS_CMD
                     fprintf('handling stop trials from server\n')
-                    if stat==constants.statuses.NO_RATRIX
-                        quit=sendError(r,com,constants.errors.BAD_STATE_FOR_COMMAND,'client status is NO_RATRIX - must call S_START_TRIALS_CMD(ratrix) before S_STOP_TRIALS_CMD');
+                    if stat==constants.statuses.NO_BCORE
+                        quit=sendError(r,com,constants.errors.BAD_STATE_FOR_COMMAND,'client status is NO_BCORE - must call S_START_TRIALS_CMD(BCore) before S_STOP_TRIALS_CMD');
                     else
                         quit=true;
                         sendAcknowledge(r,com); %even tho this just means the client is telling itself to stop trials, not that it is done.
-                        %rather than sending an ack here, may be better to always return the ratrix w/C_RECV_RATRIX_CMD
-                        %no actually, need to let session clean itself up.  the ratrix
+                        %rather than sending an ack here, may be better to always return the BCore w/C_RECV_BCORE_CMD
+                        %no actually, need to let session clean itself up.  the BCore
                         %will get sent by the line after doTrials in the handler for
                         %start_trials
                     end
@@ -552,9 +552,9 @@ classdef rnet
 
                     %commands that are OK regardless of status
 
-                case constants.serverToStationCommands.S_GET_RATRIX_CMD
+                case constants.serverToStationCommands.S_GET_BCORE_CMD
 
-                    quit=sendRatrixToServer(ratrixDataPath,r,constants);
+                    quit=sendBCoreToServer(BCoreDataPath,r,constants);
 
 
                 case constants.serverToStationCommands.S_GET_PENDING_COMMANDS_CMD
@@ -573,9 +573,9 @@ classdef rnet
                     recordInOracle=1; %pmm -08/06/26
                     replicateTrialRecords([],deleteOnSuccess, recordInOracle); %9/17/2008 - fli
                     sendAcknowledge(r,com);
-                case constants.serverToStationCommands.S_GET_RATRIX_BACKUPS_CMD
-                    %C_RECV_RATRIX_BACKUPS_CMD
-                case constants.serverToStationCommands.S_CLEAR_RATRIX_BACKUPS_CMD
+                case constants.serverToStationCommands.S_GET_BCORE_BACKUPS_CMD
+                    %C_RECV_BCORE_BACKUPS_CMD
+                case constants.serverToStationCommands.S_CLEAR_BCORE_BACKUPS_CMD
                     %ack?
                 case constants.serverToStationCommands.S_GET_STATUS_CMD
                     fprintf('handling get status from server\n')
@@ -597,15 +597,15 @@ classdef rnet
                 case {constants.serverToStationCommands.S_GET_VALVE_STATES_CMD constants.serverToStationCommands.S_SET_VALVES_CMD}
                     %C_RECV_VALVE_STATES_CMD
                     %C_VALVES_SET_CMD
-                    quit=sendError(rn,com,constants.errors.BAD_STATE_FOR_COMMAND,'client received S_GET_VALVE_STATES_CMD or S_SET_VALVES_CMD outside of a session context (a ratrix and station are needed to work valves)');
+                    quit=sendError(rn,com,constants.errors.BAD_STATE_FOR_COMMAND,'client received S_GET_VALVE_STATES_CMD or S_SET_VALVES_CMD outside of a session context (a BCore and station are needed to work valves)');
                 otherwise
                     quit=sendError(r,com,constants.errors.UNRECOGNIZED_COMMAND);
             end
         end
 
-        function quit=sendRatrixToServer(ratrixDataPath,r,constants)
+        function quit=sendBCoreToServer(BCoreDataPath,r,constants)
             try
-                rx=ratrix(fullfile(ratrixDataPath, 'ServerData'),0); %load from file
+                rx=BCore(fullfile(BCoreDataPath, 'ServerData'),0); %load from file
             catch ex
                 noDBstr='no db at that location';
                 if ~isempty(findstr(ex.message,noDBstr))
@@ -616,7 +616,7 @@ classdef rnet
                 end
             end
 
-            quit=sendToServer(r,getClientId(r),constants.priorities.IMMEDIATE_PRIORITY,constants.stationToServerCommands.C_RECV_RATRIX_CMD,{rx});
+            quit=sendToServer(r,getClientId(r),constants.priorities.IMMEDIATE_PRIORITY,constants.stationToServerCommands.C_RECV_BCORE_CMD,{rx});
         end
         
         function [tf loc]=clientIsRegistered(r,c)
@@ -1081,7 +1081,7 @@ classdef rnet
                         %subjects{i}{2}{2}
                         if strcmp(subjects{i}{2}{2},mac)
 
-                            rx=putSubjectInBox(rx,subjects{i}{1},getBoxIDForStationID(rx,getID(s)),'ratrix');
+                            rx=putSubjectInBox(rx,subjects{i}{1},getBoxIDForStationID(rx,getID(s)),'BCore');
                             tf=true;
 
                         end
@@ -1118,7 +1118,7 @@ classdef rnet
 
             constants=r.constants;
 
-            fprintf('shutting down %s\n',c.id.toCharArray()) %need a matlab wrapper around RatrixNetworkNodeIdent to expose this
+            fprintf('shutting down %s\n',c.id.toCharArray()) %need a matlab wrapper around BCoreNetworkNodeIdent to expose this
             timeout=10.0;
 
             [quit com]=sendToClient(r,c,constants.priorities.IMMEDIATE_PRIORITY,constants.serverToStationCommands.S_GET_STATUS_CMD,{});
@@ -1140,17 +1140,17 @@ classdef rnet
                             end
 
                             if ~quit
-                                [quit stopCom stopCmd stopArgs]=waitForSpecificCommand(r,c,constants.stationToServerCommands.C_STOPPED_TRIALS,timeout,'waiting for client response (with ratrix) to already acked S_STOP_TRIALS_CMD (C_STOPPED_TRIALS)',[]);
-                                %get ratrix, merge
+                                [quit stopCom stopCmd stopArgs]=waitForSpecificCommand(r,c,constants.stationToServerCommands.C_STOPPED_TRIALS,timeout,'waiting for client response (with BCore) to already acked S_STOP_TRIALS_CMD (C_STOPPED_TRIALS)',[]);
+                                %get BCore, merge
                                 if ~quit && ~isempty(rx)
-                                    [rx quit] = updateRatrixFromClientRatrix(r,rx,c);
+                                    [rx quit] = updateBCoreFromClientBCore(r,rx,c);
                                 end
                             end
 
-                        case constants.statuses.NO_RATRIX
+                        case constants.statuses.NO_BCORE
                             if ~isempty(rx)
-                                %get ratrix, merge (could pass in)
-                                [rx quit] = updateRatrixFromClientRatrix(r,rx,c);
+                                %get BCore, merge (could pass in)
+                                [rx quit] = updateBCoreFromClientBCore(r,rx,c);
                             end
                         otherwise
                             error('bad status')
@@ -1201,7 +1201,7 @@ classdef rnet
             constants = getConstants(r);
 
             timeout=30;
-            %paths={getPermanentStorePath(r)}; % Get the permanent store path from the ratrix
+            %paths={getPermanentStorePath(r)}; % Get the permanent store path from the BCore
 
             [quit com]=sendToClient(r,c,constants.priorities.IMMEDIATE_PRIORITY,constants.serverToStationCommands.S_REPLICATE_TRIAL_RECORDS_CMD,{paths,true});    
 
@@ -1331,9 +1331,9 @@ classdef rnet
               driveLetter = 'z';
               serverAddress = '132.239.158.169';
               % The share name used on the server
-              serverShare = 'Ratrix';
+              serverShare = 'BCore';
               % The server share mapping to the server's local filesystem
-              serverShareLocal = 'C:\Ratrix'; 
+              serverShareLocal = 'C:\BCore'; 
               commPath = 'Network\Incoming'; % Location on share to store .mat objects being sent to
               % another computer
               serverPath = sprintf('\\\\%s\\%s',serverAddress,serverShare);
@@ -1468,10 +1468,10 @@ classdef rnet
                         error('client sent an error')
             %         case constants.stationToServerCommands.C_RECV_TRIAL_RECORDS_CMD
             %             error('unexpected C_RECV_TRIAL_RECORDS_CMD')
-                    case constants.stationToServerCommands.C_RECV_RATRIX_CMD
-                        error('unexpected C_RECV_RATRIX_CMD')
-                    case constants.stationToServerCommands.C_RECV_RATRIX_BACKUPS_CMD
-                        error('unexpected C_RECV_RATRIX_BACKUPS_CMD')
+                    case constants.stationToServerCommands.C_RECV_BCORE_CMD
+                        error('unexpected C_RECV_BCORE_CMD')
+                    case constants.stationToServerCommands.C_RECV_BCORE_BACKUPS_CMD
+                        error('unexpected C_RECV_BCORE_BACKUPS_CMD')
                     case constants.stationToServerCommands.C_RECV_STATUS_CMD
                         error('unexpected C_RECV_STATUS_CMD')
                     case constants.stationToServerCommands.C_RECV_REPORT_CMD
@@ -1562,7 +1562,7 @@ classdef rnet
 
                         while ~r.server.isShutdown
                             if rand>.99
-                                'waiting for ratrix server thread to shutdown'
+                                'waiting for BCore server thread to shutdown'
                             end
                         end
 
@@ -1581,7 +1581,7 @@ classdef rnet
 
                     while ~r.client.isShutdown
                         if rand>.99
-                            'waiting for ratrix client thread to shutdown'
+                            'waiting for BCore client thread to shutdown'
                         end
                     end
 
@@ -1645,8 +1645,8 @@ classdef rnet
 
             r=shutdown(r);
 
-            % Update the Ratrix codebase using SVN
-            % Determine the root directory for the ratrix code
+            % Update the BCore codebase using SVN
+            % Determine the root directory for the BCore code
             % If no revision is specified, supply the empty string
             if nargin <= 1
                 targetRevision = '';
@@ -1654,7 +1654,7 @@ classdef rnet
             svnPath = GetSubversionPath;
 
             % Construct svn update command
-            info.updateCommand=[svnPath 'svn update '  targetRevision getRatrixPath ];
+            info.updateCommand=[svnPath 'svn update '  targetRevision getBCorePath ];
             save('info.mat','info');
 
             % Clear java classes
@@ -1670,7 +1670,7 @@ classdef rnet
             x=whos
             clear java
             clearJavaComponents();
-            import ratrix.net.*;  
+            import BCore.net.*;  
 
             load('info.mat','info');
             % Run svn update command
@@ -1691,7 +1691,7 @@ classdef rnet
 
             % Reload java classes
             addJavaComponents();
-            import ratrix.net.*;
+            import BCore.net.*;
 
 
 
@@ -1738,7 +1738,7 @@ classdef rnet
                     for i=1:length(subjects)
                     %subjects{i}{2}{2}
                     if strcmp(subjects{i}{2}{2},mac)
-                        rx=removeSubjectFromBox(rx,subjects{i}{1},getBoxIDForSubjectID(rx,subjects{i}{1}),'unregistering client','ratrix');
+                        rx=removeSubjectFromBox(rx,subjects{i}{1},getBoxIDForSubjectID(rx,subjects{i}{1}),'unregistering client','BCore');
                     end
                 end
 
@@ -1746,29 +1746,29 @@ classdef rnet
             end
         end
         
-        function [rx quit] = updateRatrixFromClientRatrix(rn,rx,client)
+        function [rx quit] = updateBCoreFromClientBCore(rn,rx,client)
             constants = getConstants(rn);
 
-            [quit com]=sendToClient(rn,client,constants.priorities.IMMEDIATE_PRIORITY,constants.serverToStationCommands.S_GET_RATRIX_CMD,{});
+            [quit com]=sendToClient(rn,client,constants.priorities.IMMEDIATE_PRIORITY,constants.serverToStationCommands.S_GET_BCORE_CMD,{});
 
             if ~quit
                 timeout=10.0;
-                [quit rxCmd rxCom rxArgs]=waitForSpecificCommand(rn,client,constants.stationToServerCommands.C_RECV_RATRIX_CMD,timeout,'waiting for client response to S_GET_RATRIX_CMD',[]);
+                [quit rxCmd rxCom rxArgs]=waitForSpecificCommand(rn,client,constants.stationToServerCommands.C_RECV_BCORE_CMD,timeout,'waiting for client response to S_GET_BCORE_CMD',[]);
                 com=[];
                 rxCmd=[];
 
                 if ~quit
                     if length(rxArgs)==1 && ~isempty(rxArgs{1})
                         newRX = rxArgs{1};
-                        if isa(newRX,'ratrix')
+                        if isa(newRX,'BCore')
                             %merge backup to rx %may be for totally different subject!
-                            rx = mergeMiniIntoRatrix(rx,newRX);
+                            rx = mergeMiniIntoBCore(rx,newRX);
                         else
-                            error('C_RECV_RATRIX_CMD sent an argument that was not a ratrix')
+                            error('C_RECV_BCORE_CMD sent an argument that was not a BCore')
                         end
                     else
             %             rxArgs
-            %             warning('Ratrix was not sent to the server as a part of the the C_RECV_RATRIX_CMD')
+            %             warning('BCore was not sent to the server as a part of the the C_RECV_BCORE_CMD')
                     end
                 end
             end
@@ -1821,12 +1821,12 @@ classdef rnet
             %                 if how pass file?
             %                     error('Usage: C_RECV_TRIAL_RECORDS_CMD(?)')
             %                 end
-                        case constants.stationToServerCommands.C_RECV_RATRIX_CMD
-                            if length(args) ~=1 || ~(isa(args{1},'ratrix') || isempty(args{1}))
+                        case constants.stationToServerCommands.C_RECV_BCORE_CMD
+                            if length(args) ~=1 || ~(isa(args{1},'BCore') || isempty(args{1}))
                                 good=false;
-                                error('Usage: C_RECV_RATRIX_CMD(ratrix)   (ratrix may be [])')
+                                error('Usage: C_RECV_BCORE_CMD(BCore)   (BCore may be [])')
                             end
-                        case constants.stationToServerCommands.C_RECV_RATRIX_BACKUPS_CMD
+                        case constants.stationToServerCommands.C_RECV_BCORE_BACKUPS_CMD
                         case constants.stationToServerCommands.C_RECV_STATUS_CMD
                             if ~(length(args)==1 && isValidStatus(r,args{1}))
                                 good=false;
@@ -1861,9 +1861,9 @@ classdef rnet
                                 error('Usage: C_RECV_CURR_VERSION_CMD(booleanRestarting)')
                             end
                         case r.constants.stationToServerCommands.C_STOPPED_TRIALS
-                            if length(args) ~=1 || ~isa(args{1},'ratrix')
+                            if length(args) ~=1 || ~isa(args{1},'BCore')
                                 good=false;
-                                error('Usage: C_RECV_RATRIX_CMD(ratrix)')
+                                error('Usage: C_RECV_BCORE_CMD(BCore)')
                             end
                         otherwise
                             good=false;
@@ -1875,9 +1875,9 @@ classdef rnet
 
                     switch cmd
                         case constants.serverToStationCommands.S_START_TRIALS_CMD
-                            if length(args)~=1 || ~isa(args{1},'ratrix')
+                            if length(args)~=1 || ~isa(args{1},'BCore')
                                 good=false;
-                                sendError(r,c,constants.errors.BAD_ARGS,'usage: S_START_TRIALS_CMD(Ratrix)');
+                                sendError(r,c,constants.errors.BAD_ARGS,'usage: S_START_TRIALS_CMD(BCore)');
                             end
                         case constants.serverToStationCommands.S_STOP_TRIALS_CMD
             %             case constants.serverToStationCommands.S_GET_TRIAL_RECORDS_CMD
@@ -1912,13 +1912,13 @@ classdef rnet
                                 sendError(r,c,constants.errors.BAD_ARGS,'Usage: S_REPLICATE_TRIAL_RECORDS_CMD({destination paths},bool deleteOnSuccess)')
                             end
                         case constants.serverToStationCommands.S_GET_STATUS_CMD
-                        case constants.serverToStationCommands.S_GET_RATRIX_CMD
+                        case constants.serverToStationCommands.S_GET_BCORE_CMD
                             if ~isempty(args)
                                 good=false;
-                                sendError(r,c,constants.errors.BAD_ARGS,'usage: S_GET_RATRIX_CMD(void)');
+                                sendError(r,c,constants.errors.BAD_ARGS,'usage: S_GET_BCORE_CMD(void)');
                             end
-                        case constants.serverToStationCommands.S_GET_RATRIX_BACKUPS_CMD
-                        case constants.serverToStationCommands.S_CLEAR_RATRIX_BACKUPS_CMD
+                        case constants.serverToStationCommands.S_GET_BCORE_BACKUPS_CMD
+                        case constants.serverToStationCommands.S_CLEAR_BCORE_BACKUPS_CMD
                         case constants.serverToStationCommands.S_GET_QUICK_REPORT_CMD
                         case constants.serverToStationCommands.S_SET_VALVES_CMD
                             if length(args)~=2 || ~islogical(args{1}) || ~isvector(args{1}) || ~islogical(args{2}) || ~isscalar(args{2})
@@ -1937,7 +1937,7 @@ classdef rnet
                                 checkTargetRevision(args);
                             catch
                                 good=false;
-                                sendError(r,c,constants.errors.BAD_ARGS,'usage: S_UPDATE_SOFTWARE_CMD(svn url(ex: ''svn://132.239.158.177/projects/ratrix/tags/v0.6'') [,integer revision_number]) (see util\checkTargetRevision for more restrictions)');
+                                sendError(r,c,constants.errors.BAD_ARGS,'usage: S_UPDATE_SOFTWARE_CMD(svn url(ex: ''svn://132.239.158.177/projects/BCore/tags/v0.6'') [,integer revision_number]) (see util\checkTargetRevision for more restrictions)');
                             end
                         case constants.serverToStationCommands.S_REWARD_COMPLETE_CMD
                         case constants.serverToStationCommands.S_GET_MAC_CMD

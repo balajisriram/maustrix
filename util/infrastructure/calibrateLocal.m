@@ -3,7 +3,7 @@ function calibrateLocal( numReps, amts, timeBtw, requiredAccuracy )
 
 clc
 
-dataPath=fullfile(fileparts(fileparts(getRatrixPath)),'ratrixData',filesep);
+dataPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData',filesep);
 
 rewardMethod = 'localTimed';
 

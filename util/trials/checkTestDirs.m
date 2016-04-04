@@ -1,11 +1,11 @@
 clc
 
-addpath('C:\Documents and Settings\rlab\Desktop\ratrix\bootstrap')
+addpath('C:\Documents and Settings\rlab\Desktop\BCore\bootstrap')
 setupEnvironment
 
-dir1='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\ratrixAdmin\test\subjects\';
-dir2='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\ratrixAdmin\test2\subjects\';
-targetDir='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\ratrixAdmin\subjects\';
+dir1='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\BCoreAdmin\test\subjects\';
+dir2='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\BCoreAdmin\test2\subjects\';
+targetDir='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\BCoreAdmin\subjects\';
 
 d1=dir(dir1);
 d2=dir(dir2);

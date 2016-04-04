@@ -1,11 +1,11 @@
 function r = setProtocolBSStAl(r,subjIDs)
 %% Check for basics
-if ~isa(r,'ratrix')
-    error('need a ratrix')
+if ~isa(r,'BCore')
+    error('need a BCore')
 end
 
 if ~all(ismember(subjIDs,getSubjectIDs(r)))
-    error('not all those subject IDs are in that ratrix')
+    error('not all those subject IDs are in that BCore')
 end
 
 %% Create Sound Manager
@@ -219,7 +219,7 @@ doCombos = true;
 trf = fullField(frequencies,contrasts,durations,radii,annuli,location,normalizationMethod,mean,thresh,numRepeats,...
     maxWidth,maxHeight,scaleFactor,interTrialLuminance,doCombos,false,true);
 %% Svn check
-svnRev={'svn://132.239.158.177/projects/ratrix/trunk'};
+svnRev={'svn://132.239.158.177/projects/BCore/trunk'};
 svnCheckMode='session';
 
 %% Define trainingStep

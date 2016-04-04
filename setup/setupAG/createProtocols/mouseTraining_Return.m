@@ -10,7 +10,7 @@ function pMouseTraining_OD = mouseTraining_Return(subID)
 
 ValidTestSubject={'demo1','999'};
 
-% define ratrix version to use
+% define BCore version to use
 svnRev={''};
 svnCheckMode='none';
 [~, ~, ~, ~, fd_Alt] = createFreeDrinksStepsAG_auto_Lever(svnRev,svnCheckMode,subID);

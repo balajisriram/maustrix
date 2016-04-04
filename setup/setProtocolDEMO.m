@@ -1,11 +1,11 @@
 function r = setProtocolDEMO(r,subjIDs)
 
-if ~isa(r,'ratrix')
-    error('need a ratrix')
+if ~isa(r,'BCore')
+    error('need a BCore')
 end
 
 if ~all(ismember(subjIDs,getSubjectIDs(r)))
-    error('not all those subject IDs are in that ratrix')
+    error('not all those subject IDs are in that BCore')
 end
 
 sm=makeStandardSoundManager();
@@ -214,8 +214,8 @@ else
 end
 
 if ismac
-    %ts001 = '/Users/eflister/Desktop/ratrix trunk/classes/protocols/stimManagers/@flicker/ts001';
-    ts001=fullfile(getRatrixPath,'ts001');
+    %ts001 = '/Users/eflister/Desktop/BCore trunk/classes/protocols/stimManagers/@flicker/ts001';
+    ts001=fullfile(getBCorePath,'ts001');
 else
     ts001 = '\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\stimuli\hateren\ts001';
 end
@@ -251,7 +251,7 @@ cs=[1];
 [noiseSpec.loopDuration]         =deal(length(cs)*length(tfs)*1);
 search=filteredNoise(noiseSpec,maxWidth,maxHeight,scaleFactor,interTrialLuminance);
 
-svnRev={'svn://132.239.158.177/projects/ratrix/trunk'};
+svnRev={'svn://132.239.158.177/projects/BCore/trunk'};
 svnCheckMode='session';
 
 ts1 = trainingStep(fd, freeStim, repeatIndefinitely(), noTimeOff(), svnRev,svnCheckMode);   %stochastic free drinks

@@ -254,7 +254,7 @@ classdef filteredNoise<stimManager
         function [stimulus,updateSM,resolutionIndex,preRequestStim,preResponseStim,discrimStim,postDiscrimStim,interTrialStim,LUT,targetPorts,distractorPorts, ...
     details,interTrialLuminance,text,indexPulse,imagingTasks] =...
     calcStim(stimulus,trialManagerClass,allowRepeats,resolutions,displaySize,LUTbits,responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
-            % see ratrixPath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
+            % see BCorePath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
             % 1/3/0/09 - trialRecords now includes THIS trial
             imagingTasks=[];
 
@@ -566,7 +566,7 @@ classdef filteredNoise<stimManager
             out=round(100*10^decs*val)/10^decs;
         end
 
-        %can use ratrix\classes\util\matlaby\normalize if don't mind doubleified output
+        %can use BCore\classes\util\matlaby\normalize if don't mind doubleified output
         function x=normalize(x)
             x=x-min(x(:));
             x=x/max(x(:));

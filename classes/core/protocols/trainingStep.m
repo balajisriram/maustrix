@@ -30,7 +30,7 @@ classdef trainingStep
         
         function ok=boxOKForTrainingStep(t,b,r)
             validateattributes(b,{'box'},{'nonempty'});
-            validateattributes(r,{'ratrix'},{'nonempty'});
+            validateattributes(r,{'BCore'},{'nonempty'});
             ok=t.trialManager.boxOKForTrialManager(b,r) & t.stimManager.boxOKForStimManager(b,r);
         end
 
@@ -55,7 +55,7 @@ classdef trainingStep
             
             %note: the number of session is preserved in the session
             %record in the the training step, but this hack version
-            %always overwrites the ratrix, so isn't making use of that
+            %always overwrites the BCore, so isn't making use of that
             %funcitonality, even though it should work
             
             %always make a new session after an intersession
@@ -146,7 +146,7 @@ classdef trainingStep
             
             manualTs=false;
             validateattributes(st,{'station'},{'nonempty'});
-            validateattributes(r,{'ratrix'},{'nonempty'});
+            validateattributes(r,{'BCore'},{'nonempty'});
             validateattributes(sub,{'subject'},{'nonempty'});
             assert((isempty(rn) || isa(rn,'rnet')),'trainingStep:doTrial:incomaptibleDataValue','if you provide a non empty rnet, it has to be an rnet')
             
@@ -187,7 +187,7 @@ classdef trainingStep
                         % This will update the protocol locally, and also update
                         % the subject's protocolversion.autoVersion, which will
                         % propagate the changes back to the server upon session end
-                        [sub, r]=changeProtocolStep(sub,ts,r,'trialManager or stimManager or scheduler state change','ratrix');
+                        [sub, r]=changeProtocolStep(sub,ts,r,'trialManager or stimManager or scheduler state change','BCore');
                     end
                     
                 else
@@ -211,7 +211,7 @@ classdef trainingStep
 
             tsName = [getNameFragment(ts.trialManager) '_' getNameFragment(ts.stimManager) '_' getNameFragment(ts.criterion) '_' getNameFragment(ts.scheduler)];
 
-            usersNameOfWholeStep=getStepName(ts); % optional name is used by physiology and could be used by ratrix protocols.  defaults to '' when unspecified.
+            usersNameOfWholeStep=getStepName(ts); % optional name is used by physiology and could be used by BCore protocols.  defaults to '' when unspecified.
             if ~strcmp(usersNameOfWholeStep,'')
                 tsName=[usersNameOfWholeStep '_' tsName];
             end
@@ -258,7 +258,7 @@ classdef trainingStep
             out=sampleStimFrame(ts.stimManager,class(ts.trialManager));
             else
                 out=[];
-                warning('not a stimManager:  maybe the current class definitions don''t match the ratrix')
+                warning('not a stimManager:  maybe the current class definitions don''t match the BCore')
             end
 
         end

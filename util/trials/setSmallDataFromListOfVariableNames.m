@@ -6,7 +6,7 @@ numFields=size(savedVariableNames,1);
 numTrials=size(trialRecords,2);
 for f=1:numFields
     for i=1:numTrials
-        trial=i; %this used to be different when collecting many sessions at once, see getRatrixDataFromStation
+        trial=i; %this used to be different when collecting many sessions at once, see getBCoreDataFromStation
 
         %Check to See the Field Exists
         command=sprintf('tempVariable=trialRecords(i)%s;',char(savedVariableNames(f,2)));

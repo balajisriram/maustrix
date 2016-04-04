@@ -1,5 +1,5 @@
 function startDataListener()
-%this opens up the datanet listener so that a ratrix datanet can connect to it;
+%this opens up the datanet listener so that a BCore datanet can connect to it;
 
 setupEnvironment;
 try

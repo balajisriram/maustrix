@@ -189,7 +189,7 @@ CNOIndex=find(strcmp(eventTypeStrs,'CNO'));
 singleUnitIndex=find(strcmp(eventTypeStrs,'singleUnit')); 
 
 % get the orientation images
-imagesFile = fullfile(getRatrixPath,'util','other','axisOrientation.mat');
+imagesFile = fullfile(getBCorePath,'util','other','axisOrientation.mat');
 temp = stochasticLoad(imagesFile,{'UpLeft','UpRight','DownLeft','DownRight'});
 UpLeft = temp.UpLeft;
 UpRight = temp.UpRight;
@@ -1038,8 +1038,8 @@ protocolField = uicontrol(protocolPanel,'Style','popupmenu','String',protocolStr
 
 stepInProtocolField = uicontrol(protocolPanel,'Style','listbox','Visible','on','Units','normalized','Value',defaultIndex,'Enable','on','Position',[0.01 0.01 0.98 0.74]);
     function populateTrainingStepNames(source,eventdata)
-        % will make a temporary ratrix
-        rxTemp = getOrMakeDefaultRatrix(true,false);
+        % will make a temporary BCore
+        rxTemp = getOrMakeDefaultBCore(true,false);
         
         % createSubject
         subj = subject;
@@ -1936,7 +1936,7 @@ end
 function [quit, retval, status, requestDone]=doServerIteration(data,params,externalRequest)
 % should also work in standalone phys logging mode (just do nothing...)
 requestDone=false;
-% check pnet('status') here if ratrix throws error, go back to
+% check pnet('status') here if BCore throws error, go back to
 % connectToClient
 status=pnet(getCmdCon(data),'status')>0 && pnet(getAckCon(data),'status')>0;
 

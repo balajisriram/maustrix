@@ -6,7 +6,7 @@ if ispc
     [a b]=dos('ipconfig');
     if a==0
         conn=dbConn;
-        sql_query='SELECT * from ratrixservers';
+        sql_query='SELECT * from BCoreservers';
         results = query(conn,sql_query);
         
         if ~isempty(results)

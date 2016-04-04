@@ -6,7 +6,7 @@ function pMouseTraining_Reversal = mouseTraining_ObjectReversal_auto(subID)
 % details for each subject are internally modifiable. 
 % define subjects
 
-% define ratrix version to use
+% define BCore version to use
 svnRev={''};
 svnCheckMode='none';
 

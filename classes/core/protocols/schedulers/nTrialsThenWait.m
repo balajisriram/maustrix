@@ -91,7 +91,7 @@ classdef nTrialsThenWait<scheduler
             %initialize
             updateScheduler=0;
             %in the long run, its okay to update the the scheuler alot, b/c it won't be
-            %the whole ratrix, but just the training step. Thus its safe to be able to
+            %the whole BCore, but just the training step. Thus its safe to be able to
             %save the scheduler after every trial (not just after session start stops)
             %If set to 0, this script still has extra calls to updateScheduler that enforces
             %session-only changes.   

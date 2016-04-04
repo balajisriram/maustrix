@@ -17,15 +17,15 @@ closeConn(conn);
 
 subs=createSubjectsFromDB(ids);
 
-dataPath=fullfile(fileparts(fileparts(getRatrixPath)),'ratrixData',filesep);
-r=ratrix(fullfile(dataPath, 'ServerData'),0); %load from file
+dataPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData',filesep);
+r=BCore(fullfile(dataPath, 'ServerData'),0); %load from file
 
 preExistingSubs=getSubjectIDs(r);
 
 for i=1:length(subs)
     if ismember(getID(subs(i)),preExistingSubs)
         getID(subs(i))
-        warning('subject already in ratrix - not adding')
+        warning('subject already in BCore - not adding')
     else
         r=addSubject(r,subs(i),auth);
     end

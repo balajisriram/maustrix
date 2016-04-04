@@ -6,7 +6,7 @@
 % other light sources in room: LED, phys comp, eyetracking comp.  didn't draw curtain
 % nvidia gforce 8600GTS (unsure of mfg - xfx? black case/gigabyte mobo) at dual 100Hz 1280x1024
 %
-% ratrix trunk rev 1992
+% BCore trunk rev 1992
 %
 % spyderData=useSpyder('CRT', 1, repmat(linspace(0,1,2^8)',1,3))
 % spyderCdPerMsquared=spyderData(end-255:end,2);

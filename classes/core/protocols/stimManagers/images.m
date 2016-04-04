@@ -258,7 +258,7 @@ classdef images<stimManager
                 details,interTrialLuminance,text,indexPulses,imagingTasks] =...
                 calcStim(stimulus,trialManager,allowRepeats,resolutions,displaySize,LUTbits,...
                 responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
-            % see ratrixPath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
+            % see BCorePath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
             trialManagerClass = class(trialManager);
             LUT=makeStandardLUT(LUTbits);
             [junk, mac] = getMACaddress();
@@ -916,7 +916,7 @@ classdef images<stimManager
                         error('exceeded maxAttempts')
                     end
                     
-                    beep %feedback when ptb screen is up -- ratrix can appear to be dead for long periods without this -- better would be screen output, but that requries some rearchitecting
+                    beep %feedback when ptb screen is up -- BCore can appear to be dead for long periods without this -- better would be screen output, but that requries some rearchitecting
                     pause(pauseDur);
                 end
                 
@@ -1082,7 +1082,7 @@ classdef images<stimManager
                                 bestBigger={};
                                 bestSmaller={};
                                 while abs(delta)>tolerance && m<maxLoops
-                                    beep %feedback when ptb screen is up -- ratrix can appear to be dead for long periods without this -- better would be screen output, but that requries some rearchitecting
+                                    beep %feedback when ptb screen is up -- BCore can appear to be dead for long periods without this -- better would be screen output, but that requries some rearchitecting
                                     
                                     factor=mean(factorRange);
                                     

@@ -99,7 +99,7 @@ classdef trialManager
             %   station - the station object
             %   stimManager - the stim manager object
             %   subject - the subject object
-            %   r - the ratrix object
+            %   r - the BCore object
             %   rn - the rnet object
             %   trialRecords - a vector of the current session's trialRecords (includes some history from prev. session until they get replaced by current session)
             %   sessionNumber - the current session number
@@ -124,7 +124,7 @@ classdef trialManager
             %% validateattributes
             validateattributes(st,{'station'},{'nonempty'});
             validateattributes(sm,{'stimManager'},{'nonempty'});
-            validateattributes(r,{'ratrix'},{'nonempty'});
+            validateattributes(r,{'BCore'},{'nonempty'});
             validateattributes(sub,{'subject'},{'nonempty'});
             assert(tm.stationOKForTrialManager(st),'trialManager:doTrial:incompatibleValues','station not okay for trial manager');
             
@@ -178,7 +178,7 @@ classdef trialManager
             %% calcStim
             % calcStim should return the following:
             %	newSM - a (possibly) modified stimManager object
-            %	updateSM - a flag whether or not to copy newSM to ratrix
+            %	updateSM - a flag whether or not to copy newSM to BCore
             %	resInd - for setting resolution - DO NOT CHANGE
             %	preRequestStim - a struct containing all stim-specifc parameters to create a stimSpec for the pre-request phase
             %	preResponseStim - a struct containing all stim-specific parameters to create a stimSpec for the pre-response phase
@@ -1945,7 +1945,7 @@ classdef trialManager
         
         function out=boxOKForTrialManager(b,r)
             validateattributes(b,{'box'},{'nonempty'});
-            validateattributes(r,{'ratrix'},{'nonempty'});
+            validateattributes(r,{'BCore'},{'nonempty'});
             
             out=false;
             

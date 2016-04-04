@@ -7,7 +7,7 @@ function pMouseTraining_Motion = mouseTraining_Motion(subID)
 % details for each subject are internally modifiable. 
 % define subjects
 
-% define ratrix version to use
+% define BCore version to use
 svnRev={''};
 svnCheckMode='none';
 

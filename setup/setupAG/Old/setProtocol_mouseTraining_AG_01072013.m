@@ -46,7 +46,7 @@ function r = setProtocol_mouseTraining_AG_01072013(r,subjIDs)
 
 ValidTestSubject={'demo1','999'};
 
-% define ratrix version to use
+% define BCore version to use
 svnRev={''};
 svnCheckMode='none';
 

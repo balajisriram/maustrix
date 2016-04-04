@@ -250,7 +250,7 @@ if writeToOracle
         CLUT=fread(fid,'*uint8');
         fclose(fid);
         timestamp=datestr(now,'mm-dd-yyyy HH:MM');
-        svnRev=getSVNRevisionFromXML(getRatrixPath);
+        svnRev=getSVNRevisionFromXML(getBCorePath);
         addCalibrationData(CLUT,mac,timestamp,svnRev,comment,calibrationString)
         closeConn(conn);
     catch ex
@@ -260,14 +260,14 @@ if writeToOracle
 end
 
 if saveLocalCopy
-    % data is always stored on the local ratrix folder currently overwrites
+    % data is always stored on the local BCore folder currently overwrites
     % old calibration data.
     disp('saving calibration to local store...')
-    ratrixFolder = getRatrixPath;
-    if ~exist(fullfile(ratrixFolder,'monitorCalibration'),'dir')
-        mkdir(fullfile(ratrixFolder,'monitorCalibration'));
+    BCoreFolder = getBCorePath;
+    if ~exist(fullfile(BCoreFolder,'monitorCalibration'),'dir')
+        mkdir(fullfile(BCoreFolder,'monitorCalibration'));
     end
-    save(fullfile(ratrixFolder,'monitorCalibration','tempCLUT.mat'),'linearizedCLUT','measuredR','measuredG','measuredB','currentCLUT','validationValues','details');
+    save(fullfile(BCoreFolder,'monitorCalibration','tempCLUT.mat'),'linearizedCLUT','measuredR','measuredG','measuredB','currentCLUT','validationValues','details');
     disp('...done');
 end
 

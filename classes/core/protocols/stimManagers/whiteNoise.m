@@ -217,7 +217,7 @@ classdef whiteNoise<stimManager
                 details,interTrialLuminance,text,indexPulses,imagingTasks] =...
                 calcStim(stimulus,trialManager,allowRepeats,resolutions,displaySize,LUTbits,...
                 responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
-            % see ratrixPath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
+            % see BCorePath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
             % 1/3/0/09 - trialRecords now includes THIS trial
             trialManagerClass=class(trialManager);
             indexPulses=[];
@@ -234,8 +234,8 @@ classdef whiteNoise<stimManager
                 desiredWidth=800;
                 desiredHeight=600;
                 desiredHertz=60;
-                ratrixEnforcedColor=32;
-                resolutionIndex=find(([resolutions.height]==desiredHeight) & ([resolutions.width]==desiredWidth) & ([resolutions.pixelSize]==ratrixEnforcedColor) & ([resolutions.hz]==desiredHertz));
+                BCoreEnforcedColor=32;
+                resolutionIndex=find(([resolutions.height]==desiredHeight) & ([resolutions.width]==desiredWidth) & ([resolutions.pixelSize]==BCoreEnforcedColor) & ([resolutions.hz]==desiredHertz));
                 height=resolutions(resolutionIndex).height
                 width=resolutions(resolutionIndex).width
                 hz=resolutions(resolutionIndex).hz
@@ -958,7 +958,7 @@ classdef whiteNoise<stimManager
                     error('that method for getting a LUT is not defined');
                 case 'linearizedDefault'
                     
-                    %WARNING:  need to get gamma from measurements of ratrix workstation with NEC monitor and new graphics card
+                    %WARNING:  need to get gamma from measurements of BCore workstation with NEC monitor and new graphics card
                     
                     
                     LUTBitDepth=8;
@@ -1005,10 +1005,10 @@ classdef whiteNoise<stimManager
                         checkLocal = true;
                         downloadCLUT = true;
                         if checkLocal
-                            a = dir(getRatrixPath);
+                            a = dir(getBCorePath);
                             if true|| (any(ismember({a.name},'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat')) && ...
                                     datenum(a(ismember({a.name},'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat')).date)>floor(now))
-                                temp = load(fullfile(getRatrixPath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat'));
+                                temp = load(fullfile(getBCorePath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat'));
                                 uncorrected = temp.cal.linearizedCLUT;
                                 useUncorrected=1; % its already corrected
                                 downloadCLUT = false;
@@ -1021,7 +1021,7 @@ classdef whiteNoise<stimManager
                             uncorrected = cal.linearizedCLUT;
                             useUncorrected=1; % its already corrected
                             % now save cal
-                            filename = fullfile(getRatrixPath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat');
+                            filename = fullfile(getBCorePath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat');
                             save(filename,'cal');
                         end
                     end
@@ -1045,10 +1045,10 @@ classdef whiteNoise<stimManager
                         checkLocal = true;
                         downloadCLUT = true;
                         if checkLocal
-                            a = dir(getRatrixPath);
+                            a = dir(getBCorePath);
                             if any(ismember({a.name},'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat')) && ...
                                     datenum(a(ismember({a.name},'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat')).date)>floor(now)
-                                temp = load(fullfile(getRatrixPath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat'));
+                                temp = load(fullfile(getBCorePath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat'));
                                 uncorrected = temp.cal.linearizedCLUT;
                                 useUncorrected=1; % its already corrected
                                 downloadCLUT = false;
@@ -1061,13 +1061,13 @@ classdef whiteNoise<stimManager
                             uncorrected = cal.linearizedCLUT;
                             useUncorrected=1; % its already corrected
                             % now save cal
-                            filename = fullfile(getRatrixPath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat');
+                            filename = fullfile(getBCorePath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat');
                             save(filename,'cal');
                         end
                     end
                 case 'localCalibStore'
                     try
-                        temp = load(fullfile(getRatrixPath,'monitorCalibration','tempCLUT.mat'));
+                        temp = load(fullfile(getBCorePath,'monitorCalibration','tempCLUT.mat'));
                         uncorrected = temp.linearizedCLUT;
                         useUncorrected=1;
                     catch ex

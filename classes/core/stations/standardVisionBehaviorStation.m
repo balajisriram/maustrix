@@ -197,11 +197,11 @@ classdef standardVisionBehaviorStation < station
         end
         
         function [r, exitByFinishingTrialQuota]=doTrials(s,r,n,rn,trustOsRecordFiles)
-            %this will doTrials on station=(s) of ratrix=(r).
+            %this will doTrials on station=(s) of BCore=(r).
             %n=number of trials, where 0 means repeat indefinitely
-            %rn is a ratrix network object, which only the server uses, otherwise leave empty
+            %rn is a BCore network object, which only the server uses, otherwise leave empty
             %trustOsRecordFiles is risky because we know that they can be wrong when
-            %the server is taxed. The ratrix downstairs does not trust them. But you
+            %the server is taxed. The BCore downstairs does not trust them. But you
             %are free of oracle dependency. It is not recommended to trustOsRecordFiles
             %unless your permanentStore is local, then it might be okay.
             %recordNeuralData is a flag to decide whether or not to start datanet for NIDAQ recording
@@ -271,7 +271,7 @@ classdef standardVisionBehaviorStation < station
                 end
                 
             else
-                error('that ratrix doesn''t contain this station')
+                error('that BCore doesn''t contain this station')
             end
         end
         

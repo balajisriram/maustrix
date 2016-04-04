@@ -199,9 +199,9 @@ switch upper(spikeSortingMethod)
         
         
         % we need a file temp.fet.1 as input to KlustaKwik, and the output file will be temp.clu.1
-        % change to ratrixPath/KlustaKwik directory
+        % change to BCorePath/KlustaKwik directory
         currentDir=pwd;
-        tempDir=fullfile(getRatrixPath,'util','spikes','spike sorting','KlustaKwik');
+        tempDir=fullfile(getBCorePath,'util','spikes','spike sorting','KlustaKwik');
         cd(tempDir);
         
         [features nrDatapoints spikeModel.featureDetails] = calculateFeatures(spikeWaveforms,spikeSortingParams.featureList);

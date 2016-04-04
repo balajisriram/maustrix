@@ -37,12 +37,12 @@ function r = setProtocolTEST(r,subjIDs)
 
 % ====================================================================================================================
 % error test initial
-if ~isa(r,'ratrix')
-    error('need a ratrix')
+if ~isa(r,'BCore')
+    error('need a BCore')
 end
 
 if ~all(ismember(subjIDs,getSubjectIDs(r)))
-    error('not all those subject IDs are in that ratrix')
+    error('not all those subject IDs are in that BCore')
 end
 % ====================================================================================================================
 % variables for reinforcement and trial managers
@@ -385,7 +385,7 @@ parameters.pixPerCycs =12;
 parameters.stdGaussMask = 3/128;
 
 parameters.fractionNoFlanks=.05;
-parameters.flankerContrast = [0.4]; % **!! miniDatabase overwrites this (for rats on this step)  if within-step shaping rebuilding ratrix
+parameters.flankerContrast = [0.4]; % **!! miniDatabase overwrites this (for rats on this step)  if within-step shaping rebuilding BCore
 parameters.flankerOffset = 3;
 parameters.toggleStim=false;
 
@@ -394,7 +394,7 @@ parameters.toggleStim=false;
 targetContrast=2.^[-8,-7,-6]%-8,-7,-6,-2,-1]; %[.25 0.5 0.75 1]; % starting sweep (rational: match acuity, but if at chance on .25 don't swamp more than you need, if above chance then add in something smaller, also easier ones will keep up moral )
 parameters=setLeftAndRightContrastInParameterStruct(parameters, protocolType, targetContrast);
 
-parameters=setLeftAndRightContrastInParameterStruct(parameters, protocolType, targetContrast);  % **skip .9 ; miniDatabase overwrites this (for rats on this step)  if rebuilding ratrix
+parameters=setLeftAndRightContrastInParameterStruct(parameters, protocolType, targetContrast);  % **skip .9 ; miniDatabase overwrites this (for rats on this step)  if rebuilding BCore
 parameters.persistFlankersDuringToggle = 0; %
 
 
@@ -507,7 +507,7 @@ ports=cellfun(@uint8,{1 3},'UniformOutput',false);
 % % % % led=nAFC(sm,percentCorrectionTrials,constantRewards,[],{'off'},false,'LED');
 % % % 
 % % % if ismac
-% % %     ts001 = '/Users/eflister/Desktop/ratrix trunk/classes/protocols/stimManagers/@flicker/ts001';
+% % %     ts001 = '/Users/eflister/Desktop/BCore trunk/classes/protocols/stimManagers/@flicker/ts001';
 % % % else
 % % %     ts001 = '\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\hateren\ts001';
 % % % end
@@ -537,7 +537,7 @@ ports=cellfun(@uint8,{1 3},'UniformOutput',false);
 
 % ====================================================================================================================
 % training steps
-svnRev={'svn://132.239.158.177/projects/ratrix/trunk'};
+svnRev={'svn://132.239.158.177/projects/BCore/trunk'};
 svnCheckMode='session';
 % set up graduationCriterion
 graduateQuickly = performanceCriterion([.2, .5], [uint8(5), uint8(20)]); %cannot use this for freeDrinks b/c no "correct" answer

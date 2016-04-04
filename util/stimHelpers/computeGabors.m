@@ -18,7 +18,7 @@ function out=computeGabors(params,mean,width,height,waveform,normalizeMethod,cor
 % end
 
 %%080218 added waveform = 'none' pmm
-%080218 confirmed in-sync with svnErik ratrix pmm
+%080218 confirmed in-sync with svnErik BCore pmm
 %080419  got rid of oldMethod that uses imrotate, we now have no aliasing   pmm
 %   phases defined from center of mask 
 %   emperically everything is fine with integer pixPerCyc. Non-integer looks bad.(Especialy weird wrapping effect for horizontal or vertical)

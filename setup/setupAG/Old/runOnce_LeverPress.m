@@ -1,6 +1,6 @@
 function runOnce_LeverPress
 
-dataPath=fullfile(fileparts(fileparts(getRatrixPath)),'ratrixData',filesep);
+dataPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData',filesep);
 
 try
     [success, mac]=getMACaddress();
@@ -12,11 +12,11 @@ catch
 end
 
 machines={{'1U',mac,[1 1 1]}};
-rx=createRatrixWithDefaultLeverPressStations(machines,dataPath,'localTimed');
+rx=createBCoreWithDefaultLeverPressStations(machines,dataPath,'localTimed');
 permStorePath=fullfile(dataPath,'PermanentTrialRecordStore');
 mkdir(permStorePath);
 rx.standAlonePath=permStorePath;
-fprintf('created new ratrix\n')
+fprintf('created new BCore\n')
 
 pMotion = @mouseTraining_Motion_Lever;
 

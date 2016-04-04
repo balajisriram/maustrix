@@ -1,13 +1,13 @@
 function setParamsForSubject
 
-dataPath=fullfile(fileparts(fileparts(getRatrixPath)),'ratrixData',filesep);
+dataPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData',filesep);
 defaultLoc=fullfile(dataPath, 'ServerData');
 
 d=dir(fullfile(defaultLoc, 'db.mat'));
 
 if length(d)==1
-    rx=ratrix(defaultLoc,0);
-    fprintf('loaded ratrix from default location\n')
+    rx=BCore(defaultLoc,0);
+    fprintf('loaded BCore from default location\n')
 else
     error('you are doing something dangerous - are you sure you know what you are doing?');
 end
@@ -50,7 +50,7 @@ try
             case 'subject'
                 tempID = getID(subjectID);
                 disp(tempID);
-                if isSubjectInRatrix(rx,tempID)
+                if isSubjectInBCore(rx,tempID)
                     sub = getSubjectFromID(rx,subjectID);
                     [~, step] = getProtocolAndStep(sub);
                     newProt = subjectChanges{i}{2};

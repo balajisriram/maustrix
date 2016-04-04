@@ -13,7 +13,7 @@ end
 
 [~,mac] = getMACaddress;
 
-dataPath=fullfile(fileparts(fileparts(getRatrixPath)),'ratrixData',filesep);
+dataPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData',filesep);
 path=fullfile(dataPath, 'Stations',sprintf('station%s','1U'));
 
 rewardMethod = 'localTimed';

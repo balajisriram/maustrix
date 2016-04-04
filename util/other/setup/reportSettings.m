@@ -66,7 +66,7 @@ if ~isempty(ids)
                                 end
                             end
                             if ~found
-                                fprintf(' subject not found in ratrix\n');
+                                fprintf(' subject not found in BCore\n');
                                 %error('no subj found')
                             end
                         end

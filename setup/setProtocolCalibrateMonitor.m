@@ -1,11 +1,11 @@
 function r = setProtocolCalibrateMonitor(r,subjIDs)
 
-if ~isa(r,'ratrix')
-    error('need a ratrix')
+if ~isa(r,'BCore')
+    error('need a BCore')
 end
 
 if ~all(ismember(subjIDs,getSubjectIDs(r)))
-    error('not all those subject IDs are in that ratrix')
+    error('not all those subject IDs are in that BCore')
 end
 
 % soundManager
@@ -68,7 +68,7 @@ contrasts = 0.125;
 s_c12 = fullField(frequencies,contrasts,durations,radii,annuli,location,normalizationMethod,mean,thresh,numRepeats,...
 maxWidth,maxHeight,scaleFactor,interTrialLuminance,doCombos);
 
-svnRev={'svn://132.239.158.177/projects/ratrix/trunk'};
+svnRev={'svn://132.239.158.177/projects/BCore/trunk'};
 svnCheckMode = 'session';
 
 ts1 = trainingStep(ap, s_c100, numTrialsDoneCriterion(3), noTimeOff(), svnRev,svnCheckMode);   %stochastic free drinks

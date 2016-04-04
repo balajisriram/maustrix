@@ -48,14 +48,14 @@ classdef box
         end
         
         function subPath=getBoxPathForSubjectID(b,sID,r)
-            if isa(r,'ratrix')
+            if isa(r,'BCore')
                 if getBoxIDForSubjectID(r,sID)==b.id
                     subPath=fullfile(getSubjectDataDir(b),sID);  %[b.path 'subjectData' filesep sID filesep];
                 else
                     error('subject not in this box')
                 end
             else
-                error('ratrix does not contain subject')
+                error('BCore does not contain subject')
             end
         end
         
@@ -66,11 +66,11 @@ classdef box
         function trialRecords=getTrialRecordsForSubjectID(b,sID,r)
             disp(sprintf('loading records for %s (from box)',sID))
             startTime=GetSecs();
-            if isa(r,'ratrix')
+            if isa(r,'BCore')
                 subPath=getBoxPathForSubjectID(b,sID,r);
                 trialRecords=loadMakeOrSaveTrialRecords(subPath);
             else
-                error('need ratrix object')
+                error('need BCore object')
             end
             disp(sprintf('done loading records for %s: %g s elapsed',sID,GetSecs()-startTime))
         end
@@ -97,11 +97,11 @@ classdef box
         function updateTrialRecordsForSubjectID(b,sID,trialRecords,r)
             disp(sprintf('saving records for %s (from box)',sID))
             startTime=GetSecs();
-            if isa(r,'ratrix')
+            if isa(r,'BCore')
                 subPath=getBoxPathForSubjectID(b,sID,r);
                 loadMakeOrSaveTrialRecords(subPath,trialRecords);
             else
-                error('need ratrix object')
+                error('need BCore object')
             end
             disp(sprintf('done saving records for %s: %g s elapsed',sID,GetSecs()-startTime))
         end

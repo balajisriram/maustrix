@@ -2,7 +2,7 @@
 function failures = compileDetailedRecords(server_name,ids,recompile,source,destination)
 failures = {};
 
-%compileDetailedRecords({'demo1'},'C:\Documents and Settings\rlab\Desktop\ratrixData\PermanentTrialRecordStore','C:\Documents and Settings\rlab\Desktop\ratrixData\CompiledTrialRecords');
+%compileDetailedRecords({'demo1'},'C:\Documents and Settings\rlab\Desktop\BCoreData\PermanentTrialRecordStore','C:\Documents and Settings\rlab\Desktop\BCoreData\CompiledTrialRecords');
 
 % switch type
 %     case 'crossModal'
@@ -10,7 +10,7 @@ failures = {};
 %         source='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\behavior\pmeierTrialRecords\subjects';
 %     case 'images'
 %         ids={'280','281','283'};
-%         source='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\ratrixAdmin\rack3\subjects';
+%         source='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\BCoreAdmin\rack3\subjects';
 %     otherwise
 %         error('unrecognized type')
 % end

@@ -3,9 +3,9 @@ switch rackNum
     case 1
         out='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\behavior\pmeierTrialRecords\compiled';
     case 2
-        out='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\ratrixAdmin\compiledRecords\';
+        out='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\BCoreAdmin\compiledRecords\';
     case 3 %female
-        out='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\ratrixAdmin\rack3\compiledTrialRecords\';
+        out='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\BCoreAdmin\rack3\compiledTrialRecords\';
     case 4 % 11/26/08 - HACK to run one station
         out='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\behavior\pmeierTrialRecords\compiled';
     case 5 
@@ -17,7 +17,7 @@ switch rackNum
      case -1 % 12/13/08 -for flanker paper analysis
         out='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\behavior\pmeierTrialRecords\enhancedCompile1';
     case -2 % 12/13/08 -for local testing
-        out=fullfile(fileparts(fileparts(getRatrixPath)),'ratrixData','CompiledTrialRecords');
+        out=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData','CompiledTrialRecords');
     otherwise
         error('bad')
 end

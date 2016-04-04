@@ -70,9 +70,9 @@ warning('off','MATLAB:dispatcher:nameConflict')
 
 
 rootPath='C:\pmeier\';
-addpath(genpath(fullfile(rootPath, 'Ratrix')));
+addpath(genpath(fullfile(rootPath, 'BCore')));
 oracleVersion='classes12_g.jar';  %get this from SVN?
-javaaddpath(fullfile(rootPath,'Ratrix','OracleXE',oracleVersion))  % this is to access the oracle database with rat weights, etc
+javaaddpath(fullfile(rootPath,'BCore','OracleXE',oracleVersion))  % this is to access the oracle database with rat weights, etc
 warning('on','MATLAB:dispatcher:nameConflict')
 
 
@@ -111,7 +111,7 @@ for i=1:numRats
 end
 
 %save local and remote graph
-local=fullfile(fileparts(fileparts(getRatrixPath)),'ratrixData','graphs');
+local=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData','graphs');
 savePlotsToPNG(whichPlots,handles,who,local);
 whereOnServer=fullfile((fileparts(getSubDirForServerID(serverID))),'graphs')
 savePlotsToPNG(whichPlots,handles,who,whereOnServer);

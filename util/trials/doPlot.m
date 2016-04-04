@@ -1,6 +1,6 @@
 function doPlot(plotType,d,figureHandle,subplotX,subplotY,subplotInd,goodType,removeHuman)
 % doPlot(plotType,d,figureHandle,subplotX,subplotY,subplotInd)
-% plots ratrix data intelligently
+% plots BCore data intelligently
 %
 % INPUTS
 % plotType = one of several predefined views
@@ -17,7 +17,7 @@ function doPlot(plotType,d,figureHandle,subplotX,subplotY,subplotInd,goodType,re
 %  		'plotRatePerDay'
 %       'makeDailyRaster'
 %       'plotReinforcement'
-% d		ratrix data structure (returned by getSmalls)
+% d		BCore data structure (returned by getSmalls)
 % figureHandle
 % subplotx
 % subploty

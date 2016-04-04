@@ -1,12 +1,12 @@
 function r = setProtocolMINBS(r,subjIDs)
 % NOTE this setProtocol file assumes that your subjID has already been
-% added to the ratrix. See the history file associated with the
+% added to the BCore. See the history file associated with the
 % experiment/rat.
 
-% this works for running on the ratrix downstairs or standalone
-logPath=fullfile(fileparts(fileparts(getRatrixPath)),'ratrix\setup\setupPR',filesep);
+% this works for running on the BCore downstairs or standalone
+logPath=fullfile(fileparts(fileparts(getBCorePath)),'BCore\setup\setupPR',filesep);
 
-% define ratrix version to use
+% define BCore version to use
 svnRev={};
 svnCheckMode='none';
 

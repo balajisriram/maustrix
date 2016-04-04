@@ -7,7 +7,7 @@ if isempty(args)
     error('disallowing emtpy svn update command')
 end
 
-% svnRevision={'svn://132.239.158.177/projects/ratrix/tags/v0.8'};
+% svnRevision={'svn://132.239.158.177/projects/BCore/tags/v0.8'};
 
 % args can be either a 1-element or 2-element cell array as follows:
 % args = {targetPath, [revisionNumber]}
@@ -16,8 +16,8 @@ minRev=1550;%the lowest revision that implements subject-specific permanent reco
 
 % check that the provided input arguments are as specified above
 if iscell(args) && isvector(args) && length(args)<=2 && length(args)>0
-    % check the first argument (targetPath) and also that it matches the ratrix root directory
-    if ischar(args{1}) && isvector(args{1}) && strmatch('svn://132.239.158.177/projects/ratrix/',args{1})
+    % check the first argument (targetPath) and also that it matches the BCore root directory
+    if ischar(args{1}) && isvector(args{1}) && strmatch('svn://132.239.158.177/projects/BCore/',args{1})
         
         % check that if second argument is provided, it is above minRev
         if length(args)==2 && ~isempty(args{2})
@@ -61,12 +61,12 @@ function pathIsOkay = checkSVNPath(url)
 pathIsOkay = false;
 
 
-if strmatch(url, 'svn://132.239.158.177/projects/ratrix/trunk') 
+if strmatch(url, 'svn://132.239.158.177/projects/BCore/trunk') 
     % check against trunk
     pathIsOkay = true;
-elseif strmatch(url, 'svn://132.239.158.177/projects/ratrix/trunk/bootstrap')
+elseif strmatch(url, 'svn://132.239.158.177/projects/BCore/trunk/bootstrap')
     pathIsOkay = true;
-elseif strcmp(url,'svn://132.239.158.177/projects/ratrix/branches/fan') || strcmp(url,'svn://132.239.158.177/projects/ratrix/branches/fan/bootstrap')
+elseif strcmp(url,'svn://132.239.158.177/projects/BCore/branches/fan') || strcmp(url,'svn://132.239.158.177/projects/BCore/branches/fan/bootstrap')
     pathIsOkay=true;
 else
     % check against tags

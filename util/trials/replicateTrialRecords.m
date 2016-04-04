@@ -3,13 +3,13 @@ function replicateTrialRecords(paths,deleteOnSuccess, recordInOracle)
 % Does the following:
 %   1) calls collectTrialRecords to format from {tr1,tr2,tr3,etc} to vectorized format
 %   2) does LUT processing
-%   3) Copy the trial records stored in the (local) ratrixData directory to the
+%   3) Copy the trial records stored in the (local) BCoreData directory to the
 %       set of paths given in paths. Typically, paths is a location on the fileserver (ie each subject's permanent store path).
 
 input_paths = paths;
 
 subDirs=struct([]);
-boxDirs=fullfile(fileparts(fileparts(getRatrixPath)),'ratrixData','Boxes');
+boxDirs=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData','Boxes');
 boxDirsToCheck=dir(boxDirs);
 for b=1:length(boxDirsToCheck)
     boxDir=boxDirsToCheck(b).name;
@@ -99,7 +99,7 @@ for f=1:length(subDirs)
 
         % =======================================================================
         % 9/16/08 - change here to get paths from oracle db (specific for each subject)
-        % - if oracle has a path for this subject that is not null, use it; otherwise use ratrix default path
+        % - if oracle has a path for this subject that is not null, use it; otherwise use BCore default path
 
         gotPathFromOracle = 0;
         if isempty (input_paths) % if path not provided as input, get from oracle, otherwise use provided (for standAloneRun)

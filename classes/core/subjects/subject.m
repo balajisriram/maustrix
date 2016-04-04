@@ -153,7 +153,7 @@ classdef subject
 
         function [subject, r] = changeAllPercentCorrectionTrials(subject,newValue,r,comment,auth)
             
-            validateattributes(r,{'ratrix'},{'nonempty'});
+            validateattributes(r,{'BCore'},{'nonempty'});
             assert(~isempty(getSubjectFromID(r,subject.id)));
             
             for i=1:subject.protocol.numTrainingSteps
@@ -170,7 +170,7 @@ classdef subject
         end
         
         function [subject, r] = setReinforcementParam(subject,param,val,stepNums,r,comment,auth)
-            validateattributes(r,{'ratrix'},{'nonempty'});
+            validateattributes(r,{'BCore'},{'nonempty'});
             assert(~isempty(getSubjectFromID(r,subject.id)));
             
             switch stepNums
@@ -197,7 +197,7 @@ classdef subject
         function [subject, r] = changeProtocolStep(subject,ts,r,comment,auth,stepNum)
             
             validateattributes(ts,{'trainingStep'},{'nonempty'});
-            validateattributes(r,{'ratrix'},{'nonempty'});
+            validateattributes(r,{'BCore'},{'nonempty'});
             
             assert(~isempty(getSubjectFromID(r,subject.id)));
             
@@ -240,9 +240,9 @@ classdef subject
         end
         
         function [sub, r, keepWorking, secsStateFlip, tR, st] = doTrial(sub,r,st,rn,tR,sessNum,cR)
-            % [subject, ratrix, keepWorking, secondsTilStateFlip, trialRecord, station] = ...
-            %      doTrial(subject,ratrix,station,rnet,trialRecords,sessionNumber,compiledRecords)
-            validateattributes(r,{'ratrix'},{'nonempty'});
+            % [subject, BCore, keepWorking, secondsTilStateFlip, trialRecord, station] = ...
+            %      doTrial(subject,BCore,station,rnet,trialRecords,sessionNumber,compiledRecords)
+            validateattributes(r,{'BCore'},{'nonempty'});
             validateattributes(st,{'station'},{'nonempty'});
             if ~isempty(rn)
                 validateattributes(rn,{'rnet'},{'nonempty'});
@@ -269,19 +269,19 @@ classdef subject
                     newTsNum = userPrompt(st.window,validInputs,type,typeParams);
                     tR(end).result=[tR(end).result ' ' num2str(newTsNum)];
                     if newTsNum~=currentTsNum
-                        [sub r]=setStepNum(sub,newTsNum,r,sprintf('manually setting to %d',newTsNum),'ratrix');
+                        [sub r]=setStepNum(sub,newTsNum,r,sprintf('manually setting to %d',newTsNum),'BCore');
                     end
                     keepWorking=1;
                 end
                 
                 if graduate && ~manualTs
                     if p.numTrainingSteps>=t+1
-                        [sub, r]=setStepNum(sub,t+1,r,'graduated!','ratrix');
+                        [sub, r]=setStepNum(sub,t+1,r,'graduated!','BCore');
                     else
                         if p.isLooped
-                            [sub, r]=setStepNum(sub,uint16(1),r,'looping back to 1','ratrix'); % for looped protocols, the step is sent back to 1
+                            [sub, r]=setStepNum(sub,uint16(1),r,'looping back to 1','BCore'); % for looped protocols, the step is sent back to 1
                         else
-                            [sub, r]=setStepNum(sub,t,r,'can''t graduate because no more steps defined!','ratrix');
+                            [sub, r]=setStepNum(sub,t,r,'can''t graduate because no more steps defined!','BCore');
                         end
                     end
                 end
@@ -301,7 +301,7 @@ classdef subject
         end
         
         function [s, r]=setStepNum(s,i,r,comment,auth)
-            validateattributes(r,{'ratrix'},{'nonempty'});
+            validateattributes(r,{'BCore'},{'nonempty'});
             assert(~isempty(getSubjectFromID(r,s.id)));
             assert(~subjectIDRunning(r,s.id));
             
@@ -321,19 +321,19 @@ classdef subject
             %   thisIsANewTrainingStep  if FALSE, does not rewrite trainingstep descr to log
             %   thisIsANewStepNum       if FALSE, does not log setting of new step number
             %   i                       index of training step
-            %   r                       ratrix object
+            %   r                       BCore object
             %   comment                 string that will be saved to log file
             %   auth                    string which must be an authorized user id
-            %                           (see ratrix.authorCheck)
+            %                           (see BCore.authorCheck)
             % OUTPUTS
             % s     subject object
-            % r     ratrix object
+            % r     BCore object
             %
             % example call
             %     [subj r]=setProtocolAndStep(subj,p,1,0,1,1,r,'first try','edf');
             validateattributes(p,{'protocol'},{'nonempty'});
-            validateattributes(r,{'ratrix'},{'nonempty'});
-            assert(~isempty(getSubjectFromID(r,s.id)),'subject not found in ratrix');
+            validateattributes(r,{'BCore'},{'nonempty'});
+            assert(~isempty(getSubjectFromID(r,s.id)),'subject not found in BCore');
             assert(~r.subjectIDRunning(s.id),'subject should not be  running');
             
             assert(isPositiveIntegerValuedNumeric(i) && i<=p.numTrainingSteps,...
@@ -343,7 +343,7 @@ classdef subject
             s.protocol=p;
             s.trainingStepNum=uint8(i);
             
-            if strcmp(auth,'ratrix')
+            if strcmp(auth,'BCore')
                 s.protocolVersion.autoVersion=s.protocolVersion.autoVersion+1;
             else
                 s.protocolVersion.autoVersion=1;

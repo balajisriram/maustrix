@@ -460,7 +460,7 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
 
 
                                 case '10'
-                                    p.renderMode='ratrixGeneral-precachedInsertion';
+                                    p.renderMode='BCoreGeneral-precachedInsertion';
                                 otherwise
                                     varargin{1}
                                     error('Single input argument is bad')
@@ -830,10 +830,10 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
                         error ('wrong fields in dynamicSweep')
                     end
 
-                    if  any(strcmp(varargin{56},{'ratrixGeneral-maskTimesGrating', 'ratrixGeneral-precachedInsertion','dynamic-precachedInsertion','dynamic-maskTimesGrating','dynamic-onePatchPerPhase','dynamic-onePatch'}))
+                    if  any(strcmp(varargin{56},{'BCoreGeneral-maskTimesGrating', 'BCoreGeneral-precachedInsertion','dynamic-precachedInsertion','dynamic-maskTimesGrating','dynamic-onePatchPerPhase','dynamic-onePatch'}))
                         s.renderMode=varargin{56};   
                     else
-                        error('renderMode must be ratrixGeneral-maskTimesGrating, ratrixGeneral-precachedInsertion,dynamic-precachedInsertion, dynamic-maskTimesGrating, dynamic-onePatchPerPhase,or dynamic-onePatch')
+                        error('renderMode must be BCoreGeneral-maskTimesGrating, BCoreGeneral-precachedInsertion,dynamic-precachedInsertion, dynamic-maskTimesGrating, dynamic-onePatchPerPhase,or dynamic-onePatch')
                     end
 
                     if (checkDynamicFlicker(ifFeatureGoRightWithTwoFlank(),varargin{57}))
@@ -2514,7 +2514,7 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
                             switch version
                                 case 'precachedInsertion'
                                     %this first version of the code slavishly reproduces the method used in the
-                                    %ratrixGeneral renderMode...in the future could be used to validate a
+                                    %BCoreGeneral renderMode...in the future could be used to validate a
                                     %version where Gaussian Mask are stored seperate from grating and
                                     %orientations is handled by PTB and phase is handled by choice of
                                     %sourceRect
@@ -2555,7 +2555,7 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
 
                                 case {'maskTimesGrating'}
                                     error('not tested yet')
-                                    %this 2nd version of the code coped from  ratrixGeneral-maskTimesGrating
+                                    %this 2nd version of the code coped from  BCoreGeneral-maskTimesGrating
                                     % Gaussian Mask are stored seperate and gratings are recalculated
 
                                     maskInd = stimulus.stdGaussMask==details.stdGaussMask
@@ -2637,7 +2637,7 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
                 noise = 0;
                 if noise
                     Screen('TransformTexture')
-                    droppedRecord=zeros(frames,1); % my responsibility or the ratrix's?
+                    droppedRecord=zeros(frames,1); % my responsibility or the BCore's?
                     drawTime=zeros(frames,1);
                 end
 
@@ -3207,10 +3207,10 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
                         checkLocal = true;
                         downloadCLUT = true;
                         if checkLocal
-                            a = dir(getRatrixPath);
+                            a = dir(getBCorePath);
                             if any(ismember({a.name},'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat')) && ...
                                     datenum(a(ismember({a.name},'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat')).date)>floor(now)
-                                temp = load(fullfile(getRatrixPath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat'));
+                                temp = load(fullfile(getBCorePath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat'));
                                 uncorrected = temp.cal.linearizedCLUT;
                                 useUncorrected=1; % its already corrected
                                 downloadCLUT = false;
@@ -3222,7 +3222,7 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
                             closeConn(conn)
                             linearizedCLUT = cal.linearizedCLUT;
                             % now save cal
-                            filename = fullfile(getRatrixPath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat');
+                            filename = fullfile(getBCorePath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat');
                             save(filename,'cal');
                         end
                     end
@@ -3245,10 +3245,10 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
                         checkLocal = true;
                         downloadCLUT = true;
                         if checkLocal
-                            a = dir(getRatrixPath);
+                            a = dir(getBCorePath);
                             if any(ismember({a.name},'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat')) && ...
                                 datenum(a(ismember({a.name},'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat')).date)>floor(now)
-                                temp = load(fullfile(getRatrixPath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat'));
+                                temp = load(fullfile(getBCorePath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat'));
                                 linearizedCLUT = temp.cal.linearizedCLUT;
                                 downloadCLUT = false;
                             end
@@ -3259,13 +3259,13 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
                             closeConn(conn)
                             linearizedCLUT = cal.linearizedCLUT;
                             % now save cal
-                            filename = fullfile(getRatrixPath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat');
+                            filename = fullfile(getBCorePath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat');
                             save(filename,'cal');
                         end
                     end
                 case 'linearizedDefault'
 
-                    %WARNING:  need to get gamma from measurements of ratrix workstation with NEC monitor and new graphics card
+                    %WARNING:  need to get gamma from measurements of BCore workstation with NEC monitor and new graphics card
 
 
                     LUTBitDepth=8;
@@ -3316,7 +3316,7 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
 
                 case 'localCalibStore'
                     try
-                        temp = load(fullfile(getRatrixPath,'monitorCalibration','tempCLUT.mat'));
+                        temp = load(fullfile(getBCorePath,'monitorCalibration','tempCLUT.mat'));
                         uncorrected = temp.linearizedCLUT;
                         linearizedCLUT=uncorrected;
                     catch ex
@@ -3521,8 +3521,8 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
                     %can be overwritten to get relative values
                     default.fpaRelativeTargetOrientation=nan;
                     default.fpaRelativeFlankerOrientation=nan;
-                    %default.svnRev={'svn://132.239.158.177/projects/ratrix/tags/v1.0.1'}; %1/8/09 - added to support trunk version of trainingStep
-                    default.svnRev={'svn://132.239.158.177/projects/ratrix/trunk'}; %duc's runs on trunk dec.11,2009
+                    %default.svnRev={'svn://132.239.158.177/projects/BCore/tags/v1.0.1'}; %1/8/09 - added to support trunk version of trainingStep
+                    default.svnRev={'svn://132.239.158.177/projects/BCore/trunk'}; %duc's runs on trunk dec.11,2009
 
                     default.svnCheckMode='session';
                     %default.svnRev{2}=1920; %not used yet
@@ -3532,7 +3532,7 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
                     default.fitRF=[];
                     default.dynamicSweep=[];
 
-                    default.renderMode='ratrixGeneral-maskTimesGrating';
+                    default.renderMode='BCoreGeneral-maskTimesGrating';
 
                     %for trial manager
                     default.eyeTracker=[];
@@ -4374,7 +4374,7 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
                         end
 
                         switch s.renderMode
-                            case {'ratrixGeneral-maskTimesGrating'}
+                            case {'BCoreGeneral-maskTimesGrating'}
                                 s.cache.mask= mask;  %keep as double
                             case {'symbolicFlankerFromServerPNG'}
                                 s.cache.mask= ones(size(mask));  %keep as double
@@ -4456,7 +4456,7 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
 
 
 
-                            case  'ratrixGeneral-precachedInsertion'
+                            case  'BCoreGeneral-precachedInsertion'
 
                                 %%store these as int8 for more space... (consider int16 if better CLUT exists)
                                 %%calcStim preserves class type of stim, and stim OGL accepts without rescaling
@@ -5907,14 +5907,14 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
             end
 
             % rand('seed',initialSeed)    %default for v4; old unused
-            % rand('state',initialSeed)   %default for v5-v7.3, used in early ratrix before 20080209
+            % rand('state',initialSeed)   %default for v5-v7.3, used in early BCore before 20080209
             % rand('twister',initialSeed) %default for v7.4 +
             %the last one we initialized is twister
             %which means all rand calls will use the twister seed
 
             %also initialize randn
             % randn('seed',initialSeed)    %for v4; old unused
-            % randn('state',initialSeed)   %for v5-v7.3, used in early ratrix
+            % randn('state',initialSeed)   %for v5-v7.3, used in early BCore
 
             %Draw a randn and a rand and confirm the state changes
             % rn1=randn('state');

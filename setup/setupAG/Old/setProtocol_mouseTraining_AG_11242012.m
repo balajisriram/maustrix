@@ -39,8 +39,8 @@ function r = setProtocol_mouseTraining_AG_11242012(r,subjIDs)
 MouseTrainingCohort_AG={'1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','31','32','33','34'};
 ValidTestSubject={'demo1','999'};
 
-% define ratrix version to use
-svnRev={'svn://132.239.158.177/projects/bsriram/Ratrix/branches/multiTrodeStable'};
+% define BCore version to use
+svnRev={'svn://132.239.158.177/projects/bsriram/BCore/branches/multiTrodeStable'};
 svnCheckMode='session';
 
 for i=1:length(subjIDs)

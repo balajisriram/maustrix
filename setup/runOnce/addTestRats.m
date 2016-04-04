@@ -13,8 +13,8 @@ conn=dbConn;
 s=getSubjects(conn,{'r'}); % make this the test object one day!
 closeConn(conn);
 
-dataPath=fullfile(fileparts(fileparts(getRatrixPath)),'ratrixData',filesep);
-r=ratrix(fullfile(dataPath, 'ServerData'),0); %load from file
+dataPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData',filesep);
+r=BCore(fullfile(dataPath, 'ServerData'),0); %load from file
 
 for j=1:numSubjects
     i=1;

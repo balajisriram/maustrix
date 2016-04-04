@@ -61,7 +61,7 @@ classdef ifFeatureGoRightWithTwoFlankTrialManager<trialManager
         advancedOnRequestEnd=[];
         interTrialDimmingFraction=[];
 
-        renderMode='ratrixGeneral';
+        renderMode='BCoreGeneral';
 
         shapedParameter=[];
         shapingMethod=[];
@@ -612,7 +612,7 @@ classdef ifFeatureGoRightWithTwoFlankTrialManager<trialManager
             details.randomMethod='seedFromClock';
             details.randomSeed=[a(end) b(end)]; %if using twister method, this single number is pretty meaningless
 
-            %% choose ratrix standard verse PTB method
+            %% choose BCore standard verse PTB method
             %this should be passed in during the dynamic mode
             %firstTimeThisTrial=getNewTrialParameters 
             %phase='discriminandum'; %{'session','trial','discriminandum','reward','penalty','final'}
@@ -1493,7 +1493,7 @@ classdef ifFeatureGoRightWithTwoFlankTrialManager<trialManager
             switch version
                 case 1
                         %this first version of the code slavishly reproduces the method used in the
-                        %ratrixGeneral renderMode...in the future could be used to validate a
+                        %BCoreGeneral renderMode...in the future could be used to validate a
                         %version where Gaussian Mask are stored seperate from grating and
                         %orientations is handled by PTB and phase is handled by choice of
                         %sourceRect
@@ -1607,7 +1607,7 @@ classdef ifFeatureGoRightWithTwoFlankTrialManager<trialManager
                 if noise
                     Screen('TransformTexture')
 
-                    droppedRecord=zeros(frames,1); % my responsibility or the ratrix's?
+                    droppedRecord=zeros(frames,1); % my responsibility or the BCore's?
                     drawTime=zeros(frames,1);
                 end
 
@@ -1703,7 +1703,7 @@ classdef ifFeatureGoRightWithTwoFlankTrialManager<trialManager
                 if noise
                     Screen('TransformTexture')
 
-                    droppedRecord=zeros(frames,1); % my responsibility or the ratrix's?
+                    droppedRecord=zeros(frames,1); % my responsibility or the BCore's?
                     drawTime=zeros(frames,1);
                 end
 
@@ -2009,8 +2009,8 @@ classdef ifFeatureGoRightWithTwoFlankTrialManager<trialManager
                 error('0 <= all interTrialDimmingFraction <= 1')
             end
 
-            if ~(any(strcmp(t.renderMode,{'ratrixGeneral', 'directPTB'})))
-                error ('renderMode must be ratrixGeneral or directPTB')
+            if ~(any(strcmp(t.renderMode,{'BCoreGeneral', 'directPTB'})))
+                error ('renderMode must be BCoreGeneral or directPTB')
             end
 
             if ~(isempty(t.shapedParameter) | any(strcmp(t.shapedParameter,{'positionalHint', 'stdGaussianMask','targetContrast'})))
@@ -2104,7 +2104,7 @@ classdef ifFeatureGoRightWithTwoFlankTrialManager<trialManager
                     error('that method for getting a LUT is not defined');
                 case 'linearizedDefault'
 
-                    %WARNING:  need to get gamma from measurements of ratrix workstation with NEC monitor and new graphics card
+                    %WARNING:  need to get gamma from measurements of BCore workstation with NEC monitor and new graphics card
 
 
                     LUTBitDepth=8;
@@ -2685,7 +2685,7 @@ classdef ifFeatureGoRightWithTwoFlankTrialManager<trialManager
                     s.advancedOnRequestEnd=0;
                     s.interTrialDimmingFraction=0.01;
 
-                    s.renderMode='ratrixGeneral';
+                    s.renderMode='BCoreGeneral';
 
                     s.shapedParameter='positionalHint';
                     s.shapingMethod='linearChangeAtCriteria';
@@ -2947,7 +2947,7 @@ classdef ifFeatureGoRightWithTwoFlankTrialManager<trialManager
 
 
             switch t.renderMode
-                case 'ratrixGeneral'
+                case 'BCoreGeneral'
 
                     %     %store these as int8 for more space... (consider int16 if better CLUT exists)
                     %     %calcStim preserves class type of stim, and stim OGL accepts without rescaling
@@ -3330,14 +3330,14 @@ classdef ifFeatureGoRightWithTwoFlankTrialManager<trialManager
             end
 
             % rand('seed',initialSeed)    %default for v4; old unused
-            % rand('state',initialSeed)   %default for v5-v7.3, used in early ratrix before 20080209
+            % rand('state',initialSeed)   %default for v5-v7.3, used in early BCore before 20080209
             % rand('twister',initialSeed) %default for v7.4 +
             %the last one we initialized is twister
             %which means all rand calls will use the twister seed
 
             %also initialize randn
             % randn('seed',initialSeed)    %for v4; old unused
-            % randn('state',initialSeed)   %for v5-v7.3, used in early ratrix
+            % randn('state',initialSeed)   %for v5-v7.3, used in early BCore
 
             %Draw a randn and a rand and confirm the state changes
             % rn1=randn('state');
@@ -3520,7 +3520,7 @@ classdef ifFeatureGoRightWithTwoFlankTrialManager<trialManager
                 isCached=0;
             else
                 switch t.renderMode
-                    case 'ratrixGeneral'
+                    case 'BCoreGeneral'
                         if size(t.cache.goRightStim,1)>0
                             isCached=1;
                             %confirm all there

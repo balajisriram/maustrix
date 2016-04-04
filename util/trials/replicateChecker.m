@@ -3,7 +3,7 @@ function replicateChecker(paths,whatToDoIfThere)
 input_paths = paths;
 
 subDirs=struct([]);
-boxDirs=fullfile(fileparts(fileparts(getRatrixPath)),'ratrixData','Boxes');
+boxDirs=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData','Boxes');
 boxDirsToCheck=dir(boxDirs);
 for b=1:length(boxDirsToCheck)
     boxDir=boxDirsToCheck(b).name;

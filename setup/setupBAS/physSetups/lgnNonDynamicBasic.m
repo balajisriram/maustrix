@@ -1,11 +1,11 @@
 function r = lgnNonDynamicBasic(r,subjIDs,rigGeometryParams)
 
-if ~isa(r,'ratrix')
-    error('need a ratrix')
+if ~isa(r,'BCore')
+    error('need a BCore')
 end
 
 if ~all(ismember(subjIDs,getSubjectIDs(r)))
-    error('not all those subject IDs are in that ratrix')
+    error('not all those subject IDs are in that BCore')
 end
 
 if ~exist('rigGeometryParams','var')|| isempty(rigGeometryParams)
@@ -305,7 +305,7 @@ ap=autopilot(percentCorrectionTrials,sm,constantRewards,eyeController,frameDropC
 
 %% trainingsteps
 
-svnRev={'svn://132.239.158.177/projects/bsriram/Ratrix/branches/multiTrodeStable'};
+svnRev={'svn://132.239.158.177/projects/bsriram/BCore/branches/multiTrodeStable'};
 svnCheckMode='session';
 
 %% basic only

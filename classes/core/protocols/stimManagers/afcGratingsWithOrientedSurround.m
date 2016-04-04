@@ -291,7 +291,7 @@ classdef afcGratingsWithOrientedSurround<stimManager
                 details,interTrialLuminance,text,indexPulses,imagingTasks] =...
                 calcStim(stimulus,trialManager,allowRepeats,resolutions,displaySize,LUTbits,...
                 responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
-            % see ratrixPath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
+            % see BCorePath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
             trialManagerClass = class(trialManager);
             % 1/30/09 - trialRecords now includes THIS trial
             indexPulses=[];
@@ -913,7 +913,7 @@ classdef afcGratingsWithOrientedSurround<stimManager
                     error('that method for getting a LUT is not defined');
                 case 'linearizedDefault'
                     
-                    %WARNING:  need to get gamma from measurements of ratrix workstation with NEC monitor and new graphics card
+                    %WARNING:  need to get gamma from measurements of BCore workstation with NEC monitor and new graphics card
                     
                     
                     LUTBitDepth=8;
@@ -943,7 +943,7 @@ classdef afcGratingsWithOrientedSurround<stimManager
                     
                 case 'localCalibStore'
                     try
-                        temp = load(fullfile(getRatrixPath,'monitorCalibration','tempCLUT.mat'));
+                        temp = load(fullfile(getBCorePath,'monitorCalibration','tempCLUT.mat'));
                         uncorrected = temp.linearizedCLUT;
                         useUncorrected=1;
                     catch ex

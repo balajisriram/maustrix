@@ -1,36 +1,36 @@
-function standAloneRun(subjectID,ratrixPath,setupFile)
-%standAloneRun([ratrixPath],[setupFile],[subjectID],[recordInOracle],[backupToServer])
+function standAloneRun(subjectID,BCorePath,setupFile)
+%standAloneRun([BCorePath],[setupFile],[subjectID],[recordInOracle],[backupToServer])
 %
-% ratrixPath (optional, string path to preexisting ratrix 'db.mat' file)
-% defaults to checking for db.mat in ...\<ratrix install directory>\..\ratrixData\ServerData\
-% if none present, makes new ratrix located there, with a dummy subject
+% BCorePath (optional, string path to preexisting BCore 'db.mat' file)
+% defaults to checking for db.mat in ...\<BCore install directory>\..\BCoreData\ServerData\
+% if none present, makes new BCore located there, with a dummy subject
 %
 % setupFile (optional, name of a setProtocol file on the path, typically in the setup directory)
 % defaults to 'setProtocolDEMO'
-% if subject already exists in ratrix and has a protocol, default is no action
+% if subject already exists in BCore and has a protocol, default is no action
 %
-% subjectID (optional, must be string id of subject -- will add to ratrix if not already present)
-% default is some unspecified subject in ratrix (you can't depend on which
+% subjectID (optional, must be string id of subject -- will add to BCore if not already present)
+% default is some unspecified subject in BCore (you can't depend on which
 % one unless there is only one)
 %
 %
 setupEnvironment;
 
-if exist('ratrixPath','var') && ~isempty(ratrixPath)
-    if isdir(ratrixPath)
-        rx=ratrix(ratrixPath,0);
+if exist('BCorePath','var') && ~isempty(BCorePath)
+    if isdir(BCorePath)
+        rx=BCore(BCorePath,0);
     else
-        ratrixPath
-        error('if ratrixPath supplied, it must be a path to a preexisting ratrix ''db.mat'' file')
+        BCorePath
+        error('if BCorePath supplied, it must be a path to a preexisting BCore ''db.mat'' file')
     end
 else
-    dataPath=fullfile(fileparts(fileparts(getRatrixPath)),'ratrixData',filesep);
+    dataPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData',filesep);
     defaultLoc=fullfile(dataPath, 'ServerData');
     d=dir(fullfile(defaultLoc, 'db.mat'));
 
     if length(d)==1
-        rx=ratrix(defaultLoc,0);
-        fprintf('loaded ratrix from default location\n')
+        rx=BCore(defaultLoc,0);
+        fprintf('loaded BCore from default location\n')
     else
         try
             [success mac]=getMACaddress();
@@ -42,11 +42,11 @@ else
         end
 
         machines={{'1U',mac,[1 1 1]}};
-        rx=createRatrixWithDefaultStations(machines,dataPath,'localTimed');
+        rx=createBCoreWithDefaultStations(machines,dataPath,'localTimed');
         permStorePath=fullfile(dataPath,'PermanentTrialRecordStore');
         mkdir(permStorePath);
         rx.standAlonePath=permStorePath;
-        fprintf('created new ratrix\n')
+        fprintf('created new BCore\n')
     end
 end
 
@@ -64,9 +64,9 @@ if ~exist('subjectID','var') || isempty(subjectID)
 else
     subjectID=lower(subjectID);
     try
-        isSubjectInRatrix=getSubjectFromID(rx,subjectID);
+        isSubjectInBCore=getSubjectFromID(rx,subjectID);
     catch ex
-        if ~isempty(strfind(ex.message,'request for subject id not contained in ratrix'))
+        if ~isempty(strfind(ex.message,'request for subject id not contained in BCore'))
             
             needToCreateSubject=true;
             needToAddSubject=true;
@@ -140,22 +140,6 @@ recordInOracle = false;
         replicateTrialRecords(replicationPaths,deleteOnSuccess, recordInOracle);
     end
     [rx ids] = emptyAllBoxes(rx,'done running trials in standAloneRun',auth);
-    if ~testMode
-        compilePath=fullfile(fileparts(getStandAlonePath(rx)),'CompiledTrialRecords');
-        mkdir(compilePath);
-        dailyAnalysisPath = fullfile(fileparts(getStandAlonePath(rx)),'DailyAnalysis');
-        mkdir(dailyAnalysisPath);
-        compileDetailedRecords([],{subjectID},[],getStandAlonePath(rx),compilePath);
-        
-        selection.type = 'animal status';
-        selection.filter = 'all';
-        selection.filterVal = [];
-        selection.filterParam = [];
-        selection.titles = {sprintf('subject %s',subjectID)};
-        selection.subjects = {subjectID};
-        fs=analysisPlotter(selection,compilePath,true);
-%         subjectAnalysis(compilePath);
-    end
     cleanup;
     % testing
     clear all

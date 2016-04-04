@@ -1,11 +1,11 @@
 function r = setProtocolDEMOFreeDrinks(r,subjIDs)
 
-if ~isa(r,'ratrix')
-    error('need a ratrix')
+if ~isa(r,'BCore')
+    error('need a BCore')
 end
 
 if ~all(ismember(subjIDs,getSubjectIDs(r)))
-    error('not all those subject IDs are in that ratrix')
+    error('not all those subject IDs are in that BCore')
 end
 
 % soundManager
@@ -53,7 +53,7 @@ scaleFactor             =[1 1];
 interTrialLuminance     =.5;
 freeStim = orientedGabors(pixPerCycs,targetOrientations,distractorOrientations,mean,radius,contrast,thresh,yPosPct,maxWidth,maxHeight,scaleFactor,interTrialLuminance);
 
-svnRev={'svn://132.239.158.177/projects/ratrix/trunk'};
+svnRev={'svn://132.239.158.177/projects/BCore/trunk'};
 svnCheckMode = 'session'
 
 ts1 = trainingStep(fd, freeStim, repeatIndefinitely(), noTimeOff(), svnRev,svnCheckMode);   %stochastic free drinks

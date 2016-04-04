@@ -2,12 +2,12 @@ function r = setProtocolBS(r,subIDs)
 
 % error catching
 if ~exist('r','var') || isempty(r)
-    dataPath=fullfile(fileparts(fileparts(getRatrixPath)),'ratrixData',filesep);
-    r=ratrix(fullfile(dataPath, 'ServerData'),0);
+    dataPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData',filesep);
+    r=BCore(fullfile(dataPath, 'ServerData'),0);
 end
 
-if ~isa(r,'ratrix')
-    error('need a ratrix')
+if ~isa(r,'BCore')
+    error('need a BCore')
 end
 
 if ~exist('subIDs','var') || isempty(subIDs)
@@ -15,7 +15,7 @@ if ~exist('subIDs','var') || isempty(subIDs)
 end
 
 if ~all(ismember(subIDs,getSubjectIDs(r)))
-    error('not all those subject IDs are in that ratrix')
+    error('not all those subject IDs are in that BCore')
 end
 
 

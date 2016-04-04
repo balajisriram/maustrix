@@ -1,10 +1,10 @@
 function r = ctxCharPtcl(r,subjIDs,otherParams)
-if ~isa(r,'ratrix')
-    error('need a ratrix')
+if ~isa(r,'BCore')
+    error('need a BCore')
 end
 
 if ~all(ismember(subjIDs,getSubjectIDs(r)))
-    error('not all those subject IDs are in that ratrix')
+    error('not all those subject IDs are in that BCore')
 end
 
 if ~exist('otherParams','var') || isempty(otherParams)
@@ -173,7 +173,7 @@ ap=autopilot(percentCorrectionTrials,sm,constantRewards,eyeController,frameDropC
 
 %% trainingsteps
 
-svnRev={'svn://132.239.158.177/projects/bsriram/Ratrix/branches/multiTrodeStable'};
+svnRev={'svn://132.239.158.177/projects/bsriram/BCore/branches/multiTrodeStable'};
 svnCheckMode='session';
 
 ts{1}= trainingStep(ap,  TRF, repeatIndefinitely(), noTimeOff(), svnRev, svnCheckMode,'trf');%temporal response function only slow temp freqs

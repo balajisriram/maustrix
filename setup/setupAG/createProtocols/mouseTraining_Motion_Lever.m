@@ -9,7 +9,7 @@ function pMouseTraining_Motion_Lever = mouseTraining_Motion_Lever(subID)
 
 ValidTestSubject={'demo1','999'};
 
-% define ratrix version to use
+% define BCore version to use
 svnRev={''};
 svnCheckMode='none';
 

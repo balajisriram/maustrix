@@ -208,10 +208,10 @@ classdef phaseReverse<stimManager
                         checkLocal = true;
                         downloadCLUT = true;
                         if checkLocal
-                            a = dir(getRatrixPath);
+                            a = dir(getBCorePath);
                             if any(ismember({a.name},'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat')) && ...
                                     datenum(a(ismember({a.name},'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat')).date)>floor(now)
-                                temp = load(fullfile(getRatrixPath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat'));
+                                temp = load(fullfile(getBCorePath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat'));
                                 linearizedCLUT = temp.cal.linearizedCLUT;
                                 downloadCLUT = false;
                             end
@@ -222,7 +222,7 @@ classdef phaseReverse<stimManager
                             closeConn(conn)
                             linearizedCLUT = cal.linearizedCLUT;
                             % now save cal
-                            filename = fullfile(getRatrixPath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat');
+                            filename = fullfile(getBCorePath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat');
                             save(filename,'cal');
                         end
                     end
@@ -245,10 +245,10 @@ classdef phaseReverse<stimManager
                         checkLocal = true;
                         downloadCLUT = true;
                         if checkLocal
-                            a = dir(getRatrixPath);
+                            a = dir(getBCorePath);
                             if any(ismember({a.name},'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat')) && ...
                                 datenum(a(ismember({a.name},'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat')).date)>floor(now)
-                                temp = load(fullfile(getRatrixPath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat'));
+                                temp = load(fullfile(getBCorePath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat'));
                                 linearizedCLUT = temp.cal.linearizedCLUT;
                                 downloadCLUT = false;
                             end
@@ -259,7 +259,7 @@ classdef phaseReverse<stimManager
                             closeConn(conn)
                             linearizedCLUT = cal.linearizedCLUT;
                             % now save cal
-                            filename = fullfile(getRatrixPath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat');
+                            filename = fullfile(getBCorePath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat');
                             save(filename,'cal');
                         end
                     end

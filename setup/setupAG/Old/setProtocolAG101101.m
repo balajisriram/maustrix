@@ -32,10 +32,10 @@ percentCorrectionTrials=0.20; % fraction of trials with correction
 
 %%some baseline utilities are here %%
 % path where the log file will be saved (automatically logs each run)
-logPath=fullfile(fileparts(fileparts(getRatrixPath)),'ratrix\setup\setupAG',filesep);
+logPath=fullfile(fileparts(fileparts(getBCorePath)),'BCore\setup\setupAG',filesep);
 logFileName='GhoshV1VirusExperimentLog.txt';
-svnRev={'svn://132.239.158.177/projects/ratrix/tags/v1.0.2'}; % version of ratrix to use
-svnCheckMode='session'; % if ratrix code has been updated, get updates before each session
+svnRev={'svn://132.239.158.177/projects/BCore/tags/v1.0.2'}; % version of BCore to use
+svnCheckMode='session'; % if BCore code has been updated, get updates before each session
 % standard stuff for all nAFC training steps
 % useful variables rewardScalar,msPenalty,percentCorrectionTrials are set above 
 [sm sch easy_pc strict_pc constantRewards tm] = ...
@@ -52,7 +52,7 @@ ts_motion1 = createEasyMotion_AG(percentCorrectionTrials, tm, easy_pc, sch, svnR
 
 %parameters used for all object rec steps:
 imageRotation=[-20 20]; imageSize=[.75 1]; % vary size and rotation very slightly
-imdir='C:\Documents and Settings\rlab\Desktop\ratrix 1.0.2\AGimageset'; % make LOCAL copy for standalone run **
+imdir='C:\Documents and Settings\rlab\Desktop\BCore 1.0.2\AGimageset'; % make LOCAL copy for standalone run **
 imagelist=ImageSet_AG; % defines the image list(s) for all image training steps
 interTrialLuminance_nAFC = 0.3; %extremely brief during stim calculation
 background_nAFC=0; % note must be 0

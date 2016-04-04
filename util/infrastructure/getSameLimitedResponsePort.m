@@ -2,7 +2,7 @@ function [out hadToResample]=getSameLimitedResponsePort(responsePorts,maxSamePor
 %used to generate a random response from the ports but forcing a change if the last N+1 happen to be the same 
 %set maxSamePort to -1 for pure random selection from available ports
 %
-%data=loadRatrixData([rootPath 'Boxes\box1\'],{'rat_112-113'},3); trialRecords=data{1}.trialRecords;
+%data=loadBCoreData([rootPath 'Boxes\box1\'],{'rat_112-113'},3); trialRecords=data{1}.trialRecords;
 %[out hadToResample]=getSameLimitedResponsePort([1 3],4,trialRecords)
 %
 %future ideas: parameter to only switch is animal got all N correct on that side

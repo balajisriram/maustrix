@@ -276,7 +276,7 @@ classdef gratings<stimManager
             resolutions = station.resolutions;
             LUTbits = st.getLUTbits();
             responsePorts = trialManager.getResponsePorts(station.numPorts); 
-            % see ratrixPath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
+            % see BCorePath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
             % 1/3/0/09 - trialRecords now includes THIS trial
             indexPulses=[];
             imagingTasks=[];
@@ -292,8 +292,8 @@ classdef gratings<stimManager
                 desiredWidth=800;
                 desiredHeight=600;
                 desiredHertz=60;
-                ratrixEnforcedColor=32;
-                resolutionIndex=find(([resolutions.height]==desiredHeight) & ([resolutions.width]==desiredWidth) & ([resolutions.pixelSize]==ratrixEnforcedColor) & ([resolutions.hz]==desiredHertz));
+                BCoreEnforcedColor=32;
+                resolutionIndex=find(([resolutions.height]==desiredHeight) & ([resolutions.width]==desiredWidth) & ([resolutions.pixelSize]==BCoreEnforcedColor) & ([resolutions.hz]==desiredHertz));
                 height=resolutions(resolutionIndex).height
                 width=resolutions(resolutionIndex).width
                 hz=resolutions(resolutionIndex).hz
@@ -1420,10 +1420,10 @@ classdef gratings<stimManager
                         checkLocal = true;
                         downloadCLUT = true;
                         if checkLocal
-                            a = dir(getRatrixPath);
+                            a = dir(getBCorePath);
                             if true || (any(ismember({a.name},'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat')) && ...
                                     datenum(a(ismember({a.name},'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat')).date)>floor(now))
-                                temp = load(fullfile(getRatrixPath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat'));
+                                temp = load(fullfile(getBCorePath,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5.mat'));
                                 linearizedCLUT = temp.cal.linearizedCLUT;
                                 downloadCLUT = false;
                             end
@@ -1434,7 +1434,7 @@ classdef gratings<stimManager
                             closeConn(conn)
                             linearizedCLUT = cal.linearizedCLUT;
                             % now save cal
-                            filename = fullfile(getRatrixPath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat');
+                            filename = fullfile(getBCorePath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat');
                             save(filename,'cal');
                         end
                     end
@@ -1457,10 +1457,10 @@ classdef gratings<stimManager
                         checkLocal = true;
                         downloadCLUT = true;
                         if checkLocal
-                            a = dir(getRatrixPath);
+                            a = dir(getBCorePath);
                             if any(ismember({a.name},'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat')) && ...
                                     datenum(a(ismember({a.name},'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat')).date)>floor(now)
-                                temp = load(fullfile(getRatrixPath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat'));
+                                temp = load(fullfile(getBCorePath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat'));
                                 linearizedCLUT = temp.cal.linearizedCLUT;
                                 downloadCLUT = false;
                             end
@@ -1471,7 +1471,7 @@ classdef gratings<stimManager
                             closeConn(conn)
                             linearizedCLUT = cal.linearizedCLUT;
                             % now save cal
-                            filename = fullfile(getRatrixPath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat');
+                            filename = fullfile(getBCorePath,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5.mat');
                             save(filename,'cal');
                         end
                     end
@@ -1481,7 +1481,7 @@ classdef gratings<stimManager
                     error('that method for getting a LUT is not defined');
                 case 'localCalibStore'
                     try
-                        temp = load(fullfile(getRatrixPath,'monitorCalibration','tempCLUT.mat'));
+                        temp = load(fullfile(getBCorePath,'monitorCalibration','tempCLUT.mat'));
                         linearizedCLUT = temp.linearizedCLUT;
                     catch ex
                         disp('did you store local calibration details at all????');

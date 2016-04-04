@@ -79,11 +79,11 @@ else
         error ('Problem mapping network drive')
     end
 
-    %map network drive for ratrix work station
+    %map network drive for BCore work station
     %WARNING: for some reason you can NOT map a network drive to either a full
     %path on the local network like this:
     %
-    %\\192.168.0.101\c\pmeier\Ratrix\Boxes\box1
+    %\\192.168.0.101\c\pmeier\BCore\Boxes\box1
     %
     %nor can you map to the IP address itself, like this
     %
@@ -91,7 +91,7 @@ else
     %
     %but you can map to the c drive on the local network and then subsequently
     %specify the full path in the copyfile command - pmm 07/10/19
-    password='Pac3111'; %this is true for all ratrix work stations
+    password='Pac3111'; %this is true for all BCore work stations
     drive='c';
     command=sprintf('net use y: \\\\%s\\%s %s /user:rlab',char(sourceIP),drive,password);
 

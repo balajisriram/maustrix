@@ -35,7 +35,7 @@ end
 
 smoothingWidth=500;
 
-desktopPath=fileparts(fileparts(getRatrixPath));
+desktopPath=fileparts(fileparts(getBCorePath));
 if exist('serverID','var')
     archivePath=fullfile(  fileparts(getSubDirForServerID(serverID)) ,'weeklyReports')
 end

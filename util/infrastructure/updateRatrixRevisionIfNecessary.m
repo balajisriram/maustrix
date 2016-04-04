@@ -1,6 +1,6 @@
-function quit=updateRatrixRevisionIfNecessary(args)
+function quit=updateBCoreRevisionIfNecessary(args)
 quit=false;
-[runningSVNversion repositorySVNversion url]=getSVNRevisionFromXML(getRatrixPath);
+[runningSVNversion repositorySVNversion url]=getSVNRevisionFromXML(getBCorePath);
 properties = getSVNPropertiesForPath(url,{'commit'});
 % lastCommitVersion = properties.commit;
 [targetSVNurl targetRevNum] =checkTargetRevision(args);

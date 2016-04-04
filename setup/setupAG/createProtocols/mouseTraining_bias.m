@@ -7,7 +7,7 @@ function pMouseTraining_bias = mouseTraining_bias(subID)
 % define subjects
 
 
-% define ratrix version to use
+% define BCore version to use
 svnRev={''};
 svnCheckMode='none';
 

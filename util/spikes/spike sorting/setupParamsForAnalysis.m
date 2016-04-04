@@ -1,7 +1,7 @@
 function setupParamsForAnalysis(varargin)
 % this is a temporary working m-file for testing out the settings of spike sorting
 % it is not meant to be called as a function; 
-% cd('C:\Documents and Settings\rlab\Desktop\ratrix\bootstrap')
+% cd('C:\Documents and Settings\rlab\Desktop\BCore\bootstrap')
 % setupEnvironment
 %% twiddle the params and sort it
 close all

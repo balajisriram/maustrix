@@ -10,7 +10,7 @@ function pMouseTraining_ctrSens = mouseTraining_ctrSens(subID)
 
 ValidTestSubject={'demo1','999'};
 
-% define ratrix version to use
+% define BCore version to use
 svnRev={''};
 svnCheckMode='none';
 or_ctrXsfSweep = createSpecialOrientationSteps_auto(svnRev,svnCheckMode,subID);

@@ -6,7 +6,7 @@ function s=checkForUpdate
 % In both cases, we use the function checkTargetRevision (which holds the minRev and path constraints)
 % getSVNRevisionForPath and getSVNPropertiesFromXML are used in checkTargetRevision
 
-f = [getBCorePath 'update.mat'];
+f = [BCoreUtil.getBCorePath 'update.mat'];
 
 
 % If the file exists run the update
@@ -14,7 +14,7 @@ if exist(f) == 2
     try
         fprintf('Attempting to update BCore code\n');
 
-        rPath=getBCorePath
+        rPath=BCoreUtil.getBCorePath
         [runningSVNversion repositorySVNversion url]=getSVNRevisionFromXML(rPath)
 
         target=load(f);
@@ -36,7 +36,7 @@ if exist(f) == 2
 
         % Must remove the directories from Matlab's path, so they can be
         % deleted if needed
-        %rPath=getBCorePath; % Store it so it is not forgotten
+        %rPath=BCoreUtil.getBCorePath; % Store it so it is not forgotten
         rmpath(RemoveSVNPaths(genpath(rPath)));
 
         if isempty(targetRevNum)
@@ -57,7 +57,7 @@ if exist(f) == 2
             'error updating BCore code'
         else
             result
-            [runningSVNversion repositorySVNversion url]=getSVNRevisionFromXML(getBCorePath);
+            [runningSVNversion repositorySVNversion url]=getSVNRevisionFromXML(BCoreUtil.getBCorePath);
             if ((isempty(targetRevNum)&& repositorySVNversion==runningSVNversion)||...
                     (~isempty(targetRevNum)&&runningSVNversion==targetRevNum)) && strcmp(url,targetSVNurl)
                 delete(f);

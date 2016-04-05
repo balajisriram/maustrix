@@ -859,7 +859,7 @@ classdef afcGratings<stimManager
                     
                 case 'localCalibStore'
                     try
-                        temp = load(fullfile(getBCorePath,'monitorCalibration','tempCLUT.mat'));
+                        temp = load(fullfile(BCoreUtil.getBCorePath,'monitorCalibration','tempCLUT.mat'));
                         uncorrected = temp.linearizedCLUT;
                         useUncorrected=1;
                     catch ex

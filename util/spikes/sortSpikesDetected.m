@@ -109,7 +109,7 @@ switch upper(spikeSortingMethod)
             newTimestamps=spikeTimestamps;
         end
         numSpikes=size(newSpikes,1);
-        disp(sprintf('got %d spikes; about %2.2g Hz',numSpikes,  numSpikes/diff(neuralDataTimes([1 end]))))
+        % disp(sprintf('got %d spikes; about %2.2g Hz',numSpikes,  numSpikes/diff(neuralDataTimes([1 end]))))
         
         %convert to RBF and realign
         [spikesRBF, spikesSolved] = RBFconv( newSpikes );
@@ -201,7 +201,7 @@ switch upper(spikeSortingMethod)
         % we need a file temp.fet.1 as input to KlustaKwik, and the output file will be temp.clu.1
         % change to BCorePath/KlustaKwik directory
         currentDir=pwd;
-        tempDir=fullfile(getBCorePath,'util','spikes','spike sorting','KlustaKwik');
+        tempDir=fullfile(BCoreUtil.getBCorePath,'util','spikes','spike sorting','KlustaKwik');
         cd(tempDir);
         
         [features nrDatapoints spikeModel.featureDetails] = calculateFeatures(spikeWaveforms,spikeSortingParams.featureList);

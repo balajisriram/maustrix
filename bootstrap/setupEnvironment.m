@@ -12,7 +12,7 @@ lasterror('reset')
 lastwarn('')
 
 warning('off','MATLAB:dispatcher:nameConflict')
-addpath((genpath(getBCorePath)));
+addpath((genpath(BCoreUtil.getBCorePath)));
 warning('on','MATLAB:dispatcher:nameConflict')
 
 % intwarning('on');

@@ -1,6 +1,6 @@
 function quit=updateBCoreRevisionIfNecessary(args)
 quit=false;
-[runningSVNversion repositorySVNversion url]=getSVNRevisionFromXML(getBCorePath);
+[runningSVNversion repositorySVNversion url]=getSVNRevisionFromXML(BCoreUtil.getBCorePath);
 properties = getSVNPropertiesForPath(url,{'commit'});
 % lastCommitVersion = properties.commit;
 [targetSVNurl targetRevNum] =checkTargetRevision(args);

@@ -31,6 +31,12 @@ classdef BCore
             end
         end
         
+        function out = subjectIDInBCore(r,id)
+            assert(ischar(id),'BCore:subjectIDInBCore:incorrectValue','''id'' needs to be a char. instead is of class:%s',class(id));
+            ids = r.getSubjectIDs();
+            out = any(ismember(id,ids));
+        end
+        
         function r = set.standAlonePath(r,path)
             assert(isdir(path),'BCore:set.standAlonePath:incorrectValue','Argument to permanentStorePath (%s) is not a directory',path)
             r.standAlonePath = path;
@@ -1351,7 +1357,7 @@ classdef BCore
             end
         end
         
-        function out = testBoxSubjectDirs(r,b)
+        function out =testBoxSubjectDirs(r,b)
             validateattributes(b,{'box'},{'nonempty'})
             subIDs=getSubjectIDsForBoxID(r,b.id);
             success=1;
@@ -1510,6 +1516,5 @@ classdef BCore
                 error('not a station object')
             end
         end
-        
     end
 end

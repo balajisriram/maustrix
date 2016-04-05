@@ -1,4 +1,4 @@
-function standAloneRun(subjectID,BCorePath,setupFile)
+function standAloneRun(subjectID,BCoreServerPath,setupFile)
 %standAloneRun([BCorePath],[setupFile],[subjectID],[recordInOracle],[backupToServer])
 %
 % BCorePath (optional, string path to preexisting BCore 'db.mat' file)
@@ -16,81 +16,43 @@ function standAloneRun(subjectID,BCorePath,setupFile)
 %
 setupEnvironment;
 
-if exist('BCorePath','var') && ~isempty(BCorePath)
-    if isdir(BCorePath)
-        rx=BCore(BCorePath,0);
-    else
-        BCorePath
-        error('if BCorePath supplied, it must be a path to a preexisting BCore ''db.mat'' file')
-    end
+% create ratrix if necessary
+if exist('BCorePath','var') && ~isempty(BCoreServerPath)
+    assert(isdir(BCoreServerPath),'standAloneRun:incorrectValue','if BCorePath supplied, it must be a path to a preexisting BCore ''db.mat'' file')
+	rx=BCore(BCoreServerPath,0);
 else
-    dataPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData',filesep);
-    defaultLoc=fullfile(dataPath, 'ServerData');
-    d=dir(fullfile(defaultLoc, 'db.mat'));
-
-    if length(d)==1
-        rx=BCore(defaultLoc,0);
-        fprintf('loaded BCore from default location\n')
-    else
-        try
-            [success mac]=getMACaddress();
-            if ~success
-                mac='000000000000';
-            end
-        catch
-            mac='000000000000';
-        end
-
-        machines={{'1U',mac,[1 1 1]}};
-        rx=createBCoreWithDefaultStations(machines,dataPath,'localTimed');
-        permStorePath=fullfile(dataPath,'PermanentTrialRecordStore');
-        mkdir(permStorePath);
-        rx.standAlonePath=permStorePath;
-        fprintf('created new BCore\n')
+    d=dir(fullfile(BCoreUtil.getServerDataPath, 'db.mat'));
+    switch length(d)
+        case 0
+            rx = BCoreUtil.createDefaultBCore();
+        case 1
+            rx=BCore(defaultLoc,0);
+        otherwise
+            error('standAloneRun:unknownError','either a single db.mat exists or none exist. We found %d. Clean your database',length(d));
     end
 end
 
-needToAddSubject=false;
-needToCreateSubject=false;
+
+
+% should we add the subject to the ratrix?
 if ~exist('subjectID','var') || isempty(subjectID)
-    ids=getSubjectIDs(rx);
-    if length(ids)>0
-        subjectID=ids{1};
-    else
-        subjectID='demo1';
-        needToCreateSubject=true;
-        needToAddSubject=true;
-    end
-else
-    subjectID=lower(subjectID);
-    try
-        isSubjectInBCore=getSubjectFromID(rx,subjectID);
-    catch ex
-        if ~isempty(strfind(ex.message,'request for subject id not contained in BCore'))
-            
-            needToCreateSubject=true;
-            needToAddSubject=true;
-        else
-            rethrow(ex)
-        end
-    end
+    subjectID='demo1';
+end
+switch rx.subjectIDInRatrix(lower(subjectID))
+    case true
+        sub = rx.getSubjectFromID(subjectID);
+    case false
+        sub = virtual(subjectID, 'unknown');
+        auth = 'bas';
+        rx=rx.addSubject(sub,auth);
 end
 
-if needToCreateSubject
-    warning('creating dummy subject')
-    sub = rat(subjectID, 'male', 'long-evans', datetime(2005,05,10), datetime(2006,05,10), 'unknown', 'wild caught');
-end
-auth='bas';
-
-if needToAddSubject
-    rx=addSubject(rx,sub,auth);
+if ~exist('setupFile','var') || isempty(setupFile)
+    setupFile=@setProtocolMINBS;
+elseif ~isa(setupFile,'function_handle') ||
+    error('standAloneRun:incompatibleInput','you input setupFile thats not a function handle');
 end
 
-if (~exist('setupFile','var') || isempty(setupFile)) && ~isa(getProtocolAndStep(getSubjectFromID(rx,subjectID)),'protocol')
-    setupFile='setProtocolMINBS';
-end
-
-if exist('setupFile','var') && ~isempty(setupFile)
     x=what(fileparts(which(setupFile)));
     if isempty(x) || isempty({x.m}) || ~any(ismember(lower({setupFile,[setupFile '.m']}),lower(x.m)))
         setupFile
@@ -99,11 +61,6 @@ if exist('setupFile','var') && ~isempty(setupFile)
 
     su=str2func(setupFile); %weird, str2func does not check for existence!
     rx=su(rx,{subjectID});
-    %was:  r=feval(setupFile, r,{getID(sub)});
-    %but edf notes: eval is bad style
-    %http://www.mathworks.com/support/tech-notes/1100/1103.html
-    %http://blogs.mathworks.com/loren/2005/12/28/evading-eval/
-end
 
 %[isExperimentSubject, xtraExptBackupPath, experiment] = identifySpecificExperiment(subjectID);
 

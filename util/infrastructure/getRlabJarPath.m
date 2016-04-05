@@ -1,2 +1,2 @@
 function out=getRlabJarPath()
-out=fullfile(getBCorePath,'classes','rnet','rlabnet.jar');
+out=fullfile(BCoreUtil.getBCorePath,'classes','rnet','rlabnet.jar');

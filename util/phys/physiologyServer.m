@@ -189,7 +189,7 @@ CNOIndex=find(strcmp(eventTypeStrs,'CNO'));
 singleUnitIndex=find(strcmp(eventTypeStrs,'singleUnit')); 
 
 % get the orientation images
-imagesFile = fullfile(getBCorePath,'util','other','axisOrientation.mat');
+imagesFile = fullfile(BCoreUtil.getBCorePath,'util','other','axisOrientation.mat');
 temp = stochasticLoad(imagesFile,{'UpLeft','UpRight','DownLeft','DownRight'});
 UpLeft = temp.UpLeft;
 UpRight = temp.UpRight;

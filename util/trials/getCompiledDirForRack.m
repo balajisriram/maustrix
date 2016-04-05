@@ -17,7 +17,7 @@ switch rackNum
      case -1 % 12/13/08 -for flanker paper analysis
         out='\\Reinagel-lab.ad.ucsd.edu\rlab\Rodent-Data\behavior\pmeierTrialRecords\enhancedCompile1';
     case -2 % 12/13/08 -for local testing
-        out=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData','CompiledTrialRecords');
+        out=fullfile(fileparts(fileparts(BCoreUtil.getBCorePath)),'BCoreData','CompiledTrialRecords');
     otherwise
         error('bad')
 end

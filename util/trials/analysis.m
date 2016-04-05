@@ -16,7 +16,7 @@ format long g
 
 if ~isdeployed
 warning('off','MATLAB:dispatcher:nameConflict')
-addpath(RemoveSVNPaths(genpath(getBCorePath)));
+addpath(RemoveSVNPaths(genpath(BCoreUtil.getBCorePath)));
 warning('on','MATLAB:dispatcher:nameConflict')
 end
 
@@ -35,7 +35,7 @@ show_test_subjects=1;
 % set apath to be empty if we have an oracle connection, otherwise use the default standalone path
 
 % 10.3.08 - apath is now subject specific, so initialize to null
-apath = fullfile(fileparts(fileparts(getBCorePath())),'BCoreData','compiledTrialRecords',filesep);
+apath = fullfile(fileparts(fileparts(BCoreUtil.getBCorePath())),'BCoreData','compiledTrialRecords',filesep);
 % 12/15/08 - set apath to be the local compiled directory if in standalone mode
 % but this will never work here, because we need a dbConn() to do the rest of analysis below....
 % hmm...
@@ -45,7 +45,7 @@ try
     closeConn(conn);
 catch
     disp('no network connection detected - using local compiled directory only');
-    apath = fullfile(fileparts(fileparts(getBCorePath())),'BCoreData','compiledTrialRecords');
+    apath = fullfile(fileparts(fileparts(BCoreUtil.getBCorePath())),'BCoreData','compiledTrialRecords');
     standAlone = true;
     bySubject = true;
 end
@@ -285,7 +285,7 @@ serverM = uicontrol(f,'Style','popupmenu',...
                 set(subjectM,'String',localSubjectStrs);
                 selection.subjects={};
                 selection.subjects{1,1,1}=localSubjectStrs{get(subjectM,'Value')};
-                apath=fullfile(fileparts(fileparts(getBCorePath())),'BCoreData','compiledTrialRecords');
+                apath=fullfile(fileparts(fileparts(BCoreUtil.getBCorePath())),'BCoreData','compiledTrialRecords');
             end
             set(typeM,'String',typeStrs);
             set(typeM,'Value',1);

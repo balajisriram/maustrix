@@ -455,7 +455,7 @@ classdef rnet
             quit=false;
             constants = getConstants(r);
 
-            BCoreDataPath=fullfile(fileparts(fileparts(getBCorePath)),'testdata',filesep);
+            BCoreDataPath=fullfile(fileparts(fileparts(BCoreUtil.getBCorePath)),'testdata',filesep);
             %BCoreDataPath='C:\Documents and Settings\rlab\Desktop\testdata\'; 
             %figure out where to store this
             %actually, this is an ok place -- there's nothing persistent
@@ -1654,7 +1654,7 @@ classdef rnet
             svnPath = GetSubversionPath;
 
             % Construct svn update command
-            info.updateCommand=[svnPath 'svn update '  targetRevision getBCorePath ];
+            info.updateCommand=[svnPath 'svn update '  targetRevision BCoreUtil.getBCorePath ];
             save('info.mat','info');
 
             % Clear java classes

@@ -49,7 +49,7 @@ for i=1:numNeurons
     %start building a parameters of the calls to runAnalysis
     p.channels={db.data{neurons(i)}.channels};  % all singleUnits have only a single set of channels
     p.analysisMode=mode;
-    p.standardParams = fullfile(getBCorePath,'analysis','bsriram','analysisParameters','getBasicParams.m'); % warning... this is just a record and has no effect
+    p.standardParams = fullfile(BCoreUtil.getBCorePath,'analysis','bsriram','analysisParameters','getBasicParams.m'); % warning... this is just a record and has no effect
     p.cellBoundary={'trialRange',minmax(trials),'trialMask',mask};
     
     %default parameters are faster and no inspect for pre-processing

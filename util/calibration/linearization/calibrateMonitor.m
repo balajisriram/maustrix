@@ -250,7 +250,7 @@ if writeToOracle
         CLUT=fread(fid,'*uint8');
         fclose(fid);
         timestamp=datestr(now,'mm-dd-yyyy HH:MM');
-        svnRev=getSVNRevisionFromXML(getBCorePath);
+        svnRev=getSVNRevisionFromXML(BCoreUtil.getBCorePath);
         addCalibrationData(CLUT,mac,timestamp,svnRev,comment,calibrationString)
         closeConn(conn);
     catch ex
@@ -263,7 +263,7 @@ if saveLocalCopy
     % data is always stored on the local BCore folder currently overwrites
     % old calibration data.
     disp('saving calibration to local store...')
-    BCoreFolder = getBCorePath;
+    BCoreFolder = BCoreUtil.getBCorePath;
     if ~exist(fullfile(BCoreFolder,'monitorCalibration'),'dir')
         mkdir(fullfile(BCoreFolder,'monitorCalibration'));
     end

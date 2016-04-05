@@ -462,7 +462,7 @@ switch upper(spikeSortingMethod)
         % we need a file temp.fet.1 as input to KlustaKwik, and the output file will be temp.clu.1
         % change to BCorePath/KlustaKwik directory
         currentDir=pwd;
-        tempDir=fullfile(getBCorePath,'analysis','spike sorting','KlustaKwik');
+        tempDir=fullfile(BCoreUtil.getBCorePath,'analysis','spike sorting','KlustaKwik');
         cd(tempDir);
         
         [features nrDatapoints] = calculateFeatures(spikeWaveforms,spikeSortingParams.features);

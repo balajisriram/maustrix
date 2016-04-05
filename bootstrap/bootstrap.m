@@ -3,7 +3,7 @@ function bootstrap
 setupEnvironment;
 addJavaComponents();  %might conflict with dbconn
 
-dataPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData',filesep);
+dataPath=fullfile(fileparts(fileparts(BCoreUtil.getBCorePath)),'BCoreData',filesep);
 
 diary off
 warning('off','MATLAB:MKDIR:DirectoryExists')

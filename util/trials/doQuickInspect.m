@@ -111,7 +111,7 @@ for i=1:numRats
 end
 
 %save local and remote graph
-local=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData','graphs');
+local=fullfile(fileparts(fileparts(BCoreUtil.getBCorePath)),'BCoreData','graphs');
 savePlotsToPNG(whichPlots,handles,who,local);
 whereOnServer=fullfile((fileparts(getSubDirForServerID(serverID))),'graphs')
 savePlotsToPNG(whichPlots,handles,who,whereOnServer);

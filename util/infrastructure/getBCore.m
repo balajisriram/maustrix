@@ -1,7 +1,7 @@
 function r=getBCore
 %get the default BCore
 
-dbPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData','ServerData');
+dbPath=fullfile(fileparts(fileparts(BCoreUtil.getBCorePath)),'BCoreData','ServerData');
 d=dir(dbPath);
 if length(d)>1
     if ismember('db.mat',{d.name})

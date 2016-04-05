@@ -3,7 +3,7 @@ function calibrateLocal( numReps, amts, timeBtw, requiredAccuracy )
 
 clc
 
-dataPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData',filesep);
+dataPath=fullfile(fileparts(fileparts(BCoreUtil.getBCorePath)),'BCoreData',filesep);
 
 rewardMethod = 'localTimed';
 

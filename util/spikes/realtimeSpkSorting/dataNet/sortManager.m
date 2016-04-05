@@ -262,7 +262,7 @@ threshLoS=uicontrol(f,'Style','slider','String','loThresh','Min',-1,'Max',0,'Sli
         if ismac
             kPath='./KlustaKwik/macosx-i386/';
 		else
-			kPath=['"' fullfile(getBCorePath,'analysis','spike sorting','KlustaKwik') '"']; %#ok<NASGU>
+			kPath=['"' fullfile(BCoreUtil.getBCorePath,'analysis','spike sorting','KlustaKwik') '"']; %#ok<NASGU>
         end
         fileBase='eTest';
         numPCs=3;

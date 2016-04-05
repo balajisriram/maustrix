@@ -6,7 +6,7 @@ if ~exist('makeNew','var') || isempty(makeNew)
     makeNew=false;
 end
 
-dataPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData',filesep);
+dataPath=fullfile(fileparts(fileparts(BCoreUtil.getBCorePath)),'BCoreData',filesep);
 defaultLoc=fullfile(dataPath, 'ServerData');
 d=dir(fullfile(defaultLoc, 'db.mat'));
 

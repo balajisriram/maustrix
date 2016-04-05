@@ -20,7 +20,7 @@ if wcrev ~= reprev %limit unnecessary use of updatepsychtoolbox due to the Psych
     %first remove our stuff from the path, cuz updatepsychtoolbox has the
     %side effect of making path change permanent
     p=path;
-    r=getBCorePath;
+    r=BCoreUtil.getBCorePath;
     while ~isempty(p)
         [item p]=strtok(p,pathsep);
         if ~isempty(findstr(r,item))

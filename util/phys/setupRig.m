@@ -14,10 +14,10 @@ end
 if reEvaluate
     flushRigSpecificEnvVariables();
 end
-if ~exist(fullfile(getBCorePath,'bootstrap','rigSetup.mat'),'file')
+if ~exist(fullfile(BCoreUtil.getBCorePath,'bootstrap','rigSetup.mat'),'file')
     q = questdlg('Press "Yes" if this is a part of a physiology rig.','Is this computer part of a phys rig?');
 else
-    temp = load(fullfile(getBCorePath,'bootstrap','rigSetup.mat'));
+    temp = load(fullfile(BCoreUtil.getBCorePath,'bootstrap','rigSetup.mat'));
     if isfield(temp,'isRig') && ~temp.isRig
         q = 'No';
     else
@@ -26,19 +26,19 @@ else
 end
 switch q
     case 'Yes'
-        if ~exist(fullfile(getBCorePath,'bootstrap','rigSetup.mat'),'file')
+        if ~exist(fullfile(BCoreUtil.getBCorePath,'bootstrap','rigSetup.mat'),'file')
             succ = getAndLoadEnvVariables;
         else
-            env = load(fullfile(getBCorePath,'bootstrap','rigSetup.mat'));
+            env = load(fullfile(BCoreUtil.getBCorePath,'bootstrap','rigSetup.mat'));
             succ = loadEnvVariables(env);
         end
         if succ
             fprintf('\nRig is setup for physiology.\n');
         end
     case 'No'
-        if ~exist(fullfile(getBCorePath,'bootstrap','rigSetup.mat'),'file')
+        if ~exist(fullfile(BCoreUtil.getBCorePath,'bootstrap','rigSetup.mat'),'file')
             isRig = false;
-            save(fullfile(getBCorePath,'bootstrap','rigSetup.mat'),'isRig');
+            save(fullfile(BCoreUtil.getBCorePath,'bootstrap','rigSetup.mat'),'isRig');
         end
     case 'Cancel'
         fprintf('\nOK, doing nothing to the environment variables\n');
@@ -258,7 +258,7 @@ while ~done
 end
 
 % now save rigSetup.m in the appropriate place
-filename = fullfile(getBCorePath,'bootstrap','rigSetup.mat');
+filename = fullfile(BCoreUtil.getBCorePath,'bootstrap','rigSetup.mat');
 MACHINETYPE = env.MACHINETYPE;
 DATAIP = env.DATAIP;
 STIMIP = env.STIMIP;

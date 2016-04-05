@@ -40,7 +40,7 @@ function BCoreServer
 setupEnvironment;
 addJavaComponents();
 checkForUpdate; % 9/24/08 - check current code version
-dataPath=fullfile(fileparts(fileparts(getBCorePath)),'BCoreData',filesep);
+dataPath=fullfile(fileparts(fileparts(BCoreUtil.getBCorePath)),'BCoreData',filesep);
 
 diary off
 warning('off','MATLAB:MKDIR:DirectoryExists')
@@ -310,13 +310,13 @@ cycleB=uicontrol(f,'Style','togglebutton','String',buttonT,'Units','pixels','Pos
         closeConn(conn);
         % finished writing stop time of this heat to oracle
         [r, rx, sys]=stopServer(r,rx,servePump,sys,er,subjects);
-        rp=getBCorePath;
+        rp=BCoreUtil.getBCorePath;
         rp=fullfile(rp,'analysis','eflister');
         
         % ==============================================================================================================
         % FIX THIS PART TO ONLY COMPILE SUBJECTS OWNED BY THIS SERVER
         % we need to compile records for every rack used here
-        cmdStr=sprintf('matlab -automation -r "cd(''%s'');setupEnvironment;cd(''%s'');compileDetailedRecords(''%s'');quit" &',fullfile(getBCorePath,'bootstrap'),rp,server_name);
+        cmdStr=sprintf('matlab -automation -r "cd(''%s'');setupEnvironment;cd(''%s'');compileDetailedRecords(''%s'');quit" &',fullfile(BCoreUtil.getBCorePath,'bootstrap'),rp,server_name);
         system(cmdStr); %testing only       
         % END EDITS
         % ==============================================================================================================

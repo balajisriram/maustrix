@@ -280,18 +280,18 @@ classdef afcCoherentDots<stimManager
             displaySize = st.getDisplaySize();
             LUTbits = st.getLUTbits();
             responsePorts = tm.getResponsePorts(st.numPorts);
-            % 1/30/09 - trialRecords now includes THIS trial
+            
             indexPulses=[];
             imagingTasks=[];
             [LUT, sm, updateSM]=getLUT(sm,LUTbits);
             
-            [resInd, height, width, hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(sm),getMaxHeight(sm));
+            [resInd, height, width, hz] = st.chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(sm),getMaxHeight(sm));
             
             if isnan(resInd)
                 resInd=1;
             end
             
-            scaleFactor=getScaleFactor(sm); % dummy value since we are phased anyways; the real scaleFactor is stored in each phase's stimSpec
+            scaleFactor=sm.scaleFactor; % dummy value since we are phased anyways; the real scaleFactor is stored in each phase's stimSpec
             
             
             details.pctCorrectionTrials=tm.percentCorrectionTrials;
@@ -303,15 +303,14 @@ classdef afcCoherentDots<stimManager
             [targetPorts, distractorPorts, details]=tm.assignPorts(details,lastRec,responsePorts);
             
             
-            toggleStim=true; type='expert';
-            dynamicMode = true; %false %true
+            type='expert';
             
             % set up params for computeGabors
             height = min(height,getMaxHeight(sm));
             width = min(width,getMaxWidth(sm));
             
             % lets save some of the details for later
-            details.afcCoherentDotsType  = getType(sm,structize(sm));
+            details.afcCoherentDotsType  = sm.getType(structize(sm));
             
             % whats the chosen stim?
             if targetPorts==1
@@ -332,78 +331,79 @@ classdef afcCoherentDots<stimManager
                 stim.seedVal = sum(100*clock);
             end
             
-            if sm.doCombos
-                stim.numDots = chooseFrom(sm.numDots{chosenStimIndex});
-                stim.bkgdNumDots = chooseFrom(sm.bkgdNumDots{chosenStimIndex});
-                stim.dotCoherence = chooseFrom(sm.dotCoherence{chosenStimIndex});
-                stim.bkgdCoherence = chooseFrom(sm.bkgdCoherence{chosenStimIndex});
-                stim.dotSpeed = chooseFrom(sm.dotSpeed{chosenStimIndex});
-                stim.bkgdSpeed = chooseFrom(sm.bkgdSpeed{chosenStimIndex});
-                stim.dotDirection = chooseFrom(sm.dotDirection{chosenStimIndex});
-                stim.bkgdDirection = chooseFrom(sm.bkgdDirection{chosenStimIndex});
-                stim.dotColor = chooseFrom(sm.dotColor{chosenStimIndex});
-                stim.bkgdDotColor = chooseFrom(sm.bkgdDotColor{chosenStimIndex});
-                stim.dotSize = chooseFrom(sm.dotSize{chosenStimIndex});
-                stim.bkgdSize = chooseFrom(sm.bkgdSize{chosenStimIndex});
-                stim.dotShape = chooseFrom(sm.dotShape{chosenStimIndex});
-                stim.bkgdShape = chooseFrom(sm.bkgdShape{chosenStimIndex});
-                
-                % renderMode
-                stim.renderMode = sm.renderMode;
-                
-                % maxDuration
-                tempVar = randperm(length(sm.maxDuration{chosenStimIndex}));
-                if ~ismac
-                    stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(tempVar(1))*hz);
-                elseif ismac && hz==0
-                    % macs are weird and return a hz of 0 when they really
-                    % shouldnt. assume hz = 60 (hack)
-                    stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(tempVar(1))*60);
-                end
-                
-                % background
-                stim.background = sm.background;
-                
-                % doCombos
-                stim.doCombos = sm.doCombos;
-                
-            else
-                % numDots
-                tempVar = randperm(length(sm.numDots{chosenStimIndex}));
-                which = tempVar(1);
-                
-                stim.numDots = sm.numDots{chosenStimIndex}(which);
-                stim.bkgdNumDots = sm.bkgdNumDots{chosenStimIndex}(which);
-                stim.dotCoherence = sm.dotCoherence{chosenStimIndex}(which);
-                stim.bkgdCoherence = sm.bkgdCoherence{chosenStimIndex}(which);
-                stim.dotSpeed = sm.dotSpeed{chosenStimIndex}(which);
-                stim.bkgdSpeed = sm.bkgdSpeed{chosenStimIndex}(which);
-                stim.dotDirection = sm.dotDirection{chosenStimIndex}(which);
-                stim.bkgdDirection = sm.bkgdDirection{chosenStimIndex}(which);
-                stim.dotColor = sm.dotColor{chosenStimIndex}(which,:);
-                stim.bkgdDotColor = sm.bkgdDotColor{chosenStimIndex}(which,:);
-                stim.dotSize = sm.dotSize{chosenStimIndex}(which);
-                stim.bkgdSize = sm.bkgdSize{chosenStimIndex}(which);
-                stim.dotShape = sm.dotShape{chosenStimIndex}(which);
-                stim.bkgdShape = sm.bkgdShape{chosenStimIndex}(which);
-                
-                % waveform
-                stim.renderMode = sm.renderMode;
-                
-                if ~ismac
-                    stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(which)*hz);
-                elseif ismac && hz==0
-                    % macs are weird and return a hz of 0 when they really
-                    % shouldnt. assume hz = 60 (hack)
-                    stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(which)*60);
-                end
-                
-                % background
-                stim.background = sm.background;
-                
-                % doCombos
-                stim.doCombos = sm.doCombos;
-                
+            switch sm.doCombos
+                case true
+                    stim.numDots        = chooseFrom(sm.numDots{chosenStimIndex});
+                    stim.bkgdNumDots    = chooseFrom(sm.bkgdNumDots{chosenStimIndex});
+                    stim.dotCoherence   = chooseFrom(sm.dotCoherence{chosenStimIndex});
+                    stim.bkgdCoherence  = chooseFrom(sm.bkgdCoherence{chosenStimIndex});
+                    stim.dotSpeed       = chooseFrom(sm.dotSpeed{chosenStimIndex});
+                    stim.bkgdSpeed      = chooseFrom(sm.bkgdSpeed{chosenStimIndex});
+                    stim.dotDirection   = chooseFrom(sm.dotDirection{chosenStimIndex});
+                    stim.bkgdDirection  = chooseFrom(sm.bkgdDirection{chosenStimIndex});
+                    stim.dotColor       = chooseFrom(sm.dotColor{chosenStimIndex});
+                    stim.bkgdDotColor   = chooseFrom(sm.bkgdDotColor{chosenStimIndex});
+                    stim.dotSize        = chooseFrom(sm.dotSize{chosenStimIndex});
+                    stim.bkgdSize       = chooseFrom(sm.bkgdSize{chosenStimIndex});
+                    stim.dotShape       = chooseFrom(sm.dotShape{chosenStimIndex});
+                    stim.bkgdShape      = chooseFrom(sm.bkgdShape{chosenStimIndex});
+                    
+                    % renderMode
+                    stim.renderMode = sm.renderMode;
+                    
+                    % maxDuration
+                    tempVar = randperm(length(sm.maxDuration{chosenStimIndex}));
+                    if ~ismac
+                        stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(tempVar(1))*hz);
+                    elseif ismac && hz==0
+                        % macs are weird and return a hz of 0 when they really
+                        % shouldnt. assume hz = 60 (hack)
+                        stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(tempVar(1))*60);
+                    end
+                    
+                    % background
+                    stim.background = sm.background;
+                    
+                    % doCombos
+                    stim.doCombos = sm.doCombos;
+                    
+                case false
+                    % numDots
+                    tempVar = randperm(length(sm.numDots{chosenStimIndex}));
+                    which = tempVar(1);
+                    
+                    stim.numDots = sm.numDots{chosenStimIndex}(which);
+                    stim.bkgdNumDots = sm.bkgdNumDots{chosenStimIndex}(which);
+                    stim.dotCoherence = sm.dotCoherence{chosenStimIndex}(which);
+                    stim.bkgdCoherence = sm.bkgdCoherence{chosenStimIndex}(which);
+                    stim.dotSpeed = sm.dotSpeed{chosenStimIndex}(which);
+                    stim.bkgdSpeed = sm.bkgdSpeed{chosenStimIndex}(which);
+                    stim.dotDirection = sm.dotDirection{chosenStimIndex}(which);
+                    stim.bkgdDirection = sm.bkgdDirection{chosenStimIndex}(which);
+                    stim.dotColor = sm.dotColor{chosenStimIndex}(which,:);
+                    stim.bkgdDotColor = sm.bkgdDotColor{chosenStimIndex}(which,:);
+                    stim.dotSize = sm.dotSize{chosenStimIndex}(which);
+                    stim.bkgdSize = sm.bkgdSize{chosenStimIndex}(which);
+                    stim.dotShape = sm.dotShape{chosenStimIndex}(which);
+                    stim.bkgdShape = sm.bkgdShape{chosenStimIndex}(which);
+                    
+                    % waveform
+                    stim.renderMode = sm.renderMode;
+                    
+                    if ~ismac
+                        stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(which)*hz);
+                    elseif ismac && hz==0
+                        % macs are weird and return a hz of 0 when they really
+                        % shouldnt. assume hz = 60 (hack)
+                        stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(which)*60);
+                    end
+                    
+                    % background
+                    stim.background = sm.background;
+                    
+                    % doCombos
+                    stim.doCombos = sm.doCombos;
+                    
             end
             
             
@@ -467,7 +467,7 @@ classdef afcCoherentDots<stimManager
             discrimStim.autoTrigger=[];
             discrimStim.punishResponses=false;
             discrimStim.framesUntilTimeout=timeout;
-            discrimStim.ledON = false; %% presetting here
+            discrimStim.ledON = false; %% #### presetting here
             
             preRequestStim=[];
             preRequestStim.stimulus=sm.getInterTrialLuminance();
@@ -935,16 +935,12 @@ classdef afcCoherentDots<stimManager
                     error('unsupported type. if you want this make a name for it');
             end
         end
-        
-        
-        
-        
-        
+   
     end
     
     methods(Static)
-        function out=stimMgrOKForTrialMgr(tm)
-            assert(isa(tm,'trialManager'),'afcCoherentDots:stimMgrOKForTrialMgr:incorrectType','need a trialManager object')
+        function out = stimMgrOKForTrialMgr(tm)
+            assert(isa(tm,'trialManager'),'afcCoherentDots:stimMgrOKForTrialMgr:incorrectType','need a trialManager object');
             switch class(tm)
                 case {'goNoGo','nAFC','autopilot','reinforcedAutopilot'}
                     out=true;

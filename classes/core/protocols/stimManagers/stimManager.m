@@ -411,10 +411,6 @@ classdef stimManager
             out = physiologyAnalysis(subject,trials,channels,dataPath,stim,c);
         end
         
-        function sf=getScaleFactor(sm)
-            sf=sm.scaleFactor;
-        end
-        
         function soundsToPlay = getSoundsToPlay(stimManager, ports, lastPorts, phase, phaseType, stepsInPhase,msRewardSound, msPenaltySound, ...
                 targetOptions, distractorOptions, requestOptions, playRequestSoundLoop, trialManagerClass, trialDetails, stimDetails)
             % see doc in stimManager.calcStim.txt

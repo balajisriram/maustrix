@@ -62,490 +62,265 @@ classdef afcGratings<stimManager
             s.doCombos = true;
             
             
-            switch nargin
-                case 0
-                    % if no input arguments, create a default object
-                    
-                case 1
-                    % if single argument of this class type, return it
-                    if (isa(pixPerCycs,'afcGratings'))
-                        s = pixPerCycs;
-                    else
-                        error('Input argument is not a gratings object')
-                    end
-                case {18 19 20 21}
-                    % create object using specified values
-                    s.pixPerCycs = pixPerCycs;
-                    s.driftfrequencies = driftfrequencies;
-                    s.orientations = orientations;
-                    s.phases = phases;
-                    s.contrasts = contrasts;
-                    s.maxDuration = maxDuration;
-                    s.radii = radii;
-                    s.radiusType = radiusType;
-                    s.annuli = annuli;
-                    s.location = location;
-                    s.waveform = waveform;
-                    s.normalizationMethod = normalizationMethod;
-                    s.mean = mean;
-                    s.thresh = thresh;
-                    s.maxWidth = maxWidth;
-                    s.maxHeight = maxHeight;
-                    s.scaleFactor = scaleFactor;
-                    s.interTrialLuminance = interTrialLuminance;
-                    s.doCombos = doCombos;
-                    
-                    
-                    s.doPostDiscrim=doPostDiscrim;
-                    
-                    
-                    
-                    s.LEDParams = LEDParams;
-                    
-                    
-                    % pixPerCycs
-                    if islogical(doCombos)
-                        s.doCombos = doCombos;
-                    else
-                        doCombos
-                        error('doCombos not in the right format');
-                    end
-                    
-                    % pixPerCycs
-                    if iscell(pixPerCycs) && length(pixPerCycs)==2 && ...
-                            isnumeric(pixPerCycs{1}) && all(pixPerCycs{1}>0) && isnumeric(pixPerCycs{2}) && all(pixPerCycs{2}>0)
-                        s.pixPerCycs = pixPerCycs;
-                        L1 = length(pixPerCycs{1});
-                        L2 = length(pixPerCycs{2});
-                    else
-                        pixPerCycs
-                        error('pixPerCycs not in the right format');
-                    end
-                    
-                    % driftfrequencies
-                    if iscell(driftfrequencies) && length(driftfrequencies)==2 && ...
-                            isnumeric(driftfrequencies{1}) && all(driftfrequencies{1}>=0) && isnumeric(driftfrequencies{2}) && all(driftfrequencies{2}>=0)
-                        s.driftfrequencies = driftfrequencies;
-                        if ~doCombos && length(driftfrequencies{1})~=L1 && length(driftfrequencies{2})~=L2
-                            error('the lengths don''t match. ')
-                        end
-                    else
-                        driftfrequencies
-                        error('driftfrequencies not in the right format');
-                    end
-                    
-                    % orientations
-                    if iscell(orientations) && length(orientations)==2 && ...
-                            isnumeric(orientations{1}) && all(~isinf(orientations{1})) && isnumeric(orientations{2}) &&  all(~isinf(orientations{2}))
-                        s.orientations = orientations;
-                        if ~doCombos && length(orientations{1})~=L1 && length(orientations{2})~=L2
-                            error('the lengths don''t match. ')
-                        end
-                    else
-                        orientations
-                        error('orientations not in the right format');
-                    end
-                    
-                    % phases
-                    if iscell(phases) && length(phases)==2 && ...
-                            isnumeric(phases{1}) && all(~isinf(phases{1})) && isnumeric(phases{2}) && all(~isinf(phases{2}))
-                        s.phases = phases;
-                        if ~doCombos && length(phases{1})~=L1 && length(phases{2})~=L2
-                            error('the lengths don''t match. ')
-                        end
-                    else
-                        phases
-                        error('phases not in the right format');
-                    end
-                    
-                    % contrasts
-                    if iscell(contrasts) && length(contrasts)==2 && ...
-                            isnumeric(contrasts{1}) && all(contrasts{1}>=0) && all(contrasts{1}<=1) && isnumeric(contrasts{2}) && all(contrasts{2}>=0) && all(contrasts{2}<=1)
-                        s.contrasts = contrasts;
-                        if ~doCombos && length(contrasts{1})~=L1 && length(contrasts{2})~=L2
-                            error('the lengths don''t match. ')
-                        end
-                    else
-                        contrasts
-                        error('contrasts not in the right format');
-                    end
-                    
-                    % maxDuration
-                    if iscell(maxDuration) && length(maxDuration)==2 && ...
-                            isnumeric(maxDuration{1}) && all(maxDuration{1}>0) && isnumeric(maxDuration{2}) && all(maxDuration{2}>0)
-                        s.maxDuration = maxDuration;
-                        if ~doCombos && length(maxDuration{1})~=L1 && length(maxDuration{2})~=L2
-                            error('the lengths don''t match. ')
-                        end
-                    else
-                        maxDuration
-                        error('maxDuration not in the right format');
-                    end
-                    
-                    % radii
-                    if iscell(radii) && length(radii)==2 && ...
-                            isnumeric(radii{1}) && all(radii{1}>=0) && isnumeric(radii{2}) && all(radii{2}>=0)
-                        s.radii = radii;
-                        if ~doCombos && length(radii{1})~=L1 && length(radii{2})~=L2
-                            error('the lengths don''t match. ')
-                        end
-                    else
-                        radii
-                        error('radii not in the right format');
-                    end
-                    
-                    
-                    % radiusType
-                    if ischar(radiusType) && ismember(radiusType,{'gaussian','hardEdge'})
-                        s.radiusType = radiusType;
-                    else
-                        radiusType
-                        error('radiusType not in the right format');
-                    end
-                    
-                    
-                    % annuli
-                    if iscell(annuli) && length(annuli)==2 && ...
-                            isnumeric(annuli{1}) && all(annuli{1}>=0) && isnumeric(annuli{2}) && all(annuli{2}>=0)
-                        s.annuli = annuli;
-                        if ~doCombos && length(annuli{1})~=L1 && length(annuli{2})~=L2
-                            error('the lengths don''t match. ')
-                        end
-                    else
-                        annuli
-                        error('annuli not in the right format');
-                    end
-                    
-                    % location
-                    if iscell(location) && length(location)==2 && ...
-                            isnumeric(location{1}) && all(location{1}>=0) && size(location{1},2)==2 && ...
-                            isnumeric(location{2}) && all(location{2}>=0) && size(location{2},2)==2
-                        s.location = location;
-                        if ~doCombos && length(location{1})~=L1 && length(location{2})~=L2
-                            error('the lengths don''t match. ')
-                        end
-                    else
-                        location
-                        error('location not in the right format');
-                    end
-                    
-                    % waveform
-                    if ischar(waveform) && ismember(waveform,{'sine','square'})
-                        s.waveform = waveform;
-                    else
-                        waveform
-                        error('waveform not the right format');
-                    end
-                    
-                    % normalizationMethod
-                    if ischar(normalizationMethod) && ismember(normalizationMethod,{'normalizeVertical', 'normalizeHorizontal', 'normalizeDiagonal' , 'none'})
-                        s.normalizationMethod = normalizationMethod;
-                    else
-                        normalizationMethod
-                        error('normalizationMethod not the right format');
-                    end
-                    
-                    % mean
-                    if mean>=0 && mean<=1
-                        s.mean = mean;
-                    else
-                        mean
-                        error('mean not the right format');
-                    end
-                    
-                    % thresh
-                    if thresh>=0
-                        s.thresh = thresh;
-                    else
-                        thresh
-                        error('thresh not the right format');
-                    end
-                    
-                    % doPostDiscrim
-                    if doPostDiscrim
-                        % make sure that maxDuration is set to finite values
-                        if any(isinf(maxDuration{1})) || any(isinf(maxDuration{2}))
-                            error('cannot have post-discrim phase and infnite discrim phase. reconsider');
-                        end
-                        s.doPostDiscrim = true;
-                    else
-                        s.doPostDiscrim = false;
-                    end
-                    
-                    if nargin==21
-                        % LED state
-                        if isstruct(LEDParams)
-                            s.LEDParams = LEDParams;
-                        else
-                            error('LED state should be a structure');
-                        end
-                        if s.LEDParams.numLEDs>0
-                            % go through the Illumination Modes and check if they seem
-                            % reasonable
-                            cumulativeFraction = 0;
-                            if s.LEDParams.active && isempty(s.LEDParams.IlluminationModes)
-                                error('need to provide atleast one illumination mode if LEDs is to be active');
-                            end
-                            for i = 1:length(s.LEDParams.IlluminationModes)
-                                if any(s.LEDParams.IlluminationModes{i}.whichLED)>s.LEDParams.numLEDs
-                                    error('asking for an LED that is greater than numLEDs')
-                                else
-                                    if length(s.LEDParams.IlluminationModes{i}.whichLED)~= length(s.LEDParams.IlluminationModes{i}.intensity) || ...
-                                            any(s.LEDParams.IlluminationModes{i}.intensity>1) || any(s.LEDParams.IlluminationModes{i}.intensity<0)
-                                        error('specify a single intensity for each of the LEDs and these intensities hould lie between 0 and 1');
-                                    else
-                                        cumulativeFraction = [cumulativeFraction cumulativeFraction(end)+s.LEDParams.IlluminationModes{i}.fraction];
-                                    end
-                                end
-                            end
-                            
-                            if abs(cumulativeFraction(end)-1)>eps
-                                error('the cumulative fraction should sum to 1');
-                            else
-                                s.LEDParams.cumulativeFraction = cumulativeFraction;
-                            end
-                        end
-                    end
-                    
-                    
-                    
-                otherwise
-                    nargin
-                    error('Wrong number of input arguments')
+            s.LEDParams = LEDParams;
+            
+            
+            % pixPerCycs
+            assert(islogical(doCombos),'afcGratings:afcGratings:invalidInput','doCombos not in the right format');
+            s.doCombos = doCombos;
+                        
+            % pixPerCycs
+            assert(iscell(pixPerCycs) && length(pixPerCycs)==2 && ...
+                isnumeric(pixPerCycs{1}) && all(pixPerCycs{1}>0) && isnumeric(pixPerCycs{2}) && all(pixPerCycs{2}>0),...
+                'afcGratings:afcGratings:invalidInput','pixPerCycs not in the right format');
+            L1 = length(pixPerCycs{1});
+            L2 = length(pixPerCycs{2});
+            assert(doCombos || length(pixPerCycs{1})==L1 && length(pixPerCycs{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
+            s.pixPerCycs = pixPerCycs;
+                
+            % driftfrequencies
+            assert(iscell(driftfrequencies) && length(driftfrequencies)==2 && ...
+                    isnumeric(driftfrequencies{1}) && all(driftfrequencies{1}>=0) && isnumeric(driftfrequencies{2}) && all(driftfrequencies{2}>=0),...
+                'afcGratings:afcGratings:invalidInput','driftfrequencies not in the right format');
+            assert(doCombos || length(driftfrequencies{1})==L1 && length(driftfrequencies{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
+            s.driftfrequencies = driftfrequencies;
+            
+            % orientations
+            assert(iscell(orientations) && length(orientations)==2 && ...
+                    isnumeric(orientations{1}) && all(~isinf(orientations{1})) && isnumeric(orientations{2}) &&  all(~isinf(orientations{2})),...
+                'afcGratings:afcGratings:invalidInput','orientations not in the right format');
+            assert(doCombos || length(orientations{1})==L1 && length(orientations{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
+            s.orientations = orientations;
+            
+            % phases
+            assert(iscell(phases) && length(phases)==2 && ...
+                    isnumeric(phases{1}) && all(~isinf(phases{1})) && isnumeric(phases{2}) && all(~isinf(phases{2})),...
+                'afcGratings:afcGratings:invalidInput','phases not in the right format');
+            assert(doCombos || length(phases{1})==L1 && length(phases{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
+            s.phases = phases;
+            
+            % contrasts
+            assert(iscell(contrasts) && length(contrasts)==2 && ...
+                    isnumeric(contrasts{1}) && all(contrasts{1}>=0) && all(contrasts{1}<=1) && isnumeric(contrasts{2}) && all(contrasts{2}>=0) && all(contrasts{2}<=1),...
+                'afcGratings:afcGratings:invalidInput','contrasts not in the right format');
+            assert(doCombos || length(contrasts{1})==L1 && length(contrasts{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
+            s.contrasts = contrasts;
+            
+            % maxDuration
+            assert(iscell(maxDuration) && length(maxDuration)==2 && ...
+                    isnumeric(maxDuration{1}) && all(maxDuration{1}>0) && isnumeric(maxDuration{2}) && all(maxDuration{2}>0),...
+                'afcGratings:afcGratings:invalidInput','maxDuration not in the right format');
+            assert(doCombos || length(maxDuration{1})==L1 && length(maxDuration{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
+            s.maxDuration = maxDuration;
+            
+            % radii
+            assert(iscell(radii) && length(radii)==2 && ...
+                    isnumeric(radii{1}) && all(radii{1}>=0) && isnumeric(radii{2}) && all(radii{2}>=0),...
+                'afcGratings:afcGratings:invalidInput','radii not in the right format');
+            assert(doCombos || length(radii{1})==L1 && length(radii{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
+            s.radii = radii;
+            
+            % radiusType
+            assert(ischar(radiusType) && ismember(radiusType,{'gaussian','hardEdge'}),'afcGratings:afcGratings:invalidInput','radiusType not in the right format')
+            s.radiusType = radiusType;
+
+            % annuli
+            assert(iscell(annuli) && length(annuli)==2 && ...
+                    isnumeric(annuli{1}) && all(annuli{1}>=0) && isnumeric(annuli{2}) && all(annuli{2}>=0),...
+                'afcGratings:afcGratings:invalidInput','annuli not in the right format');
+            assert(doCombos || length(annuli{1})==L1 && length(annuli{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
+            s.annuli = annuli;
+            
+            % location
+            assert(iscell(location) && length(location)==2 && ...
+                    isnumeric(location{1}) && all(location{1}>=0) && size(location{1},2)==2 && ...
+                    isnumeric(location{2}) && all(location{2}>=0) && size(location{2},2)==2,...
+                'afcGratings:afcGratings:invalidInput','location not in the right format');
+            assert(doCombos || length(location{1})==L1 && length(location{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
+            s.location = location;
+            
+            % waveform
+            assert(ischar(waveform) && ismember(waveform,{'sine','square'}),'afcGratings:afcGratings:invalidInput','waveform not in right format');
+            s.waveform = waveform;
+
+            
+            % normalizationMethod
+            assert(ischar(normalizationMethod) && ismember(normalizationMethod,{'normalizeVertical', 'normalizeHorizontal', 'normalizeDiagonal' , 'none'}),...
+                'afcGratings:afcGratings:invalidInput','normalizationMethod not in right format')
+            s.normalizationMethod = normalizationMethod;
+            
+            % mean
+            assert(mean>=0 && mean<=1,'afcGratings:afcGratings:invalidInput','mean not in right format')
+            s.mean = mean;
+            
+            % thresh
+            assert(thresh>=0,'afcGratings:afcGratings:invalidInput','thresh not in right format')
+            s.thresh = thresh;
+            
+            % doPostDiscrim
+            assert(islogical(doPostDiscrim),'afcGratings:afcGratings:invalidInput','doPostDiscrim not in right format')
+            if doPostDiscrim
+                % make sure that maxDuration is set to finite values
+                if any(isinf(maxDuration{1})) || any(isinf(maxDuration{2}))
+                    error('cannot have post-discrim phase and infnite discrim phase. reconsider');
+                end
+                s.doPostDiscrim = true;
+            else
+                s.doPostDiscrim = false;
             end
+            
+            if nargin==21
+                % LED state
+                if isstruct(LEDParams)
+                    s.LEDParams = LEDParams;
+                else
+                    error('LED state should be a structure');
+                end
+                if s.LEDParams.numLEDs>0
+                    % go through the Illumination Modes and check if they seem
+                    % reasonable
+                    cumulativeFraction = 0;
+                    if s.LEDParams.active && isempty(s.LEDParams.IlluminationModes)
+                        error('need to provide atleast one illumination mode if LEDs is to be active');
+                    end
+                    for i = 1:length(s.LEDParams.IlluminationModes)
+                        if any(s.LEDParams.IlluminationModes{i}.whichLED)>s.LEDParams.numLEDs
+                            error('asking for an LED that is greater than numLEDs')
+                        else
+                            if length(s.LEDParams.IlluminationModes{i}.whichLED)~= length(s.LEDParams.IlluminationModes{i}.intensity) || ...
+                                    any(s.LEDParams.IlluminationModes{i}.intensity>1) || any(s.LEDParams.IlluminationModes{i}.intensity<0)
+                                error('specify a single intensity for each of the LEDs and these intensities hould lie between 0 and 1');
+                            else
+                                cumulativeFraction = [cumulativeFraction cumulativeFraction(end)+s.LEDParams.IlluminationModes{i}.fraction];
+                            end
+                        end
+                    end
+                    
+                    if abs(cumulativeFraction(end)-1)>eps
+                        error('the cumulative fraction should sum to 1');
+                    else
+                        s.LEDParams.cumulativeFraction = cumulativeFraction;
+                    end
+                end
+            end
+            
         end
         
-        function [stimulus,updateSM,resolutionIndex,stimList,LUT,targetPorts,distractorPorts,...
-                details,text,indexPulses,imagingTasks] =...
-                calcStim(stimulus,trialManager,allowRepeats,resolutions,displaySize,LUTbits,...
-                responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
-            trialManagerClass = class(trialManager);
-            % 1/30/09 - trialRecords now includes THIS trial
+        function [sm,updateSM,resInd,stimList,LUT,targetPorts,distractorPorts,details,text,indexPulses,imagingTasks,ITL] =...
+                calcStim(sm,tm,st,tR,~)
+            allowRepeats = true;
+            resolutions = st.resolutions;
+            displaySize = st.getDisplaySize();
+            LUTbits = st.getLUTBits();
+            responsePorts = tm.getResponsePorts(st.numPorts);
+            
             indexPulses=[];
             imagingTasks=[];
-            [LUT, stimulus, updateSM]=getLUT(stimulus,LUTbits);
+            [LUT, sm, updateSM]=getLUT(sm,LUTbits);
             
-            [junk, mac] = getMACaddress();
-            switch mac
-                case {'A41F7278B4DE','A41F729213E2','A41F726EC11C' } %gLab-Behavior rigs 1,2,3
-                    [resolutionIndex, height, width, hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
-                case {'7845C4256F4C', '7845C42558DF','A41F729211B1'} %gLab-Behavior rigs 4,5,6
-                    [resolutionIndex, height, width, hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
-                otherwise
-                    [resolutionIndex, height, width, hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
+            [resInd, height, width, hz] = st.chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(sm),getMaxHeight(sm));
+            
+            if isnan(resInd)
+                resInd=1;
             end
             
-            if isnan(resolutionIndex)
-                resolutionIndex=1;
-            end
+            scaleFactor=sm.scaleFactor; % dummy value since we are phased anyways; the real scaleFactor is stored in each phase's stimSpec
             
-            scaleFactor=getScaleFactor(stimulus); % dummy value since we are phased anyways; the real scaleFactor is stored in each phase's stimSpec
-            interTrialLuminance = getInterTrialLuminance(stimulus);
-            interTrialDuration = getInterTrialDuration(stimulus);
+            details.pctCorrectionTrials = tm.percentCorrectionTrials;
             
-            details.pctCorrectionTrials=trialManager.percentCorrectionTrials;
-            details.bias = getRequestBias(trialManager);
-            
-            if ~isempty(trialRecords) && length(trialRecords)>=2
-                lastRec=trialRecords(end-1);
+            if ~isempty(tR) && length(tR)>=2
+                lastRec=tR(end-1);
             else
                 lastRec=[];
             end
-            [targetPorts, distractorPorts, details]=assignPorts(details,lastRec,responsePorts,trialManagerClass,allowRepeats);
+            [targetPorts, distractorPorts, details] = tm.assignPorts(details,lastRec,responsePorts);
             
-            
-            toggleStim=true; type='expert';
-            dynamicMode = true; %false %true
-            
+            % #### need to choose expert vs cache if drift freqs is non
+            % zero
+            type='expert';
+                        
             % set up params for computeGabors
-            height = min(height,getMaxHeight(stimulus));
-            width = min(width,getMaxWidth(stimulus));
+            height = min(height,getMaxHeight(sm));
+            width = min(width,getMaxWidth(sm));
             
             % lets save some of the details for later
-            possibleStims.pixPerCycs            = stimulus.pixPerCycs;
-            possibleStims.driftfrequencies      = stimulus.driftfrequencies;
-            possibleStims.orientations          = stimulus.orientations;
-            possibleStims.phases                = stimulus.phases;
-            possibleStims.contrasts             = stimulus.contrasts;
-            possibleStims.waveform              = stimulus.waveform;
-            possibleStims.maxDuration           = {stimulus.maxDuration{1}*hz,stimulus.maxDuration{2}*hz};
-            possibleStims.radii                 = stimulus.radii;
-            possibleStims.radiusType            = stimulus.radiusType;
-            possibleStims.annuli                = stimulus.annuli;
-            possibleStims.location              = stimulus.location;
-            possibleStims.normalizationMethod   = stimulus.normalizationMethod;
-            possibleStims.mean                  = stimulus.mean;
-            possibleStims.thresh                = stimulus.thresh;
-            possibleStims.width                 = width;
-            possibleStims.height                = height;
-            possibleStims.doCombos              = stimulus.doCombos;
-            details.possibleStims               = possibleStims;
-            details.afcGratingType              = getType(stimulus,structize(stimulus));
+            details.afcGratingType = sm.getType(structize(sm));
             
             % whats the chosen stim?
-            if stimulus.doCombos
-                % choose a random value for each
-                if length(targetPorts)==1
-                    stim = [];
-                    if targetPorts == 1 % the first of the possible values
-                        % pixPerCycs
-                        tempVar = randperm(length(stimulus.pixPerCycs{1}));
-                        stim.pixPerCycs = stimulus.pixPerCycs{1}(tempVar(1));
-                        
-                        % driftfrequencies
-                        tempVar = randperm(length(stimulus.driftfrequencies{1}));
-                        stim.driftfrequencies = stimulus.driftfrequencies{1}(tempVar(1));
-                        
-                        % orientations
-                        tempVar = randperm(length(stimulus.orientations{1}));
-                        stim.orientations = stimulus.orientations{1}(tempVar(1));
-                        
-                        % phases
-                        tempVar = randperm(length(stimulus.phases{1}));
-                        stim.phases = stimulus.phases{1}(tempVar(1));
-                        
-                        % contrasts
-                        tempVar = randperm(length(stimulus.contrasts{1}));
-                        stim.contrasts = stimulus.contrasts{1}(tempVar(1));
-                        
-                        % waveform
-                        stim.waveform = stimulus.waveform;
-                        
-                        % maxDuration
-                        tempVar = randperm(length(stimulus.maxDuration{1}));
-                        if ~ismac
-                            stim.maxDuration = round(stimulus.maxDuration{1}(tempVar(1))*hz);
-                        elseif ismac && hz==0
-                            % macs are weird and return a hz of 0 when they really
-                            % shouldnt. assume hz = 60 (hack)
-                            stim.maxDuration = round(stimulus.maxDuration{1}(tempVar(1))*60);
-                        end
-                        
-                        % radii
-                        tempVar = randperm(length(stimulus.radii{1}));
-                        stim.radii = stimulus.radii{1}(tempVar(1));
-                        
-                        % annuli
-                        tempVar = randperm(length(stimulus.annuli{1}));
-                        stim.annuli = stimulus.annuli{1}(tempVar(1));
-                        
-                        % location
-                        tempVar = randperm(size(stimulus.location{1},1));
-                        stim.location = stimulus.location{1}(tempVar(1),:);
-                    elseif targetPorts == 3% the second of the possible values
-                        % pixPerCycs
-                        tempVar = randperm(length(stimulus.pixPerCycs{2}));
-                        stim.pixPerCycs = stimulus.pixPerCycs{2}(tempVar(1));
-                        
-                        % driftfrequencies
-                        tempVar = randperm(length(stimulus.driftfrequencies{2}));
-                        stim.driftfrequencies = stimulus.driftfrequencies{2}(tempVar(1));
-                        
-                        % orientations
-                        tempVar = randperm(length(stimulus.orientations{2}));
-                        stim.orientations = stimulus.orientations{2}(tempVar(1));
-                        
-                        % phases
-                        tempVar = randperm(length(stimulus.phases{2}));
-                        stim.phases = stimulus.phases{2}(tempVar(1));
-                        
-                        % contrasts
-                        tempVar = randperm(length(stimulus.contrasts{2}));
-                        stim.contrasts = stimulus.contrasts{2}(tempVar(1));
-                        
-                        % waveform
-                        stim.waveform = stimulus.waveform;
-                        
-                        % maxDuration
-                        tempVar = randperm(length(stimulus.maxDuration{2}));
-                        if ~ismac
-                            stim.maxDuration = round(stimulus.maxDuration{2}(tempVar(1))*hz);
-                        elseif ismac && hz==0
-                            % macs are weird and return a hz of 0 when they really
-                            % shouldnt. assume hz = 60 (hack)
-                            stim.maxDuration = round(stimulus.maxDuration{2}(tempVar(1))*60);
-                        end
-                        
-                        % radii
-                        tempVar = randperm(length(stimulus.radii{2}));
-                        stim.radii = stimulus.radii{2}(tempVar(1));
-                        
-                        % annuli
-                        tempVar = randperm(length(stimulus.annuli{2}));
-                        stim.annuli = stimulus.annuli{2}(tempVar(1));
-                        
-                        % location
-                        tempVar = randperm(size(stimulus.location{2},1));
-                        stim.location = stimulus.location{2}(tempVar(1),:);
-                    else
-                        targetPorts
-                        sca;
-                        keyboard
-                        error('eh? should not come here at all')
-                    end
-                else
-                    targetPorts
-                    error('not geared for more than one target port. whats wrong??');
-                end
+            if targetPorts==1
+                chosenStimIndex = 1;
+            elseif targetPorts==3
+                chosenStimIndex = 2;
             else
-                if length(targetPorts)==1
-                    if targetPorts == 1
-                        tempVar = randperm(length(stimulus.pixPerCycs{1}));
-                        which = tempVar(1);
-                        stim.pixPerCycs=stimulus.pixPerCycs{1}(which);
-                        stim.driftfrequencies=stimulus.driftfrequencies{1}(which);
-                        stim.orientations=stimulus.orientations{1}(which);
-                        stim.phases=stimulus.phases{1}(which);
-                        stim.contrasts=stimulus.contrasts{1}(which);
-                        stim.waveform=stimulus.waveform;
-                        if ~ismac
-                            stim.maxDuration=round(stimulus.maxDuration{1}(which)*hz);
-                        elseif ismac && hz==0
-                            % macs are weird and return a hz of 0 when they really
-                            % shouldnt. assume hz = 60 (hack)
-                            stim.maxDuration = round(stimulus.maxDuration{1}(which)*60);
-                        end
-                        stim.radii=stimulus.radii{1}(which);
-                        stim.annuli=stimulus.annuli{1}(which);
-                        stim.location=stimulus.location{1}(which,:);
-                    elseif targetPorts == 3
-                        tempVar = randperm(length(stimulus.pixPerCycs{2}));
-                        which = tempVarVar(1);
-                        stim.pixPerCycs=stimulus.pixPerCycs{2}(which);
-                        stim.driftfrequencies=stimulus.driftfrequencies{2}(which);
-                        stim.orientations=stimulus.orientations{2}(which);
-                        stim.phases=stimulus.phases{2}(which);
-                        stim.contrasts=stimulus.contrasts{2}(which);
-                        stim.waveform=stimulus.waveform;
-                        if ~ismac
-                            stim.maxDuration=round(stimulus.maxDuration{2}(which)*hz);
-                        elseif ismac && hz==0
-                            % macs are weird and return a hz of 0 when they really
-                            % shouldnt. assume hz = 60 (hack)
-                            stim.maxDuration = round(stimulus.maxDuration{2}(which)*60);
-                        end
-                        stim.radii=stimulus.radii{2}(which);
-                        stim.annuli=stimulus.annuli{2}(which);
-                        stim.location=stimulus.location{2}(which,:);
-                    else
-                        error('eh? should not come here at all')
+                error('cannot support this here')
+            end
+            
+            stim = [];
+            
+            
+            stim.height = height;
+            stim.width = width;
+            stim.rngMethod = sm.ordering.method;
+            if isempty(sm.ordering.seed)
+                stim.seedVal = sum(100*clock);
+            end
+            
+            % whats the chosen stim?
+            switch sm.doCombos
+                case true
+                    % choose a random value for each
+                    stim.pixPerCycs         = chooseFrom(sm.pixPerCycs{chosenStimIndex});
+                    stim.driftfrequencies   = chooseFrom(sm.driftfrequencies{chosenStimIndex});
+                    stim.orientations       = chooseFrom(sm.orientations{chosenStimIndex});
+                    stim.phases             = chooseFrom(sm.phases{chosenStimIndex});
+                    stim.contrasts          = chooseFrom(sm.contrasts{chosenStimIndex});
+                    stim.radii              = chooseFrom(sm.radii{chosenStimIndex});
+                    stim.annuli             = chooseFrom(sm.annuli{chosenStimIndex});
+                    stim.location           = chooseFrom(sm.location{chosenStimIndex});
+                    
+                    % waveform
+                    stim.waveform = sm.waveform;
+                    
+                    % maxDuration
+                    tempVar = randperm(length(sm.maxDuration{chosenStimIndex}));
+                    if ~ismac
+                        stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(tempVar(1))*hz);
+                    elseif ismac && hz==0
+                        % macs are weird and return a hz of 0 when they really
+                        % shouldnt. assume hz = 60 (hack)
+                        stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(tempVar(1))*60);
                     end
-                else
-                    error('not geared for more than one target port. whats wrong??');
-                end
+                case false
+                    tempVar = randperm(length(sm.pixPerCycs{chosenStimIndex}));
+                    which = tempVar(1);
+                    stim.pixPerCycs=sm.pixPerCycs{chosenStimIndex}(which);
+                    stim.driftfrequencies=sm.driftfrequencies{chosenStimIndex}(which);
+                    stim.orientations=sm.orientations{chosenStimIndex}(which);
+                    stim.phases=sm.phases{chosenStimIndex}(which);
+                    stim.contrasts=sm.contrasts{chosenStimIndex}(which);
+                    stim.waveform=sm.waveform;
+                    if ~ismac
+                        stim.maxDuration=round(sm.maxDuration{chosenStimIndex}(which)*hz);
+                    elseif ismac && hz==0
+                        % macs are weird and return a hz of 0 when they really
+                        % shouldnt. assume hz = 60 (hack)
+                        stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(which)*60);
+                    end
+                    stim.radii=sm.radii{chosenStimIndex}(which);
+                    stim.annuli=sm.annuli{chosenStimIndex}(which);
+                    stim.location=sm.location{chosenStimIndex}(which,:);
             end
             % normalizationMethod,mean,thresh,height,width,scaleFactor,interTrialLuminance
-            stim.radiusType = stimulus.radiusType;
-            stim.normalizationMethod=stimulus.normalizationMethod;
+            stim.radiusType = sm.radiusType;
+            stim.normalizationMethod=sm.normalizationMethod;
             stim.height=height;
             stim.width=width;
-            stim.mean=stimulus.mean;
-            stim.thresh=stimulus.thresh;
-            stim.doCombos=stimulus.doCombos;
-            details.chosenStim = stim;
+            stim.mean=sm.mean;
+            stim.thresh=sm.thresh;
+            stim.doCombos=sm.doCombos;
             
             % have a version in ''details''
-            details.doCombos            = stimulus.doCombos;
+            details.doCombos            = stim.doCombos;
             details.pixPerCycs          = stim.pixPerCycs;
             details.driftfrequencies    = stim.driftfrequencies;
             details.orientations        = stim.orientations;
@@ -573,7 +348,7 @@ classdef afcGratings<stimManager
                         mask(:,:,2) = 1 - mask(:,:,2); % 0 = transparent, 255=opaque (opposite of our mask)
                         stim.masks{1}=mask;
                     case 'hardEdge'
-                        mask(:,:,1)=ones(height,width,1)*stimulus.mean;
+                        mask(:,:,1)=ones(height,width,1)*sm.mean;
                         [WIDTH HEIGHT] = meshgrid(1:width,1:height);
                         mask(:,:,2)=double((((WIDTH-width*details.chosenStim.location(1)).^2)+((HEIGHT-height*details.chosenStim.location(2)).^2)-((stim.radii)^2*(height^2)))>0);
                         stim.masks{1}=mask;
@@ -586,7 +361,7 @@ classdef afcGratings<stimManager
                 annulusRadiusInPixels=sqrt((height/2)^2 + (width/2)^2)*annulusRadius;
                 annulusCenterInPixels=[width height].*annulusCenter;
                 [x,y]=meshgrid(-width/2:width/2,-height/2:height/2);
-                annulus(:,:,1)=ones(height,width,1)*stimulus.mean;
+                annulus(:,:,1)=ones(height,width,1)*sm.mean;
                 bool=(x+width/2-annulusCenterInPixels(1)).^2+(y+height/2-annulusCenterInPixels(2)).^2 < (annulusRadiusInPixels+0.5).^2;
                 annulus(:,:,2)=bool(1:height,1:width);
                 stim.annuliMatrices{1}=annulus;
@@ -602,8 +377,7 @@ classdef afcGratings<stimManager
             
             
             % LEDParams
-            
-            [details, stim] = setupLED(details, stim, stimulus.LEDParams,arduinoCONN);
+            %[details, stim] = setupLED(details, stim, sm.LEDParams,arduinoCONN);
             
             discrimStim=[];
             discrimStim.stimulus=stim;
@@ -611,41 +385,47 @@ classdef afcGratings<stimManager
             discrimStim.scaleFactor=scaleFactor;
             discrimStim.startFrame=0;
             discrimStim.autoTrigger=[];
-            if isnan(timeout)
-                sca;
-                keyboard;
-            end
+            discrimStim.punishResponses=false;
             discrimStim.framesUntilTimeout=timeout;
-            discrimStim.ledON = [stim.LEDParam.LED1ON stim.LEDParam.LED2ON];
+            discrimStim.ledON = false; % #### presetting here
             
             preRequestStim=[];
-            preRequestStim.stimulus=interTrialLuminance;
+            preRequestStim.stimulus=sm.getInterTrialLuminance();
             preRequestStim.stimType='loop';
             preRequestStim.scaleFactor=0;
             preRequestStim.startFrame=0;
             preRequestStim.autoTrigger=[];
             preRequestStim.punishResponses=false;
-            preRequestStim.ledON = [false false];
+            preRequestStim.ledON = false; % #### presetting here
             
-            preResponseStim = [];
-            
-            if stimulus.doPostDiscrim
+         
+            if sm.doPostDiscrim
                 postDiscrimStim = preRequestStim;
             else
                 postDiscrimStim = [];
             end
             
-            interTrialStim.duration = interTrialDuration;
-            details.interTrialDuration = interTrialDuration;
-            details.stimManagerClass = class(stimulus);
-            details.trialManagerClass = trialManagerClass;
+            interTrialStim.interTrialLuminance = sm.getInterTrialLuminance();            
+            interTrialStim.duration = sm.getInterTrialDuration();
+            ITL = sm.getInterTrialLuminance();
+           
+            
+            details.interTrialDuration = sm.getInterTrialDuration();
+            details.stimManagerClass = class(sm);
+            details.trialManagerClass = class(tm);
             details.scaleFactor = scaleFactor;
             
             if strcmp(trialManagerClass,'nAFC') && details.correctionTrial
                 text='correction trial!';
             else
-                text=sprintf('thresh: %g',stimulus.thresh);
+                text=sprintf('thresh: %g',sm.thresh);
             end
+            
+            stimList = {...
+                'preRequestStim',preRequestStim;...
+                'discrimStim',discrimStim;...
+                'postDiscrimStim',postDiscrimStim;...
+                'interTrialStim',interTrialStim};
         end
         
         function [doFramePulse, expertCache, dynamicDetails, textLabel, i, dontclear, indexPulse] = ...
@@ -734,7 +514,7 @@ classdef afcGratings<stimManager
             Screen('Close',gratingtex);
         end % end function
         
-        function [out newLUT]=extractDetailFields(sm,basicRecords,trialRecords,LUTparams)
+        function [out, newLUT]=extractDetailFields(sm,basicRecords,trialRecords,LUTparams)
             newLUT=LUTparams.compiledLUT;
             
             try
@@ -807,7 +587,7 @@ classdef afcGratings<stimManager
             verifyAllFieldsNCols(out,length(trialRecords));
         end
         
-        function s=fillLUT(s,method,linearizedRange,plotOn);
+        function s=fillLUT(s,method,linearizedRange,plotOn)
             %function s=fillLUT(s,method,linearizedRange [,plotOn]);
             %stim=fillLUT(stim,'linearizedDefault');
             %note: this calculates and fits gamma with finminsearch each time
@@ -906,50 +686,12 @@ classdef afcGratings<stimManager
             s.LUT=[];
             s.LUTbits=0;
         end
-        
-        function out = getDetails(sm,stim,what)
-            switch what
-                case 'sweptParameters'
-                    if stim.doCombos
-                        if isfield(stim,'spatialFrequencies')
-                            sweepnames={'spatialFrequencies','driftfrequencies','phases','contrasts','maxDuration','radii','annuli'};
-                        elseif isfield(stim,'pixPerCycs')
-                            sweepnames={'pixPerCycs','driftfrequencies','phases','contrasts','maxDuration','radii','annuli'};
-                        end
-                        which = [false false false false false false false];
-                        for i = 1:length(sweepnames)
-                            if length(stim.(sweepnames{i}){1})>1 || length(stim.(sweepnames{i}){2})>1
-                                which(i) = true;
-                            end
-                        end
-                        out=sweepnames(which);
-                        
-                        warning('gonna assume same number of orientations for both ports? is that wise?')
-                        if length(stim.orientations{1})==1 % gonna be intelligent and consider changes by pi to be identical orientations (but they are opposite directions)
-                            % nothing there was no orientation sweep
-                        elseif length(stim.orientations{1})==2
-                            if diff(mod(stim.orientations{1},pi))<0.000001 && diff(mod(stim.orientations{2},pi))<0.000001%allowing for small changes during serialization
-                                % they are the same
-                            else
-                                out{end+1} = 'orientations';
-                            end
-                        else
-                            % then length >2 then automatically there is some sweep
-                            out{end+1} = 'orientations';
-                        end
-                    else
-                        error('unsupported');
-                    end
-                otherwise
-                    error('unknown what');
-            end
-        end
-        
-        function [out s updateSM]=getLUT(s,bits)
+
+        function [out, s, updateSM]=getLUT(s,bits)
             if isempty(s.LUT) || s.LUTbits~=bits
                 updateSM=true;
                 s.LUTbits=bits;
-                [a b] = getMACaddress;
+                [~, b] = getMACaddress;
                 if ismember(b,{'7CD1C3E5176F',... balaji Macbook air
                         '180373337162',...
                         })
@@ -1033,6 +775,47 @@ classdef afcGratings<stimManager
                     end
                 otherwise
                     error('unsupported type. if you want this make a name for it');
+            end
+        end
+
+    end
+    
+    methods(Static)
+        function out = getDetails(stim,what)
+            switch what
+                case 'sweptParameters'
+                    if stim.doCombos
+                        if isfield(stim,'spatialFrequencies')
+                            sweepnames={'spatialFrequencies','driftfrequencies','phases','contrasts','maxDuration','radii','annuli'};
+                        elseif isfield(stim,'pixPerCycs')
+                            sweepnames={'pixPerCycs','driftfrequencies','phases','contrasts','maxDuration','radii','annuli'};
+                        end
+                        which = [false false false false false false false];
+                        for i = 1:length(sweepnames)
+                            if length(stim.(sweepnames{i}){1})>1 || length(stim.(sweepnames{i}){2})>1
+                                which(i) = true;
+                            end
+                        end
+                        out=sweepnames(which);
+                        
+                        warning('gonna assume same number of orientations for both ports? is that wise?')
+                        if length(stim.orientations{1})==1 % gonna be intelligent and consider changes by pi to be identical orientations (but they are opposite directions)
+                            % nothing there was no orientation sweep
+                        elseif length(stim.orientations{1})==2
+                            if diff(mod(stim.orientations{1},pi))<0.000001 && diff(mod(stim.orientations{2},pi))<0.000001%allowing for small changes during serialization
+                                % they are the same
+                            else
+                                out{end+1} = 'orientations';
+                            end
+                        else
+                            % then length >2 then automatically there is some sweep
+                            out{end+1} = 'orientations';
+                        end
+                    else
+                        error('unsupported');
+                    end
+                otherwise
+                    error('unknown what');
             end
         end
         
@@ -1282,27 +1065,16 @@ classdef afcGratings<stimManager
             
         end
         
-        function out=stimMgrOKForTrialMgr(sm,tm)
-            if isa(tm,'trialManager')
-                switch class(tm)
-                    case 'freeDrinks'
-                        out=0;
-                    case 'nAFC'
-                        out=1;
-                    case 'biasedNAFC'
-                        out = 1;
-                    case {'autopilot','reinforcedAutopilot'}
-                        out=1;
-                    case 'goNoGo'
-                        out=1;
-                    otherwise
-                        out=0;
-                end
-            else
-                error('need a trialManager object')
+        function out = stimMgrOKForTrialMgr(tm)
+            assert(isa(tm,'trialManager'),'afcCoherentDots:stimMgrOKForTrialMgr:incorrectType','need a trialManager object');
+            switch class(tm)
+                case {'nAFC','biasedNAFC','autopilot','reinforcedAutopilot','goNoGo'}
+                    out=true;
+                otherwise
+                    out=0;
             end
+            
         end
-        
     end
     
 end

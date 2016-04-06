@@ -1,5 +1,5 @@
 function standAloneRun(subjectID,BCoreServerPath,setup)
-%standAloneRun([BCorePath],[setupFile],[subjectID],[recordInOracle],[backupToServer])
+%standAloneRun([BCorePath],[setupFile],[subjectID])
 %
 % BCorePath (optional, string path to preexisting BCore 'db.mat' file)
 % defaults to checking for db.mat in ...\<BCore install directory>\..\BCoreData\ServerData\

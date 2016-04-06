@@ -347,26 +347,11 @@ classdef afcCoherentDots<stimManager
                     stim.bkgdSize       = chooseFrom(sm.bkgdSize{chosenStimIndex});
                     stim.dotShape       = chooseFrom(sm.dotShape{chosenStimIndex});
                     stim.bkgdShape      = chooseFrom(sm.bkgdShape{chosenStimIndex});
+                    stim.maxDuration    = round(chooseFrom(sm.maxDuration{chosenStimIndex})*hz);
                     
-                    % renderMode
                     stim.renderMode = sm.renderMode;
-                    
-                    % maxDuration
-                    tempVar = randperm(length(sm.maxDuration{chosenStimIndex}));
-                    if ~ismac
-                        stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(tempVar(1))*hz);
-                    elseif ismac && hz==0
-                        % macs are weird and return a hz of 0 when they really
-                        % shouldnt. assume hz = 60 (hack)
-                        stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(tempVar(1))*60);
-                    end
-                    
-                    % background
                     stim.background = sm.background;
-                    
-                    % doCombos
                     stim.doCombos = sm.doCombos;
-                    
                 case false
                     % numDots
                     tempVar = randperm(length(sm.numDots{chosenStimIndex}));
@@ -386,24 +371,11 @@ classdef afcCoherentDots<stimManager
                     stim.bkgdSize = sm.bkgdSize{chosenStimIndex}(which);
                     stim.dotShape = sm.dotShape{chosenStimIndex}(which);
                     stim.bkgdShape = sm.bkgdShape{chosenStimIndex}(which);
+                    stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(which)*hz);
                     
-                    % waveform
                     stim.renderMode = sm.renderMode;
-                    
-                    if ~ismac
-                        stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(which)*hz);
-                    elseif ismac && hz==0
-                        % macs are weird and return a hz of 0 when they really
-                        % shouldnt. assume hz = 60 (hack)
-                        stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(which)*60);
-                    end
-                    
-                    % background
                     stim.background = sm.background;
-                    
-                    % doCombos
                     stim.doCombos = sm.doCombos;
-                    
             end
             
             

@@ -2586,9 +2586,11 @@ classdef trialManager
                 error('can''t loop with no response ports -- would have no way out')
             end
             
-            if strcmp(strategy,'textureCache') % texture precaching causes dropped frames (~1 per 45mins @ 100Hz)
-                strategy = 'noCache';
-            end
+            % why are we not cacheing???
+            
+%             if strcmp(strategy,'textureCache') % texture precaching causes dropped frames (~1 per 45mins @ 100Hz)
+%                 strategy = 'noCache';
+%             end
             
         end
         

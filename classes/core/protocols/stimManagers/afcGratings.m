@@ -235,10 +235,6 @@ classdef afcGratings<stimManager
             end
             [targetPorts, distractorPorts, details] = tm.assignPorts(details,lastRec,responsePorts);
             
-            % #### need to choose expert vs cache if drift freqs is non
-            % zero
-            type='expert';
-                        
             % set up params for computeGabors
             height = min(height,getMaxHeight(sm));
             width = min(width,getMaxWidth(sm));
@@ -277,40 +273,23 @@ classdef afcGratings<stimManager
                     stim.radii              = chooseFrom(sm.radii{chosenStimIndex});
                     stim.annuli             = chooseFrom(sm.annuli{chosenStimIndex});
                     stim.location           = chooseFrom(sm.location{chosenStimIndex});
-                    
-                    % waveform
-                    stim.waveform = sm.waveform;
-                    
-                    % maxDuration
-                    tempVar = randperm(length(sm.maxDuration{chosenStimIndex}));
-                    if ~ismac
-                        stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(tempVar(1))*hz);
-                    elseif ismac && hz==0
-                        % macs are weird and return a hz of 0 when they really
-                        % shouldnt. assume hz = 60 (hack)
-                        stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(tempVar(1))*60);
-                    end
+                    stim.maxDuration        = round(chooseFrom(sm.maxDuration{chosenStimIndex})*hz);
+                    stim.waveform           = sm.waveform;
                 case false
                     tempVar = randperm(length(sm.pixPerCycs{chosenStimIndex}));
                     which = tempVar(1);
-                    stim.pixPerCycs=sm.pixPerCycs{chosenStimIndex}(which);
-                    stim.driftfrequencies=sm.driftfrequencies{chosenStimIndex}(which);
-                    stim.orientations=sm.orientations{chosenStimIndex}(which);
-                    stim.phases=sm.phases{chosenStimIndex}(which);
-                    stim.contrasts=sm.contrasts{chosenStimIndex}(which);
-                    stim.waveform=sm.waveform;
-                    if ~ismac
-                        stim.maxDuration=round(sm.maxDuration{chosenStimIndex}(which)*hz);
-                    elseif ismac && hz==0
-                        % macs are weird and return a hz of 0 when they really
-                        % shouldnt. assume hz = 60 (hack)
-                        stim.maxDuration = round(sm.maxDuration{chosenStimIndex}(which)*60);
-                    end
-                    stim.radii=sm.radii{chosenStimIndex}(which);
-                    stim.annuli=sm.annuli{chosenStimIndex}(which);
-                    stim.location=sm.location{chosenStimIndex}(which,:);
+                    stim.pixPerCycs         = sm.pixPerCycs{chosenStimIndex}(which);
+                    stim.driftfrequencies   = sm.driftfrequencies{chosenStimIndex}(which);
+                    stim.orientations       = sm.orientations{chosenStimIndex}(which);
+                    stim.phases             = sm.phases{chosenStimIndex}(which);
+                    stim.contrasts          = sm.contrasts{chosenStimIndex}(which);
+                    stim.radii              = sm.radii{chosenStimIndex}(which);
+                    stim.annuli             = sm.annuli{chosenStimIndex}(which);
+                    stim.location           = sm.location{chosenStimIndex}(which,:);
+                    stim.maxDuration        = round(sm.maxDuration{chosenStimIndex}(which)*hz);
+                    stim.waveform           = sm.waveform;
             end
-            % normalizationMethod,mean,thresh,height,width,scaleFactor,interTrialLuminance
+            
             stim.radiusType = sm.radiusType;
             stim.normalizationMethod=sm.normalizationMethod;
             stim.height=height;
@@ -331,43 +310,68 @@ classdef afcGratings<stimManager
             details.annuli              = stim.annuli;
             details.waveform            = stim.waveform;
             
-            % radii
-            if stim.radii==Inf
-                stim.masks={[]};
-            else
-                mask=[];
-                maskParams=[stim.radii 999 0 0 ...
-                    1.0 stim.thresh stim.location(1) stim.location(2)]; %11/12/08 - for some reason mask contrast must be 2.0 to get correct result
-                
-                switch details.chosenStim.radiusType
-                    case 'gaussian'
-                        mask(:,:,1)=ones(height,width,1)*stim.mean;
-                        mask(:,:,2)=computeGabors(maskParams,0,width,height,...
-                            'none', stim.normalizationMethod,0,0);
-                        % necessary to make use of PTB alpha blending: 1 -
-                        mask(:,:,2) = 1 - mask(:,:,2); % 0 = transparent, 255=opaque (opposite of our mask)
-                        stim.masks{1}=mask;
-                    case 'hardEdge'
-                        mask(:,:,1)=ones(height,width,1)*sm.mean;
-                        [WIDTH HEIGHT] = meshgrid(1:width,1:height);
-                        mask(:,:,2)=double((((WIDTH-width*details.chosenStim.location(1)).^2)+((HEIGHT-height*details.chosenStim.location(2)).^2)-((stim.radii)^2*(height^2)))>0);
-                        stim.masks{1}=mask;
-                end
+            TypeIsExpert = any(sm.driftfrequencies{1}>0)||any(sm.driftfrequencies{2}>0);
+            
+            switch TypeIsExpert
+                case true
+                    type = 'expert';
+                    % radii
+                    if stim.radii==Inf
+                        stim.masks={[]};
+                    else
+                        mask=[];
+                        maskParams=[stim.radii 999 0 0 ...
+                            1.0 stim.thresh stim.location(1) stim.location(2)]; %11/12/08 - for some reason mask contrast must be 2.0 to get correct result
+                        
+                        switch details.chosenStim.radiusType
+                            case 'gaussian'
+                                mask(:,:,1)=ones(height,width,1)*stim.mean;
+                                mask(:,:,2)=computeGabors(maskParams,0,width,height,...
+                                    'none', stim.normalizationMethod,0,0);
+                                % necessary to make use of PTB alpha blending: 1 -
+                                mask(:,:,2) = 1 - mask(:,:,2); % 0 = transparent, 255=opaque (opposite of our mask)
+                                stim.masks{1}=mask;
+                            case 'hardEdge'
+                                mask(:,:,1)=ones(height,width,1)*sm.mean;
+                                [WIDTH HEIGHT] = meshgrid(1:width,1:height);
+                                mask(:,:,2)=double((((WIDTH-width*details.chosenStim.location(1)).^2)+((HEIGHT-height*details.chosenStim.location(2)).^2)-((stim.radii)^2*(height^2)))>0);
+                                stim.masks{1}=mask;
+                        end
+                    end
+                    % annulus
+                    if ~(stim.annuli==0)
+                        annulusCenter=stim.location;
+                        annulusRadius=stim.annuli;
+                        annulusRadiusInPixels=sqrt((height/2)^2 + (width/2)^2)*annulusRadius;
+                        annulusCenterInPixels=[width height].*annulusCenter;
+                        [x,y]=meshgrid(-width/2:width/2,-height/2:height/2);
+                        annulus(:,:,1)=ones(height,width,1)*sm.mean;
+                        bool=(x+width/2-annulusCenterInPixels(1)).^2+(y+height/2-annulusCenterInPixels(2)).^2 < (annulusRadiusInPixels+0.5).^2;
+                        annulus(:,:,2)=bool(1:height,1:width);
+                        stim.annuliMatrices{1}=annulus;
+                    else
+                        stim.annuliMatrices = {[]};
+                    end
+                case false
+                    type = 'static';
+
+                    tic
+                    % Create a 1D vector x based on the frequency pixPerCycs
+                    % make the grating twice the normal width (to cover entire screen if rotated)
+                    x = (1:stim.width*2)*2*pi/stim.pixPerCycs;
+                    switch stim.waveform
+                        case 'sine'
+                            grating=repmat(stim.contrasts*cos(x + stim.phases)/2+stimulus.mean,2*stim.height,1);
+                        case 'square'
+                            grating=repmat(stim.contrasts*square(x + stim.phases)/2+stimulus.mean,2*stim.height,1);
+                    end
+                    grating = imrotate(grating,rad2deg(stim.orientations));
+                    midpoint = round(size(grating)/2);
+                    grating = grating(midpoint(1)-stim.width/2:midpoint(1)+stim.width/2,midpoint(2)-stim.height/2:midpoint(2)+stim.height/2);
+                    
             end
-            % annulus
-            if ~(stim.annuli==0)
-                annulusCenter=stim.location;
-                annulusRadius=stim.annuli;
-                annulusRadiusInPixels=sqrt((height/2)^2 + (width/2)^2)*annulusRadius;
-                annulusCenterInPixels=[width height].*annulusCenter;
-                [x,y]=meshgrid(-width/2:width/2,-height/2:height/2);
-                annulus(:,:,1)=ones(height,width,1)*sm.mean;
-                bool=(x+width/2-annulusCenterInPixels(1)).^2+(y+height/2-annulusCenterInPixels(2)).^2 < (annulusRadiusInPixels+0.5).^2;
-                annulus(:,:,2)=bool(1:height,1:width);
-                stim.annuliMatrices{1}=annulus;
-            else
-                stim.annuliMatrices = {[]};
-            end
+            
+            
             
             if isinf(stim.maxDuration)
                 timeout=[];
@@ -380,7 +384,12 @@ classdef afcGratings<stimManager
             %[details, stim] = setupLED(details, stim, sm.LEDParams,arduinoCONN);
             
             discrimStim=[];
-            discrimStim.stimulus=stim;
+            switch type
+                case 'expert'
+                    discrimStim.stimulus=stim;
+                case 'static'
+                    discrimStim.stimulus=grating;
+            end
             discrimStim.stimType=type;
             discrimStim.scaleFactor=scaleFactor;
             discrimStim.startFrame=0;

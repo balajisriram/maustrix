@@ -12,8 +12,17 @@ classdef trialManager
         delayManager
         responseWindowMs
     end
-  
+    
+    properties (Dependent = true)
+        allowRepeats
+    end
+    
     methods
+        
+        function out = get.allowRepeats(tm)
+            out = true;
+        end
+        
         function t=trialManager(sndMgr,reinfMgr,delMgr,frameDropCorner,dropFrames,requestPorts,saveDetailedFramedrops,customDescription,responseWindowMs,showText)
             % TRIALMANAGER  class constructor.  ABSTRACT CLASS-- DO NOT INSTANTIATE
             % t=trialManager(soundManager,reinforcementManager,eyeController,customDescription,
@@ -127,10 +136,6 @@ classdef trialManager
             validateattributes(r,{'BCore'},{'nonempty'});
             validateattributes(sub,{'subject'},{'nonempty'});
             assert(tm.stationOKForTrialManager(st),'trialManager:doTrial:incompatibleValues','station not okay for trial manager');
-            
-            if ~isempty(rn)
-                constants = getConstants(rn);
-            end
             
             %% initialize trialRecords
             tRInd=length(tR)+1;
@@ -363,7 +368,6 @@ classdef trialManager
                 case 'center'
                     out=floor((numPorts+1)/2);
             end
-            
         end
         
         function [tm,trialDetails, result, spec, rewardSizeULorMS, requestRewardSizeULorMS, ...
@@ -2422,27 +2426,6 @@ classdef trialManager
             end
             
             initTime=GetSecs;
-            %map a 1-key shortcut left center right reponse - this
-            %            if arrowKeyDown
-            %                 for keyNum=1:length(keys)
-            %                     keyName=KbName(keys(keyNum));
-            %                     if strcmp(keyName,'left')
-            %                         %doValves(1)=1;
-            %                         ports(1)=1;
-            %                         didHumanResponse=true;
-            %                     end
-            %                     if strcmp(keyName,'down')
-            %                         %doValves(2)=1;
-            %                         ports(2)=1;
-            %                         didHumanResponse=true;
-            %                     end
-            %                     if  strcmp(keyName,'right')
-            %                         %doValves(3)=1;
-            %                         ports(3)=1;
-            %                         didHumanResponse=true;
-            %                     end
-            %                 end
-            %            end
             
             if kDown
                 if any(keyCode(KbConstants.pKey))
@@ -2499,7 +2482,7 @@ classdef trialManager
                 end
             end
             if shiftDown && atDown
-                'WARNING!!!  you just hit shift-2 ("@"), which mario declared a synonym to sca (screen(''closeall'')) -- everything is going to break now'
+                disp('WARNING!!!  you just hit shift-2 ("@"), which mario declared a synonym to sca (screen(''closeall'')) -- everything is going to break now');
                 done=1;
                 result='shift-2 kill';
             end
@@ -2518,9 +2501,6 @@ classdef trialManager
             out = 0;
         end
         
-        function out = allowRepeats()
-            out = true;
-        end
     end
     
     methods (Static, Access=private)

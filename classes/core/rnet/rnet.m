@@ -328,9 +328,9 @@ classdef rnet
             % end
         end
         
-        function [quit valveErrorDetails latencyToOpenValves latencyToCloseValveRecd latencyToCloseValves actualRewardDuration latencyToRewardCompleted latencyToRewardCompletelyDone]= ...
-    clientAcceptReward(rn,com,station,timeout,refTime,requestedValveState,expectedRequestedValveState,isPrime)
-
+        function [quit, valveErrorDetails, latencyToOpenValves, latencyToCloseValveRecd, latencyToCloseValves, actualRewardDuration, latencyToRewardCompleted, latencyToRewardCompletelyDone]= ...
+                clientAcceptReward(rn,com,station,timeout,refTime,requestedValveState,expectedRequestedValveState,isPrime)
+            
             currentValveState=verifyValvesClosed(station);
             allClosed=currentValveState;
             constants=rn.constants;
@@ -339,7 +339,7 @@ classdef rnet
             latencyToRewardCompletelyDone = nan;
             valveErrorDetails=[];
             quit=false;
-
+            
             if length(requestedValveState) == getNumPorts(station)
                 'got good accept reward'
                 if isPrime
@@ -351,7 +351,7 @@ classdef rnet
                     sendError(rn,com,constants.errors.CORRUPT_STATE_SENT,'server S_SET_VALVES_CMD response to C_REWARD_CMD was not compatible with requested valve states')
                     doReward=false;
                 end
-
+                
                 if doReward
                     'got into do reward'
                     [currentValveState valveErrorDetails]=setAndCheckValves(station,requestedValveState,currentValveState,valveErrorDetails,refTime,'opening valves');
@@ -362,27 +362,27 @@ classdef rnet
                     end
                     if quit
                         'got quit'
-
+                        
                         %note -- leaving valves open cuz server told me to quit in the
                         %middle of delivering water to me and never told me to close my
                         %valves.  so i am basically a leak at this point.
-
+                        
                         latencyToCloseValveRecd =nan;
                         latencyToCloseValves  =nan;
                         actualRewardDuration  =nan;
                         latencyToRewardCompleted  =nan;
                         latencyToRewardCompletelyDone =nan;
-
+                        
                     else
                         'got past quit'
-
+                        
                         latencyToCloseValveRecd=GetSecs()-refTime;
                         if length(closeValveCmdArgs{1}) == getNumPorts(station)
                             requestedValveState=closeValveCmdArgs{1};
                             if isPrime==closeValveCmdArgs{2}
                                 if valveStateMatch(requestedValveState,allClosed)
                                     'got to lowest level'
-
+                                    
                                     [currentValveState valveErrorDetails]=setAndCheckValves(station,requestedValveState,currentValveState,valveErrorDetails,refTime,'closing valves');
                                     latencyToCloseValves=GetSecs()-refTime;
                                     actualRewardDuration = latencyToCloseValves-latencyToOpenValves;
@@ -421,14 +421,14 @@ classdef rnet
         end
         
         function quit=clientHandleCommand(r,com,status)
-
+            
             if ~isValidStatus(r,status)
                 error('status must be a status constant as defined in rnet.m')
             end
-
+            
             quit=false;
             [good cmd args] = validateCommand(r,com);
-
+            
             if good
                 quit=clientHandleVerifiedCommand(r,com,cmd,args,status);
             end
@@ -619,7 +619,7 @@ classdef rnet
             quit=sendToServer(r,getClientId(r),constants.priorities.IMMEDIATE_PRIORITY,constants.stationToServerCommands.C_RECV_BCORE_CMD,{rx});
         end
         
-        function [tf loc]=clientIsRegistered(r,c)
+        function [tf, loc]=clientIsRegistered(r,c)
             loc=0;
             tf=false;
             clients={r.serverRegister{:,1}};

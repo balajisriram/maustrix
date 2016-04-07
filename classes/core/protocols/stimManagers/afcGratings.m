@@ -23,12 +23,12 @@ classdef afcGratings<stimManager
         
         doPostDiscrim = false;
         
-        LEDParams;
+        phaseDetails % will include LED details
     end
     
     methods
         function s=afcGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType, annuli,location,...
-                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doPostDiscrim, LEDParams)
+                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doPostDiscrim, phaseDetails)
             % AFCGRATINGS  class constructor.
             % this class is specifically designed for behavior. It does not incorporate
             % many of the features usually present in GRATINGS like the ability to
@@ -169,41 +169,60 @@ classdef afcGratings<stimManager
                 s.doPostDiscrim = false;
             end
             
-            if nargin==21
-                % LED state
-                if isstruct(LEDParams)
-                    s.LEDParams = LEDParams;
-                else
-                    error('LED state should be a structure');
-                end
-                if s.LEDParams.numLEDs>0
-                    % go through the Illumination Modes and check if they seem
-                    % reasonable
-                    cumulativeFraction = 0;
-                    if s.LEDParams.active && isempty(s.LEDParams.IlluminationModes)
-                        error('need to provide atleast one illumination mode if LEDs is to be active');
-                    end
-                    for i = 1:length(s.LEDParams.IlluminationModes)
-                        if any(s.LEDParams.IlluminationModes{i}.whichLED)>s.LEDParams.numLEDs
-                            error('asking for an LED that is greater than numLEDs')
-                        else
-                            if length(s.LEDParams.IlluminationModes{i}.whichLED)~= length(s.LEDParams.IlluminationModes{i}.intensity) || ...
-                                    any(s.LEDParams.IlluminationModes{i}.intensity>1) || any(s.LEDParams.IlluminationModes{i}.intensity<0)
-                                error('specify a single intensity for each of the LEDs and these intensities hould lie between 0 and 1');
-                            else
-                                cumulativeFraction = [cumulativeFraction cumulativeFraction(end)+s.LEDParams.IlluminationModes{i}.fraction];
-                            end
-                        end
-                    end
-                    
-                    if abs(cumulativeFraction(end)-1)>eps
-                        error('the cumulative fraction should sum to 1');
-                    else
-                        s.LEDParams.cumulativeFraction = cumulativeFraction;
-                    end
-                end
-            end
+%             if nargin>=21
+%                 % LED state
+%                 if isstruct(LEDParams)
+%                     s.LEDParams = LEDParams;
+%                 else
+%                     error('LED state should be a structure');
+%                 end
+%                 if s.LEDParams.numLEDs>0
+%                     % go through the Illumination Modes and check if they seem
+%                     % reasonable
+%                     cumulativeFraction = 0;
+%                     if s.LEDParams.active && isempty(s.LEDParams.IlluminationModes)
+%                         error('need to provide atleast one illumination mode if LEDs is to be active');
+%                     end
+%                     for i = 1:length(s.LEDParams.IlluminationModes)
+%                         if any(s.LEDParams.IlluminationModes{i}.whichLED)>s.LEDParams.numLEDs
+%                             error('asking for an LED that is greater than numLEDs')
+%                         else
+%                             if length(s.LEDParams.IlluminationModes{i}.whichLED)~= length(s.LEDParams.IlluminationModes{i}.intensity) || ...
+%                                     any(s.LEDParams.IlluminationModes{i}.intensity>1) || any(s.LEDParams.IlluminationModes{i}.intensity<0)
+%                                 error('specify a single intensity for each of the LEDs and these intensities hould lie between 0 and 1');
+%                             else
+%                                 cumulativeFraction = [cumulativeFraction cumulativeFraction(end)+s.LEDParams.IlluminationModes{i}.fraction];
+%                             end
+%                         end
+%                     end
+%                     
+%                     if abs(cumulativeFraction(end)-1)>eps
+%                         error('the cumulative fraction should sum to 1');
+%                     else
+%                         s.LEDParams.cumulativeFraction = cumulativeFraction;
+%                     end
+%                 end
+%             end
             
+                % phaseDetails
+                assert(isempty(phaseDetails)||...
+                    (isstruct(phaseDetails) && ...
+                    isfield(phaseDetails,'phaseType') && ...
+                    isfield(phaseDetails,'phaseLengthInFrames') && ...
+                    isfield(phaseDetails,'LEDON')),...
+                    'afcGratings:afcGratings:incorrectvalue','phaseDetail not in the right format');
+                if ~isempty(phaseDetails)
+                    % phaseType should have
+                    % 'discrimStim','postDiscrim'/'postDiscrim1','postDiscrim2'
+                    % assume that phaseLengthInFrames cannot be set for
+                    % discrimStim but can be preset for 
+                    which = ismember({phaseDetails.phaseType},'discrimStim');
+                    assert(any(which) && isnan(phaseDetails(which).phaseLengthInFrames),...
+                        'afcGratings:afcGratings:incorrectvalue','do not provide frame length for discrimStim');
+                    assert(isnumeric([phaseDetails(~which).phaseLengthInFrames]),...
+                        'afcGratings:afcGratings:incorrectvalue','phaseLengthInFrames must be numeric!');
+                end
+                s.phaseDetails = phaseDetails;
         end
         
         function [sm,updateSM,resInd,stimList,LUT,targetPorts,distractorPorts,details,text,indexPulses,imagingTasks,ITL] =...
@@ -1141,17 +1160,22 @@ classdef afcGratings<stimManager
             if radius ~= Inf  %only compute gaussian mask if you need to
                 switch radiusType
                     case 'gaussian'
-                    mask=zeros(ySize,xSize);
-                    mask(1:xSize*ySize)=mvnpdf(...
-                        [reshape(repmat((-ySize/2:(-ySize/2 + ySize -1))',1,xSize),xSize*ySize,1) ...
-                        reshape(repmat(-xSize/2:(-xSize/2+xSize-1),ySize,1),xSize*ySize,1)],...
-                        [yPosPct*ySize-ySize/2 xPosPct*xSize-xSize/2],(radius*diag([normalizedLength normalizedLength])).^2 ...
-                        );
-                    mask=mask/max(max(mask));
-                    masked = rotated'.*mask;
-                    
-                    case 'hardEdge'
+                        mask=zeros(ySize,xSize);
+                        mask(1:xSize*ySize)=mvnpdf(...
+                            [reshape(repmat((-ySize/2:(-ySize/2 + ySize -1))',1,xSize),xSize*ySize,1) ...
+                            reshape(repmat(-xSize/2:(-xSize/2+xSize-1),ySize,1),xSize*ySize,1)],...
+                            [yPosPct*ySize-ySize/2 xPosPct*xSize-xSize/2],(radius*diag([normalizedLength normalizedLength])).^2 ...
+                            );
+                        mask=mask/max(max(mask));
+                        masked = rotated'.*mask;
                         
+                    case 'hardEdge'
+                        [WIDTH, HEIGHT] = meshgrid(1:xSize,1:ySize);
+                        mask=double( ...
+                            (((WIDTH-xSize*xPosPct).^2)+((HEIGHT-ySize*yPosPct).^2)...
+                            -((radius*normalizedLength)^2))>0 ...
+                        );
+                        masked = rotated'.*mask;
                 end
             else
                 masked = rotated';

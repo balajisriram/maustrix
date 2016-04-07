@@ -13,16 +13,11 @@ classdef trialManager
         responseWindowMs
     end
     
-    properties (Dependent = true)
-        allowRepeats
+    properties (Constant = true)
+        allowRepeats = true;
     end
     
     methods
-        
-        function out = get.allowRepeats(tm)
-            out = true;
-        end
-        
         function t=trialManager(sndMgr,reinfMgr,delMgr,frameDropCorner,dropFrames,requestPorts,saveDetailedFramedrops,customDescription,responseWindowMs,showText)
             % TRIALMANAGER  class constructor.  ABSTRACT CLASS-- DO NOT INSTANTIATE
             % t=trialManager(soundManager,reinforcementManager,eyeController,customDescription,

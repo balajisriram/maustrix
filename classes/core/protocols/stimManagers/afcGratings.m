@@ -68,7 +68,7 @@ classdef afcGratings<stimManager
             % pixPerCycs
             assert(islogical(doCombos),'afcGratings:afcGratings:invalidInput','doCombos not in the right format');
             s.doCombos = doCombos;
-                        
+            
             % pixPerCycs
             assert(iscell(pixPerCycs) && length(pixPerCycs)==2 && ...
                 isnumeric(pixPerCycs{1}) && all(pixPerCycs{1}>0) && isnumeric(pixPerCycs{2}) && all(pixPerCycs{2}>0),...
@@ -77,45 +77,45 @@ classdef afcGratings<stimManager
             L2 = length(pixPerCycs{2});
             assert(doCombos || length(pixPerCycs{1})==L1 && length(pixPerCycs{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
             s.pixPerCycs = pixPerCycs;
-                
+            
             % driftfrequencies
             assert(iscell(driftfrequencies) && length(driftfrequencies)==2 && ...
-                    isnumeric(driftfrequencies{1}) && all(driftfrequencies{1}>=0) && isnumeric(driftfrequencies{2}) && all(driftfrequencies{2}>=0),...
+                isnumeric(driftfrequencies{1}) && all(driftfrequencies{1}>=0) && isnumeric(driftfrequencies{2}) && all(driftfrequencies{2}>=0),...
                 'afcGratings:afcGratings:invalidInput','driftfrequencies not in the right format');
             assert(doCombos || length(driftfrequencies{1})==L1 && length(driftfrequencies{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
             s.driftfrequencies = driftfrequencies;
             
             % orientations
             assert(iscell(orientations) && length(orientations)==2 && ...
-                    isnumeric(orientations{1}) && all(~isinf(orientations{1})) && isnumeric(orientations{2}) &&  all(~isinf(orientations{2})),...
+                isnumeric(orientations{1}) && all(~isinf(orientations{1})) && isnumeric(orientations{2}) &&  all(~isinf(orientations{2})),...
                 'afcGratings:afcGratings:invalidInput','orientations not in the right format');
             assert(doCombos || length(orientations{1})==L1 && length(orientations{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
             s.orientations = orientations;
             
             % phases
             assert(iscell(phases) && length(phases)==2 && ...
-                    isnumeric(phases{1}) && all(~isinf(phases{1})) && isnumeric(phases{2}) && all(~isinf(phases{2})),...
+                isnumeric(phases{1}) && all(~isinf(phases{1})) && isnumeric(phases{2}) && all(~isinf(phases{2})),...
                 'afcGratings:afcGratings:invalidInput','phases not in the right format');
             assert(doCombos || length(phases{1})==L1 && length(phases{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
             s.phases = phases;
             
             % contrasts
             assert(iscell(contrasts) && length(contrasts)==2 && ...
-                    isnumeric(contrasts{1}) && all(contrasts{1}>=0) && all(contrasts{1}<=1) && isnumeric(contrasts{2}) && all(contrasts{2}>=0) && all(contrasts{2}<=1),...
+                isnumeric(contrasts{1}) && all(contrasts{1}>=0) && all(contrasts{1}<=1) && isnumeric(contrasts{2}) && all(contrasts{2}>=0) && all(contrasts{2}<=1),...
                 'afcGratings:afcGratings:invalidInput','contrasts not in the right format');
             assert(doCombos || length(contrasts{1})==L1 && length(contrasts{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
             s.contrasts = contrasts;
             
             % maxDuration
             assert(iscell(maxDuration) && length(maxDuration)==2 && ...
-                    isnumeric(maxDuration{1}) && all(maxDuration{1}>0) && isnumeric(maxDuration{2}) && all(maxDuration{2}>0),...
+                isnumeric(maxDuration{1}) && all(maxDuration{1}>0) && isnumeric(maxDuration{2}) && all(maxDuration{2}>0),...
                 'afcGratings:afcGratings:invalidInput','maxDuration not in the right format');
             assert(doCombos || length(maxDuration{1})==L1 && length(maxDuration{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
             s.maxDuration = maxDuration;
             
             % radii
             assert(iscell(radii) && length(radii)==2 && ...
-                    isnumeric(radii{1}) && all(radii{1}>=0) && isnumeric(radii{2}) && all(radii{2}>=0),...
+                isnumeric(radii{1}) && all(radii{1}>=0) && isnumeric(radii{2}) && all(radii{2}>=0),...
                 'afcGratings:afcGratings:invalidInput','radii not in the right format');
             assert(doCombos || length(radii{1})==L1 && length(radii{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
             s.radii = radii;
@@ -123,18 +123,18 @@ classdef afcGratings<stimManager
             % radiusType
             assert(ischar(radiusType) && ismember(radiusType,{'gaussian','hardEdge'}),'afcGratings:afcGratings:invalidInput','radiusType not in the right format')
             s.radiusType = radiusType;
-
+            
             % annuli
             assert(iscell(annuli) && length(annuli)==2 && ...
-                    isnumeric(annuli{1}) && all(annuli{1}>=0) && isnumeric(annuli{2}) && all(annuli{2}>=0),...
+                isnumeric(annuli{1}) && all(annuli{1}>=0) && isnumeric(annuli{2}) && all(annuli{2}>=0),...
                 'afcGratings:afcGratings:invalidInput','annuli not in the right format');
             assert(doCombos || length(annuli{1})==L1 && length(annuli{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
             s.annuli = annuli;
             
             % location
             assert(iscell(location) && length(location)==2 && ...
-                    isnumeric(location{1}) && all(location{1}>=0) && size(location{1},2)==2 && ...
-                    isnumeric(location{2}) && all(location{2}>=0) && size(location{2},2)==2,...
+                isnumeric(location{1}) && all(location{1}>=0) && size(location{1},2)==2 && ...
+                isnumeric(location{2}) && all(location{2}>=0) && size(location{2},2)==2,...
                 'afcGratings:afcGratings:invalidInput','location not in the right format');
             assert(doCombos || length(location{1})==L1 && length(location{2})==L2,'afcGratings:afcGratings:incompatibleValues','the lengths don''t match.');
             s.location = location;
@@ -142,7 +142,7 @@ classdef afcGratings<stimManager
             % waveform
             assert(ischar(waveform) && ismember(waveform,{'sine','square'}),'afcGratings:afcGratings:invalidInput','waveform not in right format');
             s.waveform = waveform;
-
+            
             
             % normalizationMethod
             assert(ischar(normalizationMethod) && ismember(normalizationMethod,{'normalizeVertical', 'normalizeHorizontal', 'normalizeDiagonal' , 'none'}),...
@@ -208,7 +208,6 @@ classdef afcGratings<stimManager
         
         function [sm,updateSM,resInd,stimList,LUT,targetPorts,distractorPorts,details,text,indexPulses,imagingTasks,ITL] =...
                 calcStim(sm,tm,st,tR,~)
-            allowRepeats = true;
             resolutions = st.resolutions;
             displaySize = st.getDisplaySize();
             LUTbits = st.getLUTBits();
@@ -218,7 +217,7 @@ classdef afcGratings<stimManager
             imagingTasks=[];
             [LUT, sm, updateSM]=getLUT(sm,LUTbits);
             
-            [resInd, height, width, hz] = st.chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(sm),getMaxHeight(sm));
+            [resInd, height, width, hz] = st.chooseLargestResForHzsDepthRatio(resolutions,[60],32,sm.maxWidth,sm.maxHeight);
             
             if isnan(resInd)
                 resInd=1;
@@ -236,8 +235,8 @@ classdef afcGratings<stimManager
             [targetPorts, distractorPorts, details] = tm.assignPorts(details,lastRec,responsePorts);
             
             % set up params for computeGabors
-            height = min(height,getMaxHeight(sm));
-            width = min(width,getMaxWidth(sm));
+            height = min(height,sm.maxHeight);
+            width = min(width,sm.maxWidth);
             
             % lets save some of the details for later
             details.afcGratingType = sm.getType(structize(sm));
@@ -265,26 +264,28 @@ classdef afcGratings<stimManager
             switch sm.doCombos
                 case true
                     % choose a random value for each
-                    stim.pixPerCycs         = chooseFrom(sm.pixPerCycs{chosenStimIndex});
-                    stim.driftfrequencies   = chooseFrom(sm.driftfrequencies{chosenStimIndex});
-                    stim.orientations       = chooseFrom(sm.orientations{chosenStimIndex});
-                    stim.phases             = chooseFrom(sm.phases{chosenStimIndex});
-                    stim.contrasts          = chooseFrom(sm.contrasts{chosenStimIndex});
-                    stim.radii              = chooseFrom(sm.radii{chosenStimIndex});
-                    stim.annuli             = chooseFrom(sm.annuli{chosenStimIndex});
+                    % #### need to use the seed val somehow not used here
+                    stim.pixPerCyc          = chooseFrom(sm.pixPerCycs{chosenStimIndex});
+                    stim.driftfrequency     = chooseFrom(sm.driftfrequencies{chosenStimIndex});
+                    stim.orientation        = chooseFrom(sm.orientations{chosenStimIndex});
+                    stim.phase              = chooseFrom(sm.phases{chosenStimIndex});
+                    stim.contrast           = chooseFrom(sm.contrasts{chosenStimIndex});
+                    stim.radius             = chooseFrom(sm.radii{chosenStimIndex});
+                    stim.annulus            = chooseFrom(sm.annuli{chosenStimIndex});
                     stim.location           = chooseFrom(sm.location{chosenStimIndex});
                     stim.maxDuration        = round(chooseFrom(sm.maxDuration{chosenStimIndex})*hz);
                     stim.waveform           = sm.waveform;
                 case false
+                    % #### need to use the seed val somehow not used here
                     tempVar = randperm(length(sm.pixPerCycs{chosenStimIndex}));
                     which = tempVar(1);
-                    stim.pixPerCycs         = sm.pixPerCycs{chosenStimIndex}(which);
-                    stim.driftfrequencies   = sm.driftfrequencies{chosenStimIndex}(which);
-                    stim.orientations       = sm.orientations{chosenStimIndex}(which);
-                    stim.phases             = sm.phases{chosenStimIndex}(which);
-                    stim.contrasts          = sm.contrasts{chosenStimIndex}(which);
-                    stim.radii              = sm.radii{chosenStimIndex}(which);
-                    stim.annuli             = sm.annuli{chosenStimIndex}(which);
+                    stim.pixPerCyc          = sm.pixPerCycs{chosenStimIndex}(which);
+                    stim.driftfrequency     = sm.driftfrequencies{chosenStimIndex}(which);
+                    stim.orientation        = sm.orientations{chosenStimIndex}(which);
+                    stim.phase              = sm.phases{chosenStimIndex}(which);
+                    stim.contrast           = sm.contrasts{chosenStimIndex}(which);
+                    stim.radius             = sm.radii{chosenStimIndex}(which);
+                    stim.annulus            = sm.annuli{chosenStimIndex}(which);
                     stim.location           = sm.location{chosenStimIndex}(which,:);
                     stim.maxDuration        = round(sm.maxDuration{chosenStimIndex}(which)*hz);
                     stim.waveform           = sm.waveform;
@@ -333,7 +334,7 @@ classdef afcGratings<stimManager
                                 stim.masks{1}=mask;
                             case 'hardEdge'
                                 mask(:,:,1)=ones(height,width,1)*sm.mean;
-                                [WIDTH HEIGHT] = meshgrid(1:width,1:height);
+                                [WIDTH, HEIGHT] = meshgrid(1:width,1:height);
                                 mask(:,:,2)=double((((WIDTH-width*details.chosenStim.location(1)).^2)+((HEIGHT-height*details.chosenStim.location(2)).^2)-((stim.radii)^2*(height^2)))>0);
                                 stim.masks{1}=mask;
                         end
@@ -354,7 +355,7 @@ classdef afcGratings<stimManager
                     end
                 case false
                     type = 'static';
-
+                    grating = sm.computeGabor(stim); % #### new
                     tic
                     % Create a 1D vector x based on the frequency pixPerCycs
                     % make the grating twice the normal width (to cover entire screen if rotated)
@@ -407,17 +408,17 @@ classdef afcGratings<stimManager
             preRequestStim.punishResponses=false;
             preRequestStim.ledON = false; % #### presetting here
             
-         
+            
             if sm.doPostDiscrim
                 postDiscrimStim = preRequestStim;
             else
                 postDiscrimStim = [];
             end
             
-            interTrialStim.interTrialLuminance = sm.getInterTrialLuminance();            
+            interTrialStim.interTrialLuminance = sm.getInterTrialLuminance();
             interTrialStim.duration = sm.getInterTrialDuration();
             ITL = sm.getInterTrialLuminance();
-           
+            
             
             details.interTrialDuration = sm.getInterTrialDuration();
             details.stimManagerClass = class(sm);
@@ -695,7 +696,7 @@ classdef afcGratings<stimManager
             s.LUT=[];
             s.LUTbits=0;
         end
-
+        
         function [out, s, updateSM]=getLUT(s,bits)
             if isempty(s.LUT) || s.LUTbits~=bits
                 updateSM=true;
@@ -786,7 +787,7 @@ classdef afcGratings<stimManager
                     error('unsupported type. if you want this make a name for it');
             end
         end
-
+        
     end
     
     methods(Static)
@@ -1084,7 +1085,108 @@ classdef afcGratings<stimManager
             end
             
         end
+        
+        function out = computeGabor(params)
+            % function out = computeGabors(params,mean,width,height,waveform,normalizeMethod,cornerMarkerOn,normalize)
+            % grating=computeGabors(params,0.5,200,200,'square','normalizeVertical',1);
+            
+            %change log
+            % 04072016 copied from old computerGabors
+            
+            
+            if ~exist('cornerMarkerOn','var')
+                cornerMarkerOn=0;
+            end
+            
+            radius      = params.radius;
+            radiusType  = params.radiusType;
+            pixPerCyc   = params.pixPerCyc;
+            phase       = params.phase;
+            orientation = params.orientation;
+            mean        = params.mean;
+            contrast    = params.contrast;
+            thresh      = params.thresh;
+            xPosPct     = params.location(1);
+            yPosPct     = params.location(2);
+            waveform    = params.waveform;
+            xSize       = params.width;
+            ySize       = params.height;
+            
+            img = zeros(ySize,xSize);
+            biggest=max(xSize,ySize);
+            
+            switch params.normalizationMethod
+                case 'normalizeVertical'
+                    normalizedLength=ySize/2;
+                case 'normalizeHorizontal'
+                    normalizedLength=xSize/2;
+                case 'normalizeDiagonal'  % erik's diag method
+                    normalizedLength=sqrt((xSize/2)^2 + (ySize/2)^2);
+                case 'none'
+                    normalizedLength=1;  % in this case the radius is the std in number of pixels
+                otherwise
+                    error('normalizeMethod must be ''normalizeVertical'', ''normalizeHorizontal'', or ''normalizeDiagonal''.')
+            end
+            
+            
+            
+            %calculate the effective frequency in the vertical and horizontal directions
+            %instead of frequency use pixPerCyc
+            xPPC=pixPerCyc/cos(orientation);
+            yPPC=pixPerCyc/sin(orientation);
+            xChange=repmat(((1:xSize) -(.5+xPosPct*xSize))  *(2*pi)/xPPC,ySize,1);
+            yChange=repmat(((1:ySize)-(.5+yPosPct*ySize))'*(2*pi)/yPPC,1, xSize);
+            phases=(xChange+yChange+phase)';
+            
+            
+            switch waveform
+                case 'sine'
+                    rotated=sin(phases)/2;
+                case 'square'
+                    %this may not right but really close
+                    rotated=sign(sin(phases))/2;
+                case 'none'
+                    rotated=ones(size(phases)); %Could be sped up by not calculating phases
+                otherwise
+                    error('waveform must be ''sine'' or ''square'' or ''none''');
+            end
+            rotated = contrast*rotated;
+            
+            if radius ~= Inf  %only compute gaussian mask if you need to
+                switch radiusType
+                    case 'gaussian'
+                    mask=zeros(ySize,xSize);
+                    mask(1:xSize*ySize)=mvnpdf(...
+                        [reshape(repmat((-ySize/2:(-ySize/2 + ySize -1))',1,xSize),xSize*ySize,1) ...
+                        reshape(repmat(-xSize/2:(-xSize/2+xSize-1),ySize,1),xSize*ySize,1)],...
+                        [yPosPct*ySize-ySize/2 xPosPct*xSize-xSize/2],(radius*diag([normalizedLength normalizedLength])).^2 ...
+                        );
+                    mask=mask/max(max(mask));
+                    masked = rotated'.*mask;
+                    
+                    case 'hardEdge'
+                        
+                end
+            else
+                masked = rotated';
+            end
+            
+            
+            masked(abs(masked)<thresh)=0;
+            img(:,:)=masked;
+            out=mean+img;
+            
+            clip = false;
+            if clip %note this is not what normalize means -- should be called clip!
+                out(out<0)=0;
+                out(out>1)=1;
+            end
+            
+            if cornerMarkerOn
+                out(1)=0;
+                out(2)=1;
+            end
+        end
     end
     
 end
-

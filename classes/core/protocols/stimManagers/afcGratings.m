@@ -355,21 +355,7 @@ classdef afcGratings<stimManager
                     end
                 case false
                     type = 'static';
-                    grating = sm.computeGabor(stim); % #### new
-                    tic
-                    % Create a 1D vector x based on the frequency pixPerCycs
-                    % make the grating twice the normal width (to cover entire screen if rotated)
-                    x = (1:stim.width*2)*2*pi/stim.pixPerCycs;
-                    switch stim.waveform
-                        case 'sine'
-                            grating=repmat(stim.contrasts*cos(x + stim.phases)/2+stimulus.mean,2*stim.height,1);
-                        case 'square'
-                            grating=repmat(stim.contrasts*square(x + stim.phases)/2+stimulus.mean,2*stim.height,1);
-                    end
-                    grating = imrotate(grating,rad2deg(stim.orientations));
-                    midpoint = round(size(grating)/2);
-                    grating = grating(midpoint(1)-stim.width/2:midpoint(1)+stim.width/2,midpoint(2)-stim.height/2:midpoint(2)+stim.height/2);
-                    
+                    grating = sm.computeGabor(stim); % #### new                    
             end
             
             
@@ -829,15 +815,15 @@ classdef afcGratings<stimManager
             end
         end
         
-        function [analysisdata, cumulativedata] = physAnalysis(stimManager,spikeRecord,stimulusDetails,plotParameters,parameters,cumulativedata,eyeData,LFPRecord)
+        function [analysisdata, cumulativedata] = physAnalysis(spikeRecord,stimulusDetails,plotParameters,parameters,cumulativedata,eyeData,LFPRecord)
             
-            %% processed clusters and spikes
+            % processed clusters and spikes
             theseSpikes = logical(spikeRecord.processedClusters);
             spikes=spikeRecord.spikes(theseSpikes);
             spikeWaveforms = spikeRecord.spikeWaveforms(theseSpikes,:);
             spikeTimestamps = spikeRecord.spikeTimestamps(theseSpikes);
             
-            %% SET UP RELATION stimInd <--> frameInd
+            % SET UP RELATION stimInd <--> frameInd
             numStimFrames=max(spikeRecord.stimInds);
             analyzeDrops=true;
             if analyzeDrops
@@ -849,17 +835,17 @@ classdef afcGratings<stimManager
                 correctedFrameIndices=spikeRecord.correctedFrameIndices(firstFramePerStimInd);
             end
             
-            %%
+            %
             trials = repmat(parameters.trialNumber,length(stimFrames),1);
             
-            %% is there randomization?
+            % is there randomization?
             if ~isfield(stimulusDetails,'method')
                 mode = {'ordered',[]};
             else
                 mode = {stimulusDetails.method,stimulusDetails.seed};
             end
             
-            %% get the stimulusCombo
+            % get the stimulusCombo
             if stimulusDetails.doCombos==1
                 comboMatrix = generateFactorialCombo({stimulusDetails.spatialFrequencies,stimulusDetails.driftfrequencies,stimulusDetails.orientations,...
                     stimulusDetails.contrasts,stimulusDetails.phases,stimulusDetails.durations,stimulusDetails.radii,stimulusDetails.annuli},[],[],mode);
@@ -890,7 +876,7 @@ classdef afcGratings<stimManager
                 length(unique(contrasts)) length(unique(startPhases)) length(unique(durations))...
                 length(unique(radii))  length(unique(annuli))];
             
-            %% find which parameters are swept
+            % find which parameters are swept
             names={'pixPerCycs','driftfrequencies','orientations','contrasts','startPhases',...
                 'durations','radii','annuli'};
             
@@ -924,7 +910,7 @@ classdef afcGratings<stimManager
             stimInfo.valsSwept = valsSwept;
             stimInfo.numTypes = numTypes;
             
-            %% to begin with no attempt will be made to group acording to type
+            % to begin with no attempt will be made to group acording to type
             typesUnordered=repmat([1:numTypes],duration,numRepeats);
             typesUnordered=typesUnordered(stimFrames); % vectorize matrix and remove extras
             repeats = reshape(repmat([1:numRepeats],[duration*numTypes 1]),[duration*numTypes*numRepeats 1]);
@@ -1045,7 +1031,7 @@ classdef afcGratings<stimManager
                 eyeSig = [];
             end
             
-            %% now update cumulativedata
+            % now update cumulativedata
             if isempty(cumulativedata)
                 cumulativedata.trialNumbers = parameters.trialNumber;
                 cumulativedata.subjectID = parameters.subjectID;

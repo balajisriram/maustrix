@@ -585,7 +585,7 @@ classdef soundManager
                 t=GetSecs-y;
                 fprintf('%g\t%g\n',s,t)
             end
-            priority(0);
+            Priority(0);
         end
 
         

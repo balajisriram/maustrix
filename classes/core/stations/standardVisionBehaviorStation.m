@@ -209,70 +209,69 @@ classdef standardVisionBehaviorStation < station
                 trustOsRecordFiles=false;
             end
             exitByFinishingTrialQuota = false;
+            assert(~isempty(getStationByID(r,s.id)),...
+                'standardVisionBehaviorStation:doTrials:incompatibleValue',...
+                'that BCore doesn''t contain this station');
             
-            if ~isempty(getStationByID(r,s.id))
+            subject=getCurrentSubject(s,r);
+            keepWorking=1;
+            trialNum=0;
+            
+            assert(n>=0,...
+                'standardVisionBehaviorStation:doTrials:incorrectValu',...
+                'n must be >= 0');
+            
+            ListenChar(2);
+            if usejava('jvm')
+                FlushEvents('keyDown');
+            end
+            
+            try
                 
-                subject=getCurrentSubject(s,r);
-                keepWorking=1;
-                trialNum=0;
+                s=startPTB(s);
                 
-                if n>=0
-                    ListenChar(2);
-                    if usejava('jvm')
-                        FlushEvents('keyDown');
+                % ==========================================================================
+                
+                % This is a hard coded trial records filter
+                % Need to decide where to parameterize this
+                filter = {'lastNTrials',int32(100)};
+                
+                % Load a subset of the previous trial records based on the given filter
+                [trialRecords, localRecordsIndex, sessionNumber, compiledRecords] = getTrialRecordsForSubjectID(r,subject.id,filter, trustOsRecordFiles);
+                
+                while keepWorking
+                    trialNum=trialNum+1;
+                    [subject, r, keepWorking, ~, trialRecords, s]= ...
+                        doTrial(subject,r,s,rn,trialRecords,sessionNumber,compiledRecords);
+                    % Cut off a trial record as we increment trials, IFF we
+                    % still have remote records (because we need to keep all
+                    % local records to properly save the local .mat)
+                    if localRecordsIndex > 1
+                        trialRecords = trialRecords(2:end);
                     end
+                    % Now update the local index (eventually all of the records
+                    % will be local if run long enough)
+                    localRecordsIndex = max(1,localRecordsIndex-1);
+                    % Only save the local records to the local copy!
+                    updateTrialRecordsForSubjectID(r,subject.id,trialRecords(localRecordsIndex:end));
                     
-                    try
-                        
-                        s=startPTB(s);
-                        
-                        % ==========================================================================
-                        
-                        % This is a hard coded trial records filter
-                        % Need to decide where to parameterize this
-                        filter = {'lastNTrials',int32(100)};
-                        
-                        % Load a subset of the previous trial records based on the given filter
-                        [trialRecords, localRecordsIndex, sessionNumber, compiledRecords] = getTrialRecordsForSubjectID(r,subject.id,filter, trustOsRecordFiles);
-                        
-                        while keepWorking
-                            trialNum=trialNum+1;
-                            [subject, r, keepWorking, ~, trialRecords, s]= ...
-                                doTrial(subject,r,s,rn,trialRecords,sessionNumber,compiledRecords);
-                            % Cut off a trial record as we increment trials, IFF we
-                            % still have remote records (because we need to keep all
-                            % local records to properly save the local .mat)
-                            if localRecordsIndex > 1
-                                trialRecords = trialRecords(2:end);
-                            end
-                            % Now update the local index (eventually all of the records
-                            % will be local if run long enough)
-                            localRecordsIndex = max(1,localRecordsIndex-1);
-                            % Only save the local records to the local copy!
-                            updateTrialRecordsForSubjectID(r,subject.id,trialRecords(localRecordsIndex:end));
-                            
-                            if n>0 && trialNum>=n
-                                keepWorking=0;
-                                exitByFinishingTrialQuota = true;
-                            end
-                        end
-                        
-                        stopPTB(s);
-                    catch ex
-                        disp(['CAUGHT ER (at doTrials): ' getReport(ex)]);
-                        rethrow(ex);
+                    if n>0 && trialNum>=n
+                        keepWorking=0;
+                        exitByFinishingTrialQuota = true;
                     end
-                    
-                    close all
-                    FlushEvents('mouseUp','mouseDown','keyDown','autoKey','update');
-                    ListenChar(0);
-                else
-                    error('n must be >= 0')
                 end
                 
-            else
-                error('that BCore doesn''t contain this station')
+                stopPTB(s);
+            catch ex
+                disp(['CAUGHT ER (at doTrials): ' getReport(ex)]);
+                rethrow(ex);
             end
+            
+            close all
+            FlushEvents('mouseUp','mouseDown','keyDown','autoKey','update');
+            ListenChar(0);
+            
+            
         end
         
         function [s, newRes, imagingTasksApplied]=setResolutionAndPipeline(s,res,imagingTasks)

@@ -17,7 +17,7 @@ classdef constantReinforcement<reinforcementManager
         end
         
         function [r, rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM] = ...
-                calcReinforcement(r,trialRecords,compiledRecord, subject)
+                calcReinforcement(r,~,~, subject)
             
             [rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound] = ...
                 calcCommonValues(r,r.rewardSizeULorMS,getRequestRewardSizeULorMS(r));

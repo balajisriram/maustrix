@@ -6,6 +6,9 @@ classdef subject
         protocol
         trainingStepNum
         protocolVersion
+        
+        reward %ul or ms as required
+        timeout % ms as required
     end
     
     methods

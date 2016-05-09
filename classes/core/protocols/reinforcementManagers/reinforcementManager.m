@@ -4,7 +4,8 @@ classdef reinforcementManager
         msPenalty=0;
         fractionOpenTimeSoundIsOn=0;
         fractionPenaltySoundIsOn=0;
-        scalar=1;
+        rewardScalar = 1;
+        requestRewardScaalr = 1;
         msPuff=0;
         requestRewardSizeULorMS=0;
         requestMode='first'; % 'first','nonrepeats', or 'all'
@@ -81,8 +82,8 @@ classdef reinforcementManager
         
         function [rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound] ...
                 = calcCommonValues(r,base,baseRequest)
-            rewardSizeULorMS= getScalar(r) * base;
-            requestRewardSizeULorMS = getScalar(r) * baseRequest;
+            rewardSizeULorMS= r.rewardScalar * base;
+            requestRewardSizeULorMS = r.requestRewardScalar * baseRequest;
             msPenalty=getMsPenalty(r);
             msPuff=getMsPuff(r);
             msRewardSound=rewardSizeULorMS*r.fractionOpenTimeSoundIsOn;

@@ -13,6 +13,7 @@ classdef asymetricReinforcement<reinforcementManager
             % ||asymetricReinforcement||  class constructor.
             % r=asymetricReinforcement(hitRewardSizeULorMS,correctRejectRewardSizeULorMS,missMsPenalty,falseAlarmMsPenalty,requestRewardSizeULorMS,requestMode,msPenalty,...
             %   fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
+            error('needs to be rewritten');
             r=r@reinforcementManager(msPenalty,msPuff,scalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestRewardSizeULorMS,requestMode);
             
             if hitRewardSizeULorMS>=0 && isreal(hitRewardSizeULorMS) && isscalar(hitRewardSizeULorMS)

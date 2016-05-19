@@ -10,29 +10,29 @@ classdef cuedGoNoGo<trialManager
             % t=cuedGoNoGo(soundManager,rewardManager,
             %         [eyeController],[frameDropCorner],[dropFrames],[displayMethod],[requestPorts],[saveDetailedFramedrops],
             %		  [delayManager],[responseWindowMs],[showText])
-
+            
             %cuedGoNoGo is very similar to nAFC, with no new parameters
-
-           d=sprintf(['cuedGoNoGo']);
-           t=t@trialManager(soundManager,rewardManager,eyeController,d,frameDropCorner,dropFrames,displayMethod,requestPort,saveDetailedFrameDrops,delayManager,responseWindowMs,showText);
-
+            
+            d=sprintf(['cuedGoNoGo']);
+            t=t@trialManager(soundManager,rewardManager,eyeController,d,frameDropCorner,dropFrames,displayMethod,requestPort,saveDetailedFrameDrops,delayManager,responseWindowMs,showText);
+            
         end
         
         function out = checkPorts(tm,targetPorts,distractorPorts)
-
+            
             if isempty(targetPorts) && isempty(distractorPorts)
                 error('targetPorts and distractorPorts cannot both be empty in cuedGoNoGo');
             end
-
+            
             out=true;
-
+            
         end % end function
         
         function out=getResponsePorts(trialManager,totalPorts)
-
+            
             out=setdiff(1:totalPorts,getRequestPorts(trialManager,totalPorts)); % old: response ports are all non-request ports
             %nAFC tries to remove the center port. but cuedGoNoGo likes the center port, and keeps it enabled.
-
+            
             enableCenterPortResponseWhenNoRequestPort=true; %false in nAFC
             if ~enableCenterPortResponseWhenNoRequestPort
                 if isempty(getRequestPorts(trialManager,totalPorts)) % removes center port if no requestPort defined
@@ -50,23 +50,23 @@ classdef cuedGoNoGo<trialManager
         end
         
         function [tm trialDetails result spec rewardSizeULorMS requestRewardSizeULorMS ...
-    msPuff msRewardSound msPenalty msPenaltySound floatprecision textures destRect,updateRM] = ...
-    updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
-    targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
-    floatprecision, textures, destRect, ...
-    requestRewardDone, punishResponses,compiledRecords,subject)
+                msPuff msRewardSound msPenalty msPenaltySound floatprecision textures destRect,updateRM] = ...
+                updateTrialState(tm, sm, result, spec, ports, lastPorts, ...
+                targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
+                floatprecision, textures, destRect, ...
+                requestRewardDone, punishResponses,compiledRecords,subject)
             % This function is a tm-specific method to update trial state before every
             % flip. This is similar to nAFC, except that timeOuts might be considered
             % correct, and rewards of 0msec and penalties of 0msec are tolerated.
             % (numErrorFrames/numCorrectFrames forced to 1 in this case)
             % the logic for msPuff has not been excersized yet.
-
+            
             % Things done here include:
             %   - set trialRecords.correct and trialRecords.result as necessary
             %   - call RM's calcReinforcement as necessary
             %   - update the stimSpec as necessary (with correctStim() and errorStim())
             %   - update the TM's RM if neceesary
-
+            
             rewardSizeULorMS=0;
             msPuff=0;
             msRewardSound=0;
@@ -78,14 +78,14 @@ classdef cuedGoNoGo<trialManager
             else
                 correct=[];
             end
-
+            
             % ========================================================
             % if the result is a port vector, and we have not yet assigned correct, then the current result must be the trial response
             % because phased trial logic returns the 'result' from previous phase only if it matches a target/distractor
             % 3/13/09 - we rely on nAFC's phaseify to correctly assign stimSpec.phaseLabel to identify where to check for correctness
             % call parent's updateTrialState() to do the request reward handling and check for 'timeout' flag
             [tm.trialManager possibleTimeout result garbage garbage requestRewardSizeULorMS] = updateTrialState(tm.trialManager, sm, result, spec, ports, lastPorts, targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, floatprecision, textures, destRect, requestRewardDone, punishResponses,compiledRecords,subject,updateRM1);
-
+            
             if isempty(possibleTimeout)
                 if ~isempty(result) && ~ischar(result) && isempty(correct) && strcmp(getPhaseLabel(spec),'reinforcement')
                     resp=find(result);
@@ -107,13 +107,13 @@ classdef cuedGoNoGo<trialManager
                 end
                 result = 'nominal';
             end
-
+            
             %by turning this off reinforced correct works... why?
             % if punishResponses % this means we got a response, but we want to punish, not reward
             %     correct=0; % we could only get here if we got a response (not by request or anything else), so it should always be correct=0
             % end
-            % 
-
+            %
+            
             % ========================================================
             phaseType = getPhaseType(spec);
             framesUntilTransition=getFramesUntilTransition(spec);
@@ -126,13 +126,13 @@ classdef cuedGoNoGo<trialManager
             if ~isempty(phaseType) && strcmp(phaseType,'earlyPenalty')
                 %      [rm rewardSizeULorMS=0 garbage msPenalty msPuff=0 msRewardSound=0 msPenaltySound updateRM] =...
                 %         calcEarlyPenalty(getReinforcementManager(tm),trialRecords, []);
-
+                
                 [rm rewardSizeULorMS garbage msPenalty msPuff msRewardSound msPenaltySound updateTM] =...
                     calcEarlyPenalty(getReinforcementManager(tm),trialRecords, []);
-
+                
                 framesUntilTransition=[]; %this is needed or else you will never get to the next part, this is very dirty and should never
                 %be repeated anywhere else, but Duc is allowed to do this (yay!)
-
+                
                 if window>0
                     numErrorFrames=max(1,ceil((msPenalty/1000)/ifi));
                     if isempty(framesUntilTransition)
@@ -141,9 +141,9 @@ classdef cuedGoNoGo<trialManager
                 else
                     error('no LED support.. too add see below')
                 end
-
+                
                 spec=setFramesUntilTransition(spec,framesUntilTransition);
-
+                
                 if msPenalty>0
                     [eStim errorScale] = errorStim(sm,numErrorFrames);
                 end
@@ -158,7 +158,7 @@ classdef cuedGoNoGo<trialManager
                 end
                 spec=setStim(spec,eStim);
             end
-
+            
             updateRM2 = false;
             if ~isempty(phaseType) && strcmp(phaseType,'reinforced') && ~isempty(correct) && framesInPhase==0
                 % we only check to do rewards on the first frame of the 'reinforced' phase
@@ -167,18 +167,18 @@ classdef cuedGoNoGo<trialManager
                 if updateRM2
                     tm.reinforcementManager = rm;
                 end
-
+                
                 if correct
                     msPuff=0;
                     msPenalty=0;
                     msPenaltySound=0;
-
+                    
                     if window>0
                         numCorrectFrames=max(1,ceil((rewardSizeULorMS/1000)/ifi)); %less than 1 frame errors on index pulse, -pmm
                         if isempty(framesUntilTransition)
                             framesUntilTransition = numCorrectFrames;
                         end
-
+                        
                     elseif strcmp(getDisplayMethod(tm),'LED')
                         numCorrectFrames=max(1,ceil(getHz(spec)*rewardSizeULorMS/1000));
                         if isempty(framesUntilTransition)
@@ -208,14 +208,14 @@ classdef cuedGoNoGo<trialManager
                     rewardSizeULorMS=0;
                     msRewardSound=0;
                     msPuff=0; % for now, we don't want airpuffs to be automatic punishment, right?
-
+                    
                     if window>0
                         numErrorFrames=max(1,ceil((msPenalty/1000)/ifi));
                         if isempty(framesUntilTransition)
                             framesUntilTransition = numErrorFrames;
                         end
-
-
+                        
+                        
                     elseif strcmp(getDisplayMethod(tm),'LED')
                         numErrorFrames=max(1,ceil(getHz(spec)*msPenalty/1000));
                         if isempty(framesUntilTransition)
@@ -237,7 +237,7 @@ classdef cuedGoNoGo<trialManager
                         [eStim errorScale] = correctStim(sm,numErrorFrames);
                     end
                     spec=setScaleFactor(spec,errorScale);
-
+                    
                     strategy='noCache';
                     if window>0
                         [floatprecision eStim] = determineColorPrecision(tm, eStim, strategy);
@@ -251,8 +251,8 @@ classdef cuedGoNoGo<trialManager
                     spec=setStim(spec,eStim);
                 end
             end % end reward handling
-
-            if ~isempty(phaseType) && strcmp(phaseType,'itl') 
+            
+            if ~isempty(phaseType) && strcmp(phaseType,'itl')
                 framesUntilTransition=[];
                 if window>0
                     if isempty(framesUntilTransition)
@@ -280,18 +280,18 @@ classdef cuedGoNoGo<trialManager
                 end
                 spec=setStim(spec,cStim);
             end
-
+            
             trialDetails.correct=correct;
             updateRM = updateRM1 || updateRM2;
-
-
+            
+            
             if strcmp(getPhaseLabel(spec),'intertrial luminance') && ischar(result) && strcmp(result,'timeout')
                 % this should be the only allowable result in autopilot
                 result='timedout'; % so we continue to next trial
             end
-
+            
         end  % end function
-
+        
         
     end
     

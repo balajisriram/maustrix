@@ -406,7 +406,7 @@ classdef trialManager
                     ~requestRewardDone) % first request
                 
                 [rm, rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM] =...
-                    tm.reinforcementManager.calcReinforcement(trialRecords,compiledRecords, subject);
+                    tm.reinforcementManager.calcReinforcement(subject,trialRecords,compiledRecords);
                 if updateRM
                     tm.reinforcementManager = rm;
                 end

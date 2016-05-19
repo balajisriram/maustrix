@@ -9,6 +9,7 @@ classdef subject
         
         reward %ul or ms as required
         timeout % ms as required
+        puff
     end
     
     methods
@@ -175,26 +176,35 @@ classdef subject
         function [subject, r] = setReinforcementParam(subject,param,val,stepNums,r,comment,auth)
             validateattributes(r,{'BCore'},{'nonempty'});
             assert(~isempty(getSubjectFromID(r,subject.id)));
-            
-            switch stepNums
-                case 'all'
-                    steps=uint8(1:subject.protocol.numTrainingSteps);
-                case 'current'
-                    steps=subject.trainingStepNum;
+            switch param
+                case 'reward'
+                    subject.reward = val;
+                case 'timeout'
+                    subject.timeout = val;
+                case 'puff'
+                    subject.puff = val;
                 otherwise
-                    if isvector(stepNums) && isNearInteger(stepNums) && all(stepNums>0 & stepNums<=subject.protocol.numTrainingSteps)
-                        steps=uint8(stepNums);
-                    else
-                        error('stepNums must be ''all'', ''current'', or an integer vector of stepnumbers between 1 and numSteps')
+                    switch stepNums
+                        case 'all'
+                            steps=uint8(1:subject.protocol.numTrainingSteps);
+                        case 'current'
+                            steps=subject.trainingStepNum;
+                        otherwise
+                            if isvector(stepNums) && isNearInteger(stepNums) && all(stepNums>0 & stepNums<=subject.protocol.numTrainingSteps)
+                                steps=uint8(stepNums);
+                            else
+                                error('stepNums must be ''all'', ''current'', or an integer vector of stepnumbers between 1 and numSteps')
+                            end
+                    end
+                    
+                    for i=steps
+                        ts=subject.protocol.trainingSteps{i};
+                        
+                        ts=ts.setReinforcementParam(param,val);
+                        [subject, r]=changeProtocolStep(subject,ts,r,comment,auth,i);
                     end
             end
             
-            for i=steps
-                ts=subject.protocol.trainingSteps{i};
-                
-                ts=ts.setReinforcementParam(param,val);
-                [subject, r]=changeProtocolStep(subject,ts,r,comment,auth,i);
-            end
         end
         
         function [subject, r] = changeProtocolStep(subject,ts,r,comment,auth,stepNum)

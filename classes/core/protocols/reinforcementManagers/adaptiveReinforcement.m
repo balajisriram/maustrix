@@ -1,13 +1,11 @@
-classdef adaptiveReinforcement<reinforcementManager
+classdef adaptiveReinforcement<constantReinforcement
 
     properties
-        rewardSizeULorMS=0;
-        minReward = .01;
-        maxPenalty = 25000;
-        minPenalty = 1000;
-        adaptationMethod = '';
-        currentReward = 1;
-        currentPenalty = 1000;
+        minRewardScalar = .01;
+        maxRewardScalar = 5;
+        minTimeoutScalar = 0.01;
+        maxTimeoutScalar = 5;
+        
         lastChangedTrial = NaN;
         lastChangedDate = NaN;
         targetTrialRate = 50;    % past 7 working days
@@ -16,32 +14,36 @@ classdef adaptiveReinforcement<reinforcementManager
     end
     
     methods
-        function r=adaptiveReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,requestMode,...
-               msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff,minReward,minPenalty,maxPenalty,adaptationMethod,targetTrialRate,targetPerformance)
+        function r=adaptiveReinforcement(rewardScalar,requestRewardScalar,penaltyScalar,puffScalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestMode,...
+                minRewardScalar,maxRewardScalar,minTimeoutScalar,maxTimeoutScalar,targetTrialRate,targetPerformance)
             % ||adaptiveReinforcement||  class constructor.
             % r=adaptiveReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,requestMode,...
             %   msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff, minReward, minPenalty, maxPenalty, adaptationMethod)
-            r=r@reinforcementManager(msPenalty,msPuff,scalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestRewardSizeULorMS,requestMode);
- 
-            r = setRewardSizeULorMS(r,rewardSizeULorMS);
-            r.minReward = minReward;
-            r.minPenalty = minPenalty;
-            r.maxPenalty = maxPenalty;
+            r=r@constantReinforcement(rewardScalar,requestRewardScalar,penaltyScalar,puffScalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestMode);
+            
+            r.minRewardScalar = minRewardScalar;
+            r.maxRewardScalar = maxRewardScalar;
+            
+            r.minTimeoutScalar = minTimeoutScalar;
+            r.maxTimeoutScalar = maxTimeoutScalar;
+            
             r.adaptationMethod = adaptationMethod;
             r.targetTrialRate = targetTrialRate;
             r.targetPerformance = targetPerformance;
-
+            
         end
         
         
         function [r, rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM] = ...
-    calcReinforcement(r,trialRecords, compiledRecord, subject)
-
-
+                calcReinforcement(r,trialRecords, compiledRecord, subject)
+            
+            [r, rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM] = r.constantReinforcement.calcReinforcement...
+                (r,trialRecords, compiledRecord, subject)
+            
             %% check if scalar needs to be changed
             [r,updateRM] = updateReinforcementManagerIfNecessary(r,compiledRecord,trialRecords, subject);
             %% collect all the return values
-
+            
             % ## CURRENT REWARD IS REPLACING r.scalar IN CURRENT SETUP OF CLASSES
             rewardSizeULorMS= r.currentReward*r.rewardSizeULorMS;
             requestRewardSizeULorMS = getRequestRewardSizeULorMS(r);

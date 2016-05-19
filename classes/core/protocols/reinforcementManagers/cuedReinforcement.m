@@ -10,6 +10,7 @@ classdef cuedReinforcement<reinforcementManager
             % ||constantReinforcement||  class constructor.
             % r=constantReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,requestMode,...
             %   msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
+            error('need to rewrite');
             r=r@reinforcementManager(msPenalty,msPuff,scalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestRewardSizeULorMS,requestMode);
 
 

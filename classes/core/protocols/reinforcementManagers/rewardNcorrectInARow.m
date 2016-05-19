@@ -10,6 +10,7 @@ classdef rewardNcorrectInARow<reinforcementManager
             % ||rewardNcorrectInARow||  class constructor.
             % r=rewardNcorrectInARow(rewardNthCorrect,requestRewardSizeULorMS,requestMode,msPenalty,...
             %   fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msPuff)
+            error('need to rewrite');
             r=r@reinforcementManager(msPenalty,msPuff,scalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestRewardSizeULorMS,requestMode);
 
             if all(rewardNthCorrect)>=0
@@ -17,13 +18,13 @@ classdef rewardNcorrectInARow<reinforcementManager
             else
                 error('all the rewardSizeULorMSs must be >=0')
             end
-
+            
         end
         
         function [r, rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM] = ...
-    calcReinforcement(r,trialRecords,compiledRecord, subject)
+                calcReinforcement(r,trialRecords,compiledRecord, subject)
             verbose=0;
-
+            
             correct=0;
             if ~isempty(trialRecords)
                 if isfield(trialRecords,'trialDetails') && isfield([trialRecords.trialDetails],'correct')

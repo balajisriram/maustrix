@@ -8,7 +8,6 @@ classdef BCoreUtil
             [pathstr, ~, ~] = fileparts(mfilename('fullpath'));
             [pathstr, ~, ~] = fileparts(pathstr);
             BCorePath = fileparts(pathstr);
-            BCorePath = [BCorePath filesep];
         end
         
         function BasePath = getBasePath()
@@ -22,7 +21,7 @@ classdef BCoreUtil
             ServerDataPath = fullfile(p,'ServerData');
         end
         
-        function [success, mac]=getMACaddress()
+        function [mac, success]=getMACaddress()
             success=false;
             switch computer
                 case {'PCWIN64','PCWIN32'}

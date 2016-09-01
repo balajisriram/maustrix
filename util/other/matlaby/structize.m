@@ -6,7 +6,7 @@ elseif isobject(s) || isstruct(s)
         if isscalar(s) || all(size(s)==0) %size(object with no data members) is [0 0]
             if isobject(s)
                 t=class(s);
-                s=struct(s);
+                warnign off; s=struct(s); warning on;
                 f=fields(s);
                 if ~ismember('originalType',f)
                     if isempty(s)

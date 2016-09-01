@@ -178,7 +178,6 @@ classdef soundManager
             d=[];
             for i=1:length(s.clips)
                 d=[d '\n\t\t\t\t' disp(s.clips{i})];
-
             end
             
         end
@@ -241,6 +240,9 @@ classdef soundManager
             end
         end    
         
+        function d = display(sm)
+            d = sm.disp();
+        end
     end
     
     methods (Access = private)
@@ -588,7 +590,6 @@ classdef soundManager
             Priority(0);
         end
 
-        
     end
 end
 

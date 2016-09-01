@@ -1766,7 +1766,7 @@ classdef trialManager
                     type = spec.stimType;
                     metaPixelSize = spec.scaleFactor;
                     framesUntilTransition = spec.framesUntilTransition;
-                    
+
                     [phaseData{i}.loop,phaseData{i}.trigger, phaseData{i}.frameIndexed ,phaseData{i}.timeIndexed, ...
                         phaseData{i}.indexedFrames, phaseData{i}.timedFrames, phaseData{i}.strategy, phaseData{i}.toggleStim] = ...
                         tm.determineStrategy(stim, type, responseOptions, framesUntilTransition);
@@ -2495,9 +2495,6 @@ classdef trialManager
             out = 0;
         end
         
-    end
-    
-    methods (Static, Access=private)
         function [loop, trigger, frameIndexed, timeIndexed, indexedFrames, timedFrames, strategy, toggleStim] = determineStrategy(stim, type, responseOptions, framesUntilTransition)
             
             if length(size(stim))>3
@@ -2587,7 +2584,7 @@ classdef trialManager
 %             end
             
         end
-        
+
         function drawFrameUsingTextureCache(window, i, frameNum, stimSize, lastI, dontclear, texture, destRect, filtMode, labelFrames, ...
                 xOrigTextPos, yNewTextPos, strategy,floatprecision)
             

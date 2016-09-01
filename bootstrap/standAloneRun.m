@@ -39,13 +39,15 @@ if ~exist('subjectID','var') || isempty(subjectID)
     subjectID='demo1';
 end
 
+% current author is bas
+auth = 'bas';
+
 % add subject if not in BCore
 switch rx.subjectIDInBCore(lower(subjectID))
     case true
         sub = rx.getSubjectFromID(subjectID);
     case false
         sub = virtual(subjectID, 'unknown');
-        auth = 'bas';
         rx=rx.addSubject(sub,auth);
 end
 

@@ -54,9 +54,6 @@ classdef nAFC<trialManager
                 correct=[];
             end
             
-            sca;
-            keyboard
-            
             % ========================================================
             % if the result is a port vector, and we have not yet assigned correct, then the current result must be the trial response
             % because phased trial logic returns the 'result' from previous phase only if it matches a target/distractor

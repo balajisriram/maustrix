@@ -81,7 +81,7 @@ classdef BCore
             validateattributes(s,{'subject'},{'nonempty'});
             assert(~any(ismember(lower(s.id),lower(getSubjectIDs(r)))),'BCore:addSubject:incompatibleValue','BCore already contains a subject with that id');
             
-            if litterCheck(r,s) && r.authorCheck(author)
+            if r.authorCheck(author) % litterCheck(r,s) && ;iotter Id is not useful
                 r.subjects{length(r.subjects)+1}=s;
                 saveDB(r,0);
                 makeSubjectServerDirectory(r,s.id);
@@ -1113,7 +1113,7 @@ classdef BCore
                 doIt=0;
                 
                 if isempty(found)
-                    warning('didn''t find existing database, writing new one')
+                    fprintf('BCore::saveDB::didn''t find existing database, writing new one\n')
                     doIt=1;
                 elseif length(found)==1
                     

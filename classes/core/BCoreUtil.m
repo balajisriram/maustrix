@@ -21,7 +21,12 @@ classdef BCoreUtil
             ServerDataPath = fullfile(p,'ServerData');
         end
         
-        function [mac, success]=getMACaddress()
+        function dataPath = getBCoreDataPath()
+            p = BCoreUtil.getBasePath();
+            dataPath = fullfile(p,'BCoreData');
+        end
+        
+        function [success, mac]=getMACaddress()
             success=false;
             switch computer
                 case {'PCWIN64','PCWIN32'}
@@ -47,6 +52,16 @@ classdef BCoreUtil
             end
         end
         
+        function mac = getMACaddressSafely()
+            try
+                [success, mac]=BCoreUtil.getMACaddress();
+                if ~success
+                    mac='000000000000';
+                end
+            catch
+                mac='000000000000';
+            end
+        end
         %% default objects
         function sm = makeStandardSoundManager()
             sm=soundManager({soundClip('correctSound','allOctaves',400,20000), ...
@@ -63,10 +78,9 @@ classdef BCoreUtil
             msPenalty                 =1000;
             fractionOpenTimeSoundIsOn =1;
             fractionPenaltySoundIsOn  =1;
-            scalar                    =1;
             msAirpuff                 =msPenalty;
             
-            rm=constantReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,requestMode,msPenalty,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,scalar,msAirpuff);
+            rm=constantReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,msPenalty,msAirpuff,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestMode);
         end
         
         function tm = makeStandardTrialManager()
@@ -89,19 +103,25 @@ classdef BCoreUtil
         end
         
         function rx = createDefaultBCore()
-            try
-                [success, mac]=getMACaddress();
-                if ~success
-                    mac='000000000000';
-                end
-            catch
-                mac='000000000000';
-            end
+            % create base BCore
+            remake = true;
+            rx = BCore(BCoreUtil.getServerDataPath,remake);
             
-            machines={{'1U',mac,[1 1 1]}};
-            rx=createBCoreWithDefaultStations(machines,dataPath,'localTimed');
-            permStorePath=fullfile(dataPath,'PermanentTrialRecordStore');
-            mkdir(permStorePath);
+            % create station
+            id = '1U';
+            mac=BCoreUtil.getMACaddressSafely();
+            physicalLocation = uint8([1 1 1]);
+            stationPath = fullfile(BCoreUtil.getBCoreDataPath,'Stations','station1');
+            st = makeDefaultStation(id,stationPath,mac,physicalLocation);
+            
+            % create and add box; add station to box. 
+            boxes=box(int8(1),fullfile(BCoreUtil.getBCoreDataPath,'Boxes','box1'));
+            rx=addBox(rx,boxes);
+            rx=addStationToBoxID(rx,st,boxes.id);
+            
+            % set perm storage; 
+            permStorePath=fullfile(BCoreUtil.getBCoreDataPath,'PermanentTrialRecordStore');
+            warning off; mkdir(permStorePath); warning on; % sets the already exists warning off 
             rx.standAlonePath=permStorePath;
             fprintf('created new BCore\n')
         end

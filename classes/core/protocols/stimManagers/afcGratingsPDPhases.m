@@ -311,7 +311,7 @@ classdef afcGratingsPDPhases<stimManager
             imagingTasks=[];
             [LUT, stimulus, updateSM]=getLUT(stimulus,LUTbits);
             
-            [junk, mac] = getMACaddress();
+            mac = BCoreUtil.getMACaddressSafely;
             switch mac
                 case {'A41F7278B4DE','A41F729213E2','A41F726EC11C' } %gLab-Behavior rigs 1,2,3
                     [resolutionIndex, height, width, hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
@@ -966,7 +966,7 @@ classdef afcGratingsPDPhases<stimManager
             if isempty(s.LUT) || s.LUTbits~=bits
                 updateSM=true;
                 s.LUTbits=bits;
-                [a b] = getMACaddress;
+                b = BCoreUtil.getMACaddressSafely;
                 if ismember(b,{'7CD1C3E5176F',... balaji Macbook air
                         '180373337162',...
                         })

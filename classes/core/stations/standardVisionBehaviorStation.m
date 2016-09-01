@@ -204,9 +204,8 @@ classdef standardVisionBehaviorStation < station
             %the server is taxed. The BCore downstairs does not trust them. But you
             %are free of oracle dependency. It is not recommended to trustOsRecordFiles
             %unless your permanentStore is local, then it might be okay.
-            %recordNeuralData is a flag to decide whether or not to start datanet for NIDAQ recording
             if ~exist('trustOsRecordFiles','var')
-                trustOsRecordFiles=false;
+                trustOsRecordFiles=true; % bas cahnged this to debug some stuff ####
             end
             exitByFinishingTrialQuota = false;
             assert(~isempty(getStationByID(r,s.id)),...

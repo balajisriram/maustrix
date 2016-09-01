@@ -3144,7 +3144,7 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
                     error('that method for getting a LUT is not defined');
 
                      dateRange=[0 Inf];
-                    [suc mac]=getMACaddress;
+                    [suc mac]=BCoreUtil.getMACaddress;
                     if ~suc
                         error('can''t get mac!')
                     end
@@ -3189,7 +3189,7 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
                     end
                 case 'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5'
                     conn=dbConn();
-                    [junk mac] = getMACaddress();
+                    mac = BCoreUtil.getMACaddressSafely;
 
                     if ~strcmp(mac,'00095B8E6171')
                         warning('using uncorrected gamma for non-rig monitors')
@@ -3228,7 +3228,7 @@ classdef ifFeatureGoRightWithTwoFlank<stimManager
                     end
                 case 'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5'
                     conn=dbConn();
-                    [junk mac] = getMACaddress();
+                    mac = BCoreUtil.getMACaddressSafely;
 
                     if ~strcmp(mac,'00095B8E6171')
                         warning('using uncorrected gamma for non-rig monitors')

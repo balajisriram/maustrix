@@ -5,3 +5,4 @@ errorTypes
 3. pathNotFound
 4. improperValue
 5. configurationUnavailable
+6. AccessUnavailable

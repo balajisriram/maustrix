@@ -868,7 +868,7 @@ classdef phaseReverseGratings<stimManager
                     end
                 case 'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5'
                     conn=dbConn();
-                    [junk mac] = getMACaddress();
+                    mac = BCoreUtil.getMACaddressSafely;
                     
                     if ~strcmp(mac,'00095B8E6171')
                         warning('using uncorrected gamma for non-rig monitors')
@@ -906,7 +906,7 @@ classdef phaseReverseGratings<stimManager
                     end
                 case 'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5'
                     conn=dbConn();
-                    [junk mac] = getMACaddress();
+                    mac = BCoreUtil.getMACaddressSafely;
                     
                     if ~strcmp(mac,'00095B8E6171')
                         warning('using uncorrected gamma for non-rig monitors')

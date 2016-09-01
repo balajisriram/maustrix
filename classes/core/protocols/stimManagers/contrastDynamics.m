@@ -796,7 +796,7 @@ classdef contrastDynamics<stimManager
                     useUncorrected=1;
                 case 'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5'
                     conn=dbConn();
-                    [junk mac] = getMACaddress();
+                    mac = BCoreUtil.getMACaddressSafely;
                     
                     if ~strcmp(mac,'001D7D9ACF80')% how come mac changed??? it was this prev... 00095B8E6171
                         warning('using uncorrected gamma for non-rig monitors')
@@ -836,7 +836,7 @@ classdef contrastDynamics<stimManager
                     end
                 case 'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5'
                     conn=dbConn();
-                    [junk mac] = getMACaddress();
+                    mac = BCoreUtil.getMACaddressSafely;
                     
                     if ~strcmp(mac,'00095B8E6171')
                         warning('using uncorrected gamma for non-rig monitors')
@@ -945,7 +945,7 @@ classdef contrastDynamics<stimManager
                 %s=fillLUT(s,'2009Trinitron255GrayBoxInterpBkgnd.5');
                 %s=fillLUT(s,'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5'); % March 2011 ViewSonic
                 %     s=fillLUT(s,'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5'); % May 2011 Westinghouse
-                [a b] = getMACaddress;
+                b = BCoreUtil.getMACaddressSafely;
                 if ismember(b,{'7CD1C3E5176F'})...,... balaji Macbook air
                         
                 s=fillLUT(s,'useThisMonitorsUncorrectedGamma');

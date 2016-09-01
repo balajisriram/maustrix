@@ -706,7 +706,7 @@ classdef afcGratings<stimManager
             if isempty(s.LUT) || s.LUTbits~=bits
                 updateSM=true;
                 s.LUTbits=bits;
-                [~, b] = getMACaddress;
+                b = BCoreUtil.getMACaddressSafely;
                 if ismember(b,{'7CD1C3E5176F',... balaji Macbook air
                         '180373337162',...
                         })

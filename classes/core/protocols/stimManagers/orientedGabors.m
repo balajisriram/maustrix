@@ -104,7 +104,7 @@ classdef orientedGabors<stimManager
             LUTbits;
             displaySize;
             [LUT, stimulus, updateSM]=getLUT(stimulus,LUTbits);
-            [junk, mac] = getMACaddress();
+            mac = BCoreUtil.getMACaddressSafely;
             switch mac
                 case {'A41F7278B4DE','A41F729213E2','A41F726EC11C','A41F729211B1' } %gLab-Behavior rigs 1,2,3
                     [resolutionIndex, height, width, hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
@@ -348,7 +348,7 @@ classdef orientedGabors<stimManager
                     useUncorrected=1;
                 case 'WestinghouseL2410NM_May2011_255RGBBoxInterpBkgnd.5'
                     conn=dbConn();
-                    [junk mac] = getMACaddress();
+                    mac = BCoreUtil.getMACaddressSafely;
                     
                     if ~strcmp(mac,'00095B8E6171')
                         warning('using uncorrected gamma for non-rig monitors')
@@ -388,7 +388,7 @@ classdef orientedGabors<stimManager
                     end
                 case 'ViewSonicPF790-VCDTS21611_Mar2011_255RGBBoxInterpBkgnd.5'
                     conn=dbConn();
-                    [junk mac] = getMACaddress();
+                    mac = BCoreUtil.getMACaddressSafely;
                     
                     if ~strcmp(mac,'00095B8E6171')
                         warning('using uncorrected gamma for non-rig monitors')
@@ -483,7 +483,7 @@ classdef orientedGabors<stimManager
                 %     s=fillLUT(s,'useThisMonitorsUncorrectedGamma');
                 % s=fillLUT(s,'linearizedDefault',[0 1],false);
                 %     s=fillLUT(s,'hardwiredLinear',[0 1],false);
-                [a b] = getMACaddress;
+                b = BCoreUtil.getMACaddressSafely;
                 
                 if ismember(b,{'7CD1C3E5176F','F8BC128444CB'... balaji Macbook air, robert analysis comp #####
                         })

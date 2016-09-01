@@ -468,8 +468,6 @@ classdef BCore
             s=[];
             stations=getStations(r);
             for i=1:length(stations)
-                %     getMACaddress(stations(i))
-                %     strcmp(getMACaddress(stations(i)),m)
                 if strcmp(getMACaddress(stations(i)),m)
                     if isempty(s)
                         s=stations(i);

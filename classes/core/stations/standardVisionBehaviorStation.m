@@ -237,12 +237,12 @@ classdef standardVisionBehaviorStation < station
                 filter = {'lastNTrials',int32(100)};
                 
                 % Load a subset of the previous trial records based on the given filter
-                [trialRecords, localRecordsIndex, sessionNumber, compiledRecords] = getTrialRecordsForSubjectID(r,subject.id,filter, trustOsRecordFiles);
+                [trialRecords, localRecordsIndex, sessionNumber, compiledRecords] = r.getTrialRecordsForSubjectID(subject.id,filter, trustOsRecordFiles);
                 
                 while keepWorking
                     trialNum=trialNum+1;
                     [subject, r, keepWorking, ~, trialRecords, s]= ...
-                        doTrial(subject,r,s,rn,trialRecords,sessionNumber,compiledRecords);
+                        subject.doTrial(r,s,rn,trialRecords,sessionNumber,compiledRecords);
                     % Cut off a trial record as we increment trials, IFF we
                     % still have remote records (because we need to keep all
                     % local records to properly save the local .mat)
@@ -253,7 +253,7 @@ classdef standardVisionBehaviorStation < station
                     % will be local if run long enough)
                     localRecordsIndex = max(1,localRecordsIndex-1);
                     % Only save the local records to the local copy!
-                    updateTrialRecordsForSubjectID(r,subject.id,trialRecords(localRecordsIndex:end));
+                    r.updateTrialRecordsForSubjectID(subject.id,trialRecords(localRecordsIndex:end));
                     
                     if n>0 && trialNum>=n
                         keepWorking=0;

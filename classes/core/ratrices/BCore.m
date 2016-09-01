@@ -589,9 +589,7 @@ classdef BCore
                     error('Only filters ''all'' and ''lastNTrials'' supported when running')
             end
             if bID==0
-                error('no box for that subject') %edf changed -- the serverDataPath is where the BCore db is, not where trial records would be
-                %    subPath=getServerDataPathForSubjectID(r,sID);
-                %    localTrialRecords=loadMakeOrSaveTrialRecords(subPath);
+                error('BCore:getTrialRecordsForSubjectID:IncorrectValue','no box for that subject')
             else
                 b=getBoxFromID(r,bID);
                 localTrialRecords=getTrialRecordsForSubjectID(b,sID,r);
@@ -620,12 +618,12 @@ classdef BCore
                 if numTrials-length(localTrialRecords) > 0
                     remoteNumTrials = numTrials-length(localTrialRecords);
                     % Get only the remaining N trials from the remote store
-                    remoteTrialRecords=getTrialRecordsFromPermanentStore(subjPermStorePath,sID,...
+                    remoteTrialRecords=BCoreUtil.getTrialRecordsFromPermanentStore(subjPermStorePath,sID,...
                         {filterType,int32(remoteNumTrials)}, trustOsRecordFiles,subjectSpecificPermStore,servDataPth);
                 end
             else
                 % Get all of the remote records
-                remoteTrialRecords=getTrialRecordsFromPermanentStore(subjPermStorePath,sID,filter, trustOsRecordFiles,subjectSpecificPermStore,servDataPth);
+                remoteTrialRecords=BCoreUtil.getTrialRecordsFromPermanentStore(subjPermStorePath,sID,filter, trustOsRecordFiles,subjectSpecificPermStore,servDataPth);
             end
             % Get from permanent store
             localIndex = length(remoteTrialRecords)+1;
@@ -1320,7 +1318,7 @@ classdef BCore
                 b=r.boxes{i};
                 sIDs=getStationIDsForBoxID(r,b.id);
                 out=out && testBoxSubjectAndStationDirs(r,b,sIDs);
-                stations=getStationsForBoxID(r,getID(b));
+                stations=getStationsForBoxID(r,b.id);
                 
                 
                 for j=1:length(stations)

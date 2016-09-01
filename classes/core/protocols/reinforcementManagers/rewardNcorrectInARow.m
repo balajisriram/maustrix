@@ -22,7 +22,7 @@ classdef rewardNcorrectInARow<reinforcementManager
         end
         
         function [r, rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM] = ...
-                calcReinforcement(r,trialRecords,compiledRecord, subject)
+                calcReinforcement(r,subject,trialRecords,compiledRecord)
             verbose=0;
             
             correct=0;

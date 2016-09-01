@@ -50,7 +50,7 @@ classdef asymetricReinforcement<reinforcementManager
         end
         
         function [r rewardSizeULorMS requestRewardSizeULorMS msPenalty msPuff msRewardSound msPenaltySound updateRM] = ...
-                calcReinforcement(r,trialRecords,compiledRecord, subject)
+                calcReinforcement(r,subject,trialRecords,compiledRecord)
             
             
             %confirm trial redords contains THIS trial (not merely the trials before this trial)

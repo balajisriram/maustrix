@@ -35,7 +35,7 @@ classdef adaptiveReinforcement<constantReinforcement
         
         
         function [r, rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM] = ...
-                calcReinforcement(r,trialRecords, compiledRecord, subject)
+                calcReinforcement(r,subject,trialRecords, compiledRecord)
             
             [r, rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM] = r.constantReinforcement.calcReinforcement...
                 (r,trialRecords, compiledRecord, subject)
@@ -62,15 +62,6 @@ classdef adaptiveReinforcement<constantReinforcement
 
                 r = setMsPenalty(r,msPenalty);
             end
-
-
-            % % rewardSizeULorMS= getScalar(r)*r.rewardSizeULorMS;
-            % % requestRewardSizeULorMS = getScalar(r)* getRequestRewardSizeULorMS(r);
-            % % msPenalty=getMsPenalty(r);
-            % % msPenaltySound=getMsPenalty(r)*getFractionPenaltySoundIsOn(r);
-
-
-
         end
         
         function out=getCurrentPenalty(r)

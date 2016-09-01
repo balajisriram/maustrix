@@ -20,7 +20,7 @@ classdef cuedReinforcement<reinforcementManager
         end
         
         function [r rewardSizeULorMS requestRewardSizeULorMS msPenalty msPuff msRewardSound msPenaltySound updateRM] = ...
-    calcReinforcement(r,trialRecords,compiledRecord, subject)
+    calcReinforcement(r,subject,trialRecords,compiledRecord)
             verbose=0;
 
             reward = trialRecords(end).stimDetails.selectedTrialValue;

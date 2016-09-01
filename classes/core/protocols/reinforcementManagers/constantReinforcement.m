@@ -40,7 +40,7 @@ classdef constantReinforcement<reinforcementManager
         end
         
         function [r, rewardSizeULorMS, requestRewardSizeULorMS, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM] = ...
-                calcReinforcement(r,~,~, subject)
+                calcReinforcement(r,subject,~,~)
             rewardSizeULorMS = subject.reward*r.rewardScalar;
             requestRewardSizeULorMS = subject.reward*r.requestRewardScalar;
             msPenalty = subject.timeout*r.penaltyScalar;

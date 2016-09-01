@@ -330,12 +330,9 @@ classdef BCoreUtil
                 subjPath = fullfile(permanentStorePath,subjectID);
             end
             if ~isdir(subjPath) %not a problem if this fails due to windows filesharing/networking bug, cuz mkdir just noops with warning if dir exists
-                [succ msg msgid]=mkdir(fullfile(permanentStorePath,subjectID)); %9/17/08 - dont need to depend on subjectSpecificPermStore flag cuz it wont happen in that case
+                [succ, msg, msgid]=mkdir(fullfile(permanentStorePath,subjectID)); %9/17/08 - dont need to depend on subjectSpecificPermStore flag cuz it wont happen in that case
                 if ~succ
-                    msg
-                    msgid
-                    permanentStorePath
-                    error('couldn''t access permanent store')
+                    error('BCoreUtil:getTrialRecordsFromPermanentStore:AccessUnavailable','couldn''t access permanent store msg : %s msgid %d path: %s',msg,msgid,permanentStorePath)
                 end
             end
             
@@ -379,27 +376,8 @@ classdef BCoreUtil
                 warning('No records recovered from permanent store');
                 return
             end
-            
-            
+
             goodRecs=getRangesFromTrialRecordFileNames(fileNames);
-            
-            % if ~isempty(goodRecs)
-            %     [garbage sortIndices]=sort([goodRecs.trialStart],2);
-            %     sortedRecs = goodRecs(sortIndices);
-            %     if ~all([sortedRecs.trialStart]-[0 sortedRecs(1:end-1).trialStop])
-            %         [sortedRecs.trialStart; sortedRecs.trialStop]
-            %         error('ranges don''t follow consecutively')
-            %     end
-            %
-            %     if sortedRecs(1).trialStart ~= 1
-            %         [sortedRecs.trialStart; sortedRecs.trialStop]
-            %         error('first verifiedHistoryFile doesn''t start at 1')
-            %     end
-            %     if max(max([sortedRecs.trialStart]),max([sortedRecs.trialStop])) ~= sortedRecs(end).trialStop
-            %         [sortedRecs.trialStart; sortedRecs.trialStop]
-            %         error('didn''t find max at bottom right corner of ranges')
-            %     end
-            % end
             
             [files lowestTrialNum highestTrialNum]=applyTrialFilter(goodRecs,filter);
             if iscell(filter)

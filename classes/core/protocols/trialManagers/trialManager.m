@@ -416,7 +416,6 @@ classdef trialManager
             
             
         end
-        
     end
     
     methods (Access=private)
@@ -1173,7 +1172,7 @@ classdef trialManager
                                 switch strategy
                                     case 'textureCache'
                                         tm.drawFrameUsingTextureCache(window, i, frameNum, size(stim,3), lastI, dontclear, textures(i), destRect, ...
-                                            filtMode, labelFrames, xOrigTextPos, yTextPos);
+                                            filtMode, labelFrames, xOrigTextPos, yTextPos,strategy,floatprecision);
                                     case 'noCache'
                                         tm.drawFrameUsingTextureCache(window, i, frameNum, size(stim,3), lastI, dontclear, squeeze(stim(:,:,i)), destRect, ...
                                             filtMode, labelFrames, xOrigTextPos, yTextPos,strategy,floatprecision);
@@ -1304,10 +1303,11 @@ classdef trialManager
                 timestamps.kbCheckDone=GetSecs;
                 
                 if keyIsDown
-                    [didAPause, paused, done, trialRecords(trialInd).result, doValves, ports, didValves, didHumanResponse, manual, ...
+                    [didAPause, paused, done, res, doValves, ports, didValves, didHumanResponse, manual, ...
                         doPuff, pressingM, pressingP,timestamps.kbOverhead,timestamps.kbInit,timestamps.kbKDown] ...
                         = tm.handleKeyboard(keyCode, didAPause, paused, done, trialRecords(trialInd).result, doValves, ports, didValves, didHumanResponse, ...
                         manual, doPuff, pressingM, pressingP, originalPriority, priorityLevel, KbConstants);
+                    trialRecords(trialInd).result = res; clear res; % because of weird effects when result is empty
                 end
                 
                 timestamps.keyboardDone=GetSecs;
@@ -2488,7 +2488,6 @@ classdef trialManager
             if ~pThisLoop && pressingP
                 pressingP=0;
             end
-            
         end
         
         function out = bias()

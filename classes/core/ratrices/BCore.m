@@ -1321,7 +1321,7 @@ classdef BCore
                 
                 for j=1:length(stations)
                     
-                    out = out && checkPath(stations(j));
+                    out = out && checkPath(stations(j).path);
                 end
             end
             

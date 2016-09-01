@@ -1338,11 +1338,14 @@ classdef BCore
                 if all(stationInds>0)
                     if testBoxSubjectDirs(r,b)
                         for i=1:length(stationInds)
-                            %                 if ~checkPath(getPath(r.assignments{getID(b)}{1}{i,1}))
+                            %                 if
+                            %                 ~checkPath(getPath(r.assignments{getID(b)}{1}{i,1}))
+                            %                 ####
                             %                     out=0;
                             %                     error('coudln''t get to station dir')
                             %                 end
-                            if ~checkPath(r.assignments{b.id}{1}{i,1})
+                            stn = r.assignments{b.id}{1}{i,1};
+                            if ~checkPath(stn.path)
                                 error('coudln''t get to station dir')
                             end
                         end

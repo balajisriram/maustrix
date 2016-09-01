@@ -833,9 +833,7 @@ classdef afcCoherentDots<stimManager
             
             s.LUT=[];
         end
-        
-        
-        
+
         function [out, s, updateSM]=getLUT(s,bits)
             if isempty(s.LUT) || s.LUTbits~=bits
                 updateSM=true;
@@ -856,7 +854,7 @@ classdef afcCoherentDots<stimManager
         end
         
         function out = getType(sm,stim)
-            sweptParameters = sm.getDetails(stim,'sweptParameters');
+            sweptParameters = sm.getDetails('sweptParameters');
             n= length(sweptParameters);
             switch n
                 case 0
@@ -907,19 +905,6 @@ classdef afcCoherentDots<stimManager
                     error('unsupported type. if you want this make a name for it');
             end
         end
-   
-    end
-    
-    methods(Static)
-        function out = stimMgrOKForTrialMgr(tm)
-            assert(isa(tm,'trialManager'),'afcCoherentDots:stimMgrOKForTrialMgr:incorrectType','need a trialManager object');
-            switch class(tm)
-                case {'goNoGo','nAFC','autopilot','reinforcedAutopilot'}
-                    out=true;
-                otherwise
-                    out=false;
-            end
-        end
         
         function out = getDetails(stim,what)
             switch what
@@ -962,6 +947,19 @@ classdef afcCoherentDots<stimManager
                     end
                 otherwise
                     error('unknown what');
+            end
+        end
+        
+    end
+    
+    methods(Static)
+        function out = stimMgrOKForTrialMgr(tm)
+            assert(isa(tm,'trialManager'),'afcCoherentDots:stimMgrOKForTrialMgr:incorrectType','need a trialManager object');
+            switch class(tm)
+                case {'goNoGo','nAFC','autopilot','reinforcedAutopilot'}
+                    out=true;
+                otherwise
+                    out=false;
             end
         end
     end

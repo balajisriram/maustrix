@@ -76,10 +76,6 @@ classdef standardVisionBehaviorStation < station
 
         end
         
-        function out=disp(st)
-            out=sprintf(['station id: ' st.id '\tports: ' num2str(st.numPorts) '\tpath: ' strrep(st.path,'\','\\')]);
-        end
-        
         function out=get.numPorts(st)
             out = length(st.sensorPins.pinNums);
         end
@@ -171,6 +167,10 @@ classdef standardVisionBehaviorStation < station
         end
         
         % display
+        function out=disp(st)
+            out=sprintf(['station id: ' st.id '\tports: ' num2str(st.numPorts) '\tpath: ' strrep(st.path,'\','\\')]);
+        end
+        
         function out=getDisplaySize(s)
             [a, b]=Screen('DisplaySize',s.screenNum);
             out=[a b];
@@ -476,7 +476,7 @@ classdef standardVisionBehaviorStation < station
                 end
             end
         end
- 
+
     end
     
     methods (Static)

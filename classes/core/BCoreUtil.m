@@ -1,5 +1,5 @@
 classdef BCoreUtil
-    properties
+    properties (Constant = true)
         EXPERIMENTER = 'sbalaji1984@gmail.com';
     end
     methods (Static)

@@ -234,7 +234,7 @@ classdef BCoreUtil
                 end
                 
                 % collection process
-                trialRecords = collectTrialRecords(tr);
+                trialRecords = BCoreUtil.collectTrialRecords(tr);
                 trialNums=[trialRecords.trialNumber];
                 
                 % 3/17/09 - do the 'collection' and LUTizing here, then resave to local trialRecords.mat
@@ -256,7 +256,7 @@ classdef BCoreUtil
                     fields(find(strcmp(fields,'result')))=[];
                     fields(find(strcmp(fields,'type')))=[];
                     [sessionLUT, fieldsInLUT, trialRecords(tsIntervals(i,2):tsIntervals(i,3))] = ...
-                        processFields(fields,sessionLUT,fieldsInLUT,trialRecords(tsIntervals(i,2):tsIntervals(i,3)));
+                        BCoreUtil.processFields(fields,sessionLUT,fieldsInLUT,trialRecords(tsIntervals(i,2):tsIntervals(i,3)));
                 end
                 
                 save(fullfile(filePath,fileName),'trialRecords','sessionLUT','fieldsInLUT');

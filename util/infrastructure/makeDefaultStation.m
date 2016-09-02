@@ -22,7 +22,7 @@ function st=makeDefaultStation(id,path,mac,physicalLocation,~,~,~,~,~)
 % 17  control	inv     i/o stimPulse
 
 switch computer
-    case {'PCWIN64','PCWIN32'}
+    case {'PCWIN64','PCWIN32','PCWIN'}
         st=standardVisionBehaviorStation(id, path, mac, physicalLocation, '0378', int8([4,3,2]), int8([13,10,12]));
     case 'MACI64'
         st = standardOSXStation(id, path, mac, physicalLocation);

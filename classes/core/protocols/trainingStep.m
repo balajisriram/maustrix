@@ -169,7 +169,7 @@ classdef trainingStep
                     
                     % ## not sure updateTM is needed here? causes bug because isnt
                     % set even when reinforcementMgr needs to be updated in TM.
-                    
+                    updateTS = false;
                     if updateTM || updateRM
                         ts.trialManager=newTM;
                         updateTS = true;

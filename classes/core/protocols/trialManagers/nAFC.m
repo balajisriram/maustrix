@@ -59,11 +59,14 @@ classdef nAFC<trialManager
             % because phased trial logic returns the 'result' from previous phase only if it matches a target/distractor
             % 3/13/09 - we rely on nAFC's phaseify to correctly assign stimSpec.phaseLabel to identify where to check for correctness
             % call parent's updateTrialState() to do the request reward handling and check for 'timeout' flag
-            [tm, possibleTimeout, result, ~, ~, requestRewardSizeULorMS,updateRM1] = ...
+            [tm, possibleTimeout, result, ~, ~, requestRewardSizeULorMS, ~, ~, ~, ~, ~, ~, ~, updateRM1] = ...
                 updateTrialState@trialManager(tm, sm, subject, result, spec, ports, lastPorts, ...
                 targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
                 floatprecision, textures, destRect, requestRewardDone, punishResponses,compiledRecords);
-            
+            if isempty(updateRM1)
+                sca;
+                keyboard
+            end
             if isempty(possibleTimeout)
                 if ~isempty(result) && ~ischar(result) && isempty(correct) && strcmp(spec.phaseLabel,'reinforcement')
                     resp=find(result);
@@ -144,7 +147,7 @@ classdef nAFC<trialManager
             
             trialDetails.correct=correct;
             updateRM = updateRM1 || updateRM2;
-            
+
         end  % end function
         
     end

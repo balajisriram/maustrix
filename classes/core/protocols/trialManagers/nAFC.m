@@ -101,7 +101,7 @@ classdef nAFC<trialManager
                 % we only check to do rewards on the first frame of the 'reinforced' phase
                 
                 [rm, rewardSizeULorMS, ~, msPenalty, ~, msRewardSound, msPenaltySound, updateRM2] =...
-                    calcReinforcement(tm.reinforcementManager,trialRecords,compiledRecords, []);
+                    calcReinforcement(tm.reinforcementManager,subject,trialRecords,compiledRecords);
                 if updateRM2
                     tm.reinforcementManager = rm;
                 end
@@ -119,7 +119,7 @@ classdef nAFC<trialManager
                     spec.framesUntilTransition=framesUntilTransition;
                     [cStim, correctScale] = correctStim(sm,numCorrectFrames);
                     spec.scaleFactor = correctScale;
-                    strategy='noCache';
+                    strategy='textureCache';
                     [floatprecision, cStim] = tm.determineColorPrecision(cStim, strategy);
                     textures = tm.cacheTextures(strategy,cStim,window,floatprecision);
                     destRect = tm.determineDestRect(window, correctScale, cStim, strategy);
@@ -138,7 +138,7 @@ classdef nAFC<trialManager
                     spec.framesUntilTransition=framesUntilTransition;
                     [eStim, errorScale] = errorStim(sm,numErrorFrames);
                     spec.scaleFactor=errorScale;
-                    strategy='noCache';
+                    strategy='textureCache';
                     [floatprecision, eStim] = tm.determineColorPrecision(eStim, strategy);
                     textures = tm.cacheTextures(strategy,eStim,window,floatprecision);
                     destRect=Screen('Rect',window);

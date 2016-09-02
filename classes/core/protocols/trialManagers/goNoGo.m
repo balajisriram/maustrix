@@ -110,8 +110,8 @@ classdef goNoGo<trialManager
             updateRM2=false;
             if ~isempty(phaseType) && strcmp(phaseType,'reinforced') && ~isempty(correct) && framesInPhase==0
                 % we only check to do rewards on the first frame of the 'reinforced' phase
-                [rm rewardSizeULorMS garbage msPenalty msPuff msRewardSound msPenaltySound updateRM2] =...
-                    calcReinforcement(getReinforcementManager(tm),trialRecords,compiledRecords, []);
+                [rm, rewardSizeULorMS, garbage, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM2] =...
+                    calcReinforcement(tm.reinforcementManager,subject,trialRecords,compiledRecords);
                 if updateRM2
                     tm.reinforcementManager = rm;
                 end

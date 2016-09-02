@@ -275,7 +275,7 @@ classdef standardVisionBehaviorStation < station
         
         function [s, newRes, imagingTasksApplied]=setResolutionAndPipeline(s,res,imagingTasks)
             
-            assert(res.pixelSize == 32,'station:setResolutionAndPipeline:improperValue','color depth must be 32')
+            assert(res.pixelSize == 32,'station:setResolutionAndPipeline:improperValue','color depth must be 32 was %d', res.pixelSize)
             
             oldRes=Screen('Resolution', s.screenNum);
             

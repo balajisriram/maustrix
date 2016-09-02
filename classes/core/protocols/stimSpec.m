@@ -96,7 +96,7 @@ classdef stimSpec
             spec.startFrame=startFrame;
                 
             % framesUntilTransition
-            assert(isscalar(framesUntilTransition) && framesUntilTransition>=0 || isempty(framesUntilTransition),'stimSpec:stimSpec:incorrectValue','framesUntilTransition should be a positive scalar');
+            assert(isscalar(framesUntilTransition) && framesUntilTransition>=0 || isempty(framesUntilTransition),'stimSpec:stimSpec:incorrectValue','framesUntilTransition should be a positive scalar, was %d',framesUntilTransition);
             if ~isinf(framesUntilTransition)
                 assert(any(cellfun(@isempty,spec.transitions)),'stimSpec:stimSpec:incompatibleValue','framesUntilTransition provided without a timeout phase target');
             end

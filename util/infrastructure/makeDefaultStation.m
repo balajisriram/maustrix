@@ -21,8 +21,12 @@ function st=makeDefaultStation(id,path,mac,physicalLocation,~,~,~,~,~)
 % 16  control           i/o phasePulse
 % 17  control	inv     i/o stimPulse
 
-
-st=standardVisionBehaviorStation(id, path, mac, physicalLocation, '0378', int8([4,3,2]), int8([13,10,12]));
+switch computer
+    case {'PCWIN64','PCWIN32'}
+        st=standardVisionBehaviorStation(id, path, mac, physicalLocation, '0378', int8([4,3,2]), int8([13,10,12]));
+    case 'MACI64'
+        st = standardOSXStation(id, path, mac, physicalLocation);
+end
 
 % 
 % if ~exist('pportaddr','var') || isempty(pportaddr)

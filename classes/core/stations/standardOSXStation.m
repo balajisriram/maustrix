@@ -57,9 +57,7 @@ classdef standardOSXStation < station
                 
                 currentValveStates =...
                     setAndCheckValves(station,0*currentValveStates,0*currentValveStates,[],GetSecs,'verify valves closed found open valves');
-                
-                
-                
+
                 warning('verify valves closed found open valves')
             end
         end
@@ -112,7 +110,7 @@ classdef standardOSXStation < station
             %unless your permanentStore is local, then it might be okay.
             %recordNeuralData is a flag to decide whether or not to start datanet for NIDAQ recording
             if ~exist('trustOsRecordFiles','var')
-                trustOsRecordFiles=false;
+                trustOsRecordFiles=true;
             end
             exitByFinishingTrialQuota = false;
             
@@ -183,7 +181,7 @@ classdef standardOSXStation < station
         
         function [s, newRes, imagingTasksApplied]=setResolutionAndPipeline(s,res,imagingTasks)
             
-            assert(res.pixelSize == 32,'station:setResolutionAndPipeline:improperValue','color depth must be 32')
+            assert(res.pixelSize == 24,'station:setResolutionAndPipeline:improperValue','color depth must be 24')
             
             oldRes=Screen('Resolution', s.screenNum);
             
@@ -264,7 +262,7 @@ classdef standardOSXStation < station
                 %4) Be pretty verbose about information and hints to optimize your code and system.
                 %5) Levels 5 and higher enable very verbose debugging output, mostly useful for debugging PTB itself, not generally useful for end-users.
                 
-                Screen('Preference', 'ConserveVRAM', 4); % added by BAS. conserves VRAM levels to prevent weiird errors XXXX remove this if there is a problem
+                Screen('Preference', 'ConserveVRAM', 4); % added by BAS. conserves VRAM levels to prevent weiird errors #### remove this if there is a problem
                 
                 
                 preScreen=GetSecs();
@@ -486,7 +484,7 @@ classdef standardOSXStation < station
         end
         
         function [ind, height, width, hz]=chooseLargestResForHzsDepthRatio(resolutions,hzs,depth,maxWidth,maxHeight)
-            
+            % #### need to work this out
             if ismac||IsLinux
                 hzs=union(hzs,0); %have to add zero for osx, cuz screen('resolutions') returns all hz as 0
                 maxWidth=1440; %balaji macbook air...

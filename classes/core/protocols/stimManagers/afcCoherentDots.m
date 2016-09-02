@@ -286,6 +286,9 @@ classdef afcCoherentDots<stimManager
             [LUT, sm, updateSM]=getLUT(sm,LUTbits);
             
             [resInd, height, width, hz] = st.chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(sm),getMaxHeight(sm));
+            if strcmp(computer, 'MACI64')
+                hz = 60; % mac does a weird thing needs to be a station specific method...####
+            end
             
             if isnan(resInd)
                 resInd=1;
@@ -348,7 +351,7 @@ classdef afcCoherentDots<stimManager
                     stim.dotShape       = chooseFrom(sm.dotShape{chosenStimIndex});
                     stim.bkgdShape      = chooseFrom(sm.bkgdShape{chosenStimIndex});
                     stim.maxDuration    = round(chooseFrom(sm.maxDuration{chosenStimIndex})*hz);
-                    
+
                     stim.renderMode = sm.renderMode;
                     stim.background = sm.background;
                     stim.doCombos = sm.doCombos;

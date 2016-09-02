@@ -1927,7 +1927,7 @@ classdef trialManager
         end
         
         function out=stationOKForTrialManager(s)
-            validateattributes(s,{'standardVisionBehaviorStation'},{'nonempty'});
+            validateattributes(s,{'standardVisionBehaviorStation','standardOSXStation'},{'nonempty'});
             out = s.numPorts>=3;
         end
         

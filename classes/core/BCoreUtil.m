@@ -72,15 +72,15 @@ classdef BCoreUtil
         end
         
         function rm = makeStandardReinforcementManager()
-            rewardSizeULorMS          =50;
-            requestRewardSizeULorMS   =10;
-            requestMode               ='first';
-            msPenalty                 =1000;
+            rewardScalar          =1;
+            requestRewardScalar   =0;
+            requestMode           ='first';
+            penaltyScalar         =1;
             fractionOpenTimeSoundIsOn =1;
             fractionPenaltySoundIsOn  =1;
-            msAirpuff                 =msPenalty;
+            puffScalar                 =penaltyScalar;
             
-            rm=constantReinforcement(rewardSizeULorMS,requestRewardSizeULorMS,msPenalty,msAirpuff,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestMode);
+            rm=constantReinforcement(rewardScalar,requestRewardScalar,penaltyScalar,puffScalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestMode);
         end
         
         function tm = makeStandardTrialManager()

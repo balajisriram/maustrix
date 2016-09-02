@@ -266,7 +266,7 @@ classdef BCore
                     %         [trialRecords(1:100).stimManagerClass]=deal(class(sm));
                     %         %asymetric needs too much history for now.
                     if ~isa(rm,'cuedReinforcement') && ~isa(rm,'asymetricReinforcement') % cued breaks b/c it requires calcstim's details
-                        [rm, rewardSizeULorMS, ~, msPenalty] = calcReinforcement(rm,trialRecords, s);
+                        [rm, rewardSizeULorMS, ~, msPenalty] = calcReinforcement(rm,s, trialRecords, []);
                     else
                         rewardSizeULorMS=nan;
                         msPenalty=nan;

@@ -129,7 +129,7 @@ classdef cuedGoNoGo<trialManager
                 %      [rm rewardSizeULorMS=0 garbage msPenalty msPuff=0 msRewardSound=0 msPenaltySound updateRM] =...
                 %         calcEarlyPenalty(getReinforcementManager(tm),trialRecords, []);
                 
-                [rm rewardSizeULorMS garbage msPenalty msPuff msRewardSound msPenaltySound updateTM] =...
+                [rm, rewardSizeULorMS, garbage, msPenalty, msPuff, msRewardSound, msPenaltySound, updateTM] =...
                     calcEarlyPenalty(getReinforcementManager(tm),trialRecords, []);
                 
                 framesUntilTransition=[]; %this is needed or else you will never get to the next part, this is very dirty and should never
@@ -147,7 +147,7 @@ classdef cuedGoNoGo<trialManager
                 spec=setFramesUntilTransition(spec,framesUntilTransition);
                 
                 if msPenalty>0
-                    [eStim errorScale] = errorStim(sm,numErrorFrames);
+                    [eStim, errorScale] = errorStim(sm,numErrorFrames);
                 end
                 spec=setScaleFactor(spec,errorScale);
                 strategy='noCache';
@@ -164,8 +164,8 @@ classdef cuedGoNoGo<trialManager
             updateRM2 = false;
             if ~isempty(phaseType) && strcmp(phaseType,'reinforced') && ~isempty(correct) && framesInPhase==0
                 % we only check to do rewards on the first frame of the 'reinforced' phase
-                [rm rewardSizeULorMS garbage msPenalty msPuff msRewardSound msPenaltySound updateRM2] =...
-                    calcReinforcement(getReinforcementManager(tm),trialRecords,compiledRecords, []);
+                [rm, rewardSizeULorMS, garbage, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM2] =...
+                    calcReinforcement(getReinforcementManager(tm), subject,trialRecords,compiledRecords);
                 if updateRM2
                     tm.reinforcementManager = rm;
                 end

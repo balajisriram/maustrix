@@ -78,7 +78,7 @@ classdef reinforcedAutopilot<trialManager
             if ~isempty(phaseType) && strcmp(phaseType,'reinforced') && framesInPhase==0
                 % we only check to do rewards on the first frame of the 'reinforced' phase
                 [rm, rewardSizeULorMS, ~, msPenalty, ~, msRewardSound, msPenaltySound, updateRM] =...
-                    calcReinforcement(getReinforcementManager(tm),trialRecords,compiledRecords, []);
+                    calcReinforcement(tm.reinforcementManager, subject, trialRecords,compiledRecords);
                 if updateRM
                     tm.reinforcementManager = rm;
                 end

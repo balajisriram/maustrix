@@ -105,7 +105,7 @@ classdef freeDrinks<trialManager
             if ~isempty(phaseType) && strcmp(phaseType,'reinforced') && framesInPhase==0
                 % we only check to do rewards on the first frame of the 'reinforced' phase
                 [rm, rewardSizeULorMS, garbage, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM2]=...
-                    calcReinforcement(getReinforcementManager(tm),trialRecords,compiledRecords, []);
+                    calcReinforcement(getReinforcementManager(tm),subject, trialRecords,compiledRecords);
                 if updateRM2
                     tm.reinforcementManager = rm;
                 end

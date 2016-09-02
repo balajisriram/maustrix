@@ -365,7 +365,7 @@ classdef trialManager
             end
         end
         
-        function [tm,trialDetails, result, spec, rewardSizeULorMS, requestRewardSizeULorMS, ...
+        function [tm, trialDetails, result, spec, rewardSizeULorMS, requestRewardSizeULorMS, ...
                 msPuff, msRewardSound, msPenalty, msPenaltySound, floatprecision, textures, destRect, updateRM] = ...
                 updateTrialState(tm, sm, subject, result, spec, ports, lastPorts,~,requestPorts,lastRequestPorts,~,trialRecords, ~, ~, ~, ...
                 floatprecision, textures, destRect,requestRewardDone, ~,compiledRecords)
@@ -399,7 +399,7 @@ classdef trialManager
                 trialDetails=[];
             end
             
-            
+            updateRM = false;
             if (any(ports(requestPorts)) && ~any(lastPorts(requestPorts))) && ... % if a request port is triggered
                     ((strcmp(tm.reinforcementManager.requestMode,'nonrepeats') && ~any(ports&lastRequestPorts)) || ... % if non-repeat
                     strcmp(tm.reinforcementManager.requestMode,'all') || ...  % all requests
@@ -409,9 +409,7 @@ classdef trialManager
                     tm.reinforcementManager.calcReinforcement(subject,trialRecords,compiledRecords);
                 if updateRM
                     tm.reinforcementManager = rm;
-                end
-                
-                
+                end  
             end
             
             

@@ -48,6 +48,9 @@ switch rx.subjectIDInBCore(lower(subjectID))
         sub = rx.getSubjectFromID(subjectID);
     case false
         sub = virtual(subjectID, 'unknown');
+        sub.reward = 100;
+        sub.timeout = 10000;
+        sub.puff = 0;
         rx=rx.addSubject(sub,auth);
 end
 

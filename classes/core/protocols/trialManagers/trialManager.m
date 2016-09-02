@@ -1157,16 +1157,8 @@ classdef trialManager
                                 [tm, frameIndex, i, done, doFramePulse, didPulse] ...
                                     = tm.updateFrameIndexUsingTextureCache(frameIndexed, loop, trigger, timeIndexed, frameIndex, indexedFrames, size(stim,3), isRequesting, ...
                                     i, frameNum, timedFrames, responseOptions, done, doFramePulse, didPulse, scheduledFrameNum);
-                                try
-                                    indexPulse=getIndexPulse(spec,i);
-                                catch ex
-                                    sca
-                                    i
-                                    warning('indexPulse problem because i=0... seems to be more of a problem during reinforcement... does this depend on timeouts?');
-                                    getReport(ex)
-                                    keyboard
-                                end
-                                
+                                indexPulse=getIndexPulse(spec,i);
+
                                 switch strategy
                                     case 'textureCache'
                                         tm.drawFrameUsingTextureCache(window, i, frameNum, size(stim,3), lastI, dontclear, textures(i), destRect, ...

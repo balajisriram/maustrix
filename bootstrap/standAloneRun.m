@@ -72,7 +72,7 @@ try
     while exitByFinishingTrialQuota
         [rx,exitByFinishingTrialQuota]=st.doTrials(rx,maxTrialsPerSession,[]);
         deleteOnSuccess = true;
-        BCoreUtil.replicateTrialRecords(rx.standAlonePath,deleteOnSuccess);
+        BCoreUtil.replicateTrialRecords({rx.standAlonePath},deleteOnSuccess);
     end
     [~, ~] = emptyAllBoxes(rx,'done running trials in standAloneRun',auth);
     cleanup;
@@ -83,7 +83,7 @@ catch ex
     message = {sprintf('Failed for subject::%s at time::%d:%d on %d-%d-%d',subjectID,c(4),c(5),c(2),c(3),c(1)),getReport(ex,'extended','hyperlinks','off')};
     BCoreUtil.notify(BCoreUtil.EXPERIMENTER,'Error in Rig',message);
     deleteOnSuccess = true;
-    BCoreUtil.replicateTrialRecords(rx.standAlonePath,deleteOnSuccess);
+    BCoreUtil.replicateTrialRecords({rx.standAlonePath},deleteOnSuccess);
     cleanup;
     rethrow(ex)
 end

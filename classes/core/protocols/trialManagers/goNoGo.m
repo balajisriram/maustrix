@@ -100,7 +100,7 @@ classdef goNoGo<trialManager
             end
             
             % ========================================================
-            phaseType = getPhaseType(spec);
+            phaseType = spec.phaseType;
             framesUntilTransition=getFramesUntilTransition(spec);
             % now, if phaseType is 'reinforced', use correct and call updateRewards(tm,correct)
             % this trialManager-specific method should do the following:

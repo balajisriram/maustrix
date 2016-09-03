@@ -268,6 +268,7 @@ classdef BCoreUtil
                 for j=1:length(paths)
                     
                     [success(j), ~, messageID]=mkdir(fullfile(paths{j},subjectName));
+
                     switch messageID
                         case {'','MATLAB:MKDIR:DirectoryExists'}
                             d=BCoreUtil.cleandir(fullfile(paths{j},subjectName));
@@ -537,7 +538,7 @@ classdef BCoreUtil
                         % this is a struct - recursively call processFields on all fields of the struct
                         thisStructFields = fieldnames((trialRecords(1).(fn)));
                         % now call processFields recursively - pass in fn as a prefix (so we know how to store to fieldsinLUT)
-                        [sessionLUT fieldsInLUT theseStructs] = processFields(thisStructFields,sessionLUT,fieldsInLUT,[trialRecords.(fn)],fieldPath);
+                        [sessionLUT, fieldsInLUT, theseStructs] = BCoreUtil.processFields(thisStructFields,sessionLUT,fieldsInLUT,[trialRecords.(fn)],fieldPath);
                         % we have to return a temporary 'theseStructs' and then manually reassign in trialRecords unless can figure out correct indexing
                         for j=1:length(trialRecords)
                             trialRecords(j).(fn)=theseStructs(j);
@@ -590,9 +591,10 @@ classdef BCoreUtil
             % and also do some sanity checking
             
             fields=fieldnames(tr);
-            unsortedRecords=[];
-            order=[];
+            unsortedRecords = [];
+            order = [];
             
+%             this doesnt sound like the correct thing at all!! what was happening here? wtf??
             for i=1:length(fields)
                 [match, tokens] = regexpi(fields{i},'tr(\d+)','match','tokens');
                 if ~isempty(match) && ~strcmp(match,'tr0')
@@ -603,6 +605,7 @@ classdef BCoreUtil
             
             [~, ind]=sort(order);
             trialRecords=unsortedRecords(ind);
+            
             if isempty(trialRecords) % when would this happen?
                 return;
             end

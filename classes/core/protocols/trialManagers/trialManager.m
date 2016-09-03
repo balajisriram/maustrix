@@ -1352,7 +1352,7 @@ classdef trialManager
                         playRequestSoundLoop, isRequesting, soundNames, lastSoundsLooped);
                     % if goDirectlyToError, then reset newSpecInd to the first error phase in stimSpecs
                     if goDirectlyToError
-                        newSpecInd=find(strcmp(cellfun(@getPhaseType,stimSpecs,'UniformOutput',false),'reinforced'));
+                        newSpecInd=find(strcmp(cellfun(@(x) x.phaseType, stimSpecs,'UniformOutput',false),'reinforced'));
                     end
                     
                     

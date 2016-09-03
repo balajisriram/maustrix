@@ -1,6 +1,6 @@
 classdef BCore
     %%% BCore
-    % ## should be split into standAloneBCore in the future
+    % #### should be split into standAloneBCore in the future
     properties
         serverDataPath
         dbpath
@@ -410,7 +410,7 @@ classdef BCore
         function [compiledRecords]=getCompiledRecordsForSubjectID(r,sID)
             fprintf('loading compiled records for %s (from BCore)\n',sID);
             
-            [dataPath, ~] = fileparts(getStandAlonePath(r));
+            [dataPath, ~] = fileparts(r.standAlonePath);
             subjCompiledStorePath = fullfile(dataPath,'CompiledTrialRecords');
             subjSearchStr = sprintf('%s.*.mat',sID);
             d = dir(fullfile(subjCompiledStorePath,subjSearchStr));
@@ -437,10 +437,6 @@ classdef BCore
         
         function path = getServerDataPath(r)
             path = r.serverDataPath;
-        end
-        
-        function path = getStandAlonePath(r)
-            path = r.standAlonePath;
         end
         
         function s=getStationByID(r,id)
@@ -599,7 +595,7 @@ classdef BCore
             % subjPermStorePath = getPermanentStorePath(r);
             
             subjectSpecificPermStore = false;
-            subjPermStorePath = getStandAlonePath(r);
+            subjPermStorePath = r.standAlonePath;
             
             if isempty(subjPermStorePath)
                 conn = dbConn();

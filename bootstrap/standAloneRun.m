@@ -26,7 +26,7 @@ else
         case 0
             rx = BCoreUtil.createDefaultBCore();
         case 1
-            rx=BCore(BCoreUtil.getServerDataPath,0);
+            rx=BCore(BCoreUtil.getServerDataPath,0,fullfile(BCoreUtil.getBCoreDataPath,'PermanentTrialRecordStore'));
         otherwise
             error('standAloneRun:unknownError','either a single db.mat exists or none exist. We found %d. Clean your database',length(d));
     end

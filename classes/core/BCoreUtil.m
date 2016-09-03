@@ -37,7 +37,6 @@ classdef BCoreUtil
                         success=true;
                     end
                 case {'GLNXA64','MACI64'}
-                    warning('BCoreUtil:getMACAddress:unsupportedSystem','This system: %s is not supported', computer);
                     compinfo = Screen('Computer');
                     if isfield(compinfo, 'MACAddress')
                         mac = compinfo.MACAddress;

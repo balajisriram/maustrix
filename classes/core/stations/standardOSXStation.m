@@ -38,17 +38,12 @@ classdef standardOSXStation < station
         end
         
         function ports=readPorts(s)
-                status=fastDec2Bin(lptread(s.sensorPins.decAddr));
-                ports=status(s.sensorPins.bitLocs)=='0'; %need to set parity in station, assumes sensors emit +5V for unbroken beams
-                ports(s.sensorPins.invs)=~ports(s.sensorPins.invs);
+                ports = zeros(1,s.numPorts); % no reading should actually happen just return them
         end
           
         % valves
         function valves =getValves(s)
-            status=fastDec2Bin(lptread(s.valvePins.decAddr));
-            
-            valves=status(s.valvePins.bitLocs)=='1'; %need to set parity in station, assumes normally closed valves
-            valves(s.valvePins.invs)=~valves(s.valvePins.invs);
+            valves = zeros(1,s.numPorts);
         end
         
         function currentValveStates=verifyValvesClosed(station)
@@ -63,15 +58,7 @@ classdef standardOSXStation < station
         end
         
         function setValves(s, valves)
-            
-            if length(valves)==s.numPorts
-                valves=logical(valves);
-                valves(s.valvePins.invs)=~valves(s.valvePins.invs);
-                lptWriteBits(s.valvePins.decAddr,s.valvePins.bitLocs,valves);
-            else
-                error('valves must be a vector of length numValves')
-            end
-            
+            % do nothing
         end
         
         % display

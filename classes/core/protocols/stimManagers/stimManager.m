@@ -590,9 +590,7 @@ classdef stimManager
                     
                     %oldCLUT = Screen('LoadNormalizedGammaTable', w, linearizedCLUT,1);
                 case 'useThisMonitorsUncorrectedGamma'
-                    
-                    LUTBitDepth=8;
-                    numColors=2^LUTBitDepth; maxColorID=numColors-1; fraction=1/(maxColorID);
+                    numColors=2^s.LUTbits; maxColorID=numColors-1; fraction=1/(maxColorID);
                     ramp=[0:fraction:1];
                     grayColors= [ramp;ramp;ramp]';
                     %maybe ask for red / green / blue gun only

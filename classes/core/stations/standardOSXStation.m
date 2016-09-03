@@ -61,6 +61,11 @@ classdef standardOSXStation < station
             % do nothing
         end
         
+        function [endValveState, valveErrorDetails]=setAndCheckValves(st,requestedValves,expectedValveState,valveErrorDetails,startTime,description,barebones)
+            endValveState = requestedValves;
+            valveErrorDetails = [];
+        end
+                
         % display
         function out=getDisplaySize(s)
             [a, b]=Screen('DisplaySize',s.screenNum);
@@ -372,10 +377,6 @@ classdef standardOSXStation < station
     end
     
     methods (Static)
-        function [endValveState, valveErrorDetails]=setAndCheckValves(requestedValves,expectedValveState,valveErrorDetails,startTime,description,barebones)
-            endValveState = requestedValves;
-            valveErrorDetails = [];
-        end
         
         function out = allImagingTasksSame(oldTasks,newTasks)
             % compare the two lists of imaging tasks and return if they are the same or not
@@ -505,7 +506,8 @@ classdef standardOSXStation < station
             x=Screen('Resolution',max(Screen('Screens'))); %error -- this may not be the screen, but we don't have a handle to it...
             height=x.height;
             width=x.width;
-            hz=x.hz;
+            hz=60;
+
             warning('no match')
         end
     end

@@ -276,6 +276,7 @@ classdef afcCoherentDots<stimManager
 
         function [sm,updateSM,resInd,stimList,LUT,targetPorts,distractorPorts,details,text,indexPulses,imagingTasks,ITL] =...
                 calcStim(sm,tm,st,tR,~) % cR not used
+            
             resolutions = st.resolutions;
             displaySize = st.getDisplaySize();
             LUTbits = st.getLUTbits();
@@ -285,10 +286,7 @@ classdef afcCoherentDots<stimManager
             imagingTasks=[];
             [LUT, sm, updateSM]=getLUT(sm,LUTbits);
             
-            [resInd, height, width, hz] = st.chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(sm),getMaxHeight(sm));
-            if strcmp(computer, 'MACI64')
-                hz = 60; % mac does a weird thing needs to be a station specific method...####
-            end
+            [resInd, height, width, hz] = st.chooseLargestResForHzsDepthRatio(resolutions,[60],32,sm.maxWidth,sm.maxHeight);
             
             if isnan(resInd)
                 resInd=1;
@@ -309,8 +307,8 @@ classdef afcCoherentDots<stimManager
             type='expert';
             
             % set up params for computeGabors
-            height = min(height,getMaxHeight(sm));
-            width = min(width,getMaxWidth(sm));
+            height = min(height,sm.maxHeight);
+            width = min(width,sm.maxWidth);
             
             % lets save some of the details for later
             details.afcCoherentDotsType  = sm.getType(structize(sm));
@@ -445,7 +443,7 @@ classdef afcCoherentDots<stimManager
             discrimStim.ledON = false; %% #### presetting here
             
             preRequestStim=[];
-            preRequestStim.stimulus=sm.getInterTrialLuminance();
+            preRequestStim.stimulus=sm.interTrialLuminance;
             preRequestStim.stimType='loop';
             preRequestStim.scaleFactor=0;
             preRequestStim.startFrame=0;
@@ -461,11 +459,11 @@ classdef afcCoherentDots<stimManager
             end
             
            
-            interTrialStim.interTrialLuminance = sm.getInterTrialLuminance();            
-            interTrialStim.duration = sm.getInterTrialDuration();
-            ITL = sm.getInterTrialLuminance();
+            interTrialStim.interTrialLuminance = sm.interTrialLuminance;            
+            interTrialStim.duration = sm.interTrialDuration;
+            ITL = sm.interTrialLuminance();
             
-            details.interTrialDuration = sm.getInterTrialDuration();
+            details.interTrialDuration = sm.interTrialDuration;
             details.stimManagerClass = class(sm);
             details.trialManagerClass = class(tm);
             details.scaleFactor = scaleFactor;

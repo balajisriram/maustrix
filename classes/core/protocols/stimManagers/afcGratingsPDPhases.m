@@ -52,6 +52,7 @@ classdef afcGratingsPDPhases<stimManager
             % mean - 0<=m<=1
             % thresh - >0
             % doCombos
+            %#### needs to be removed
             s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
             
             s.LEDParams.active = false;

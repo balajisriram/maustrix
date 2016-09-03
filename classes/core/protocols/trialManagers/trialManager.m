@@ -1672,7 +1672,7 @@ classdef trialManager
             
             [~, ~, reallutsize] = Screen('ReadNormalizedGammaTable', 0);
             
-            if isreal(LUT) && all(size(LUT)==[256 3])
+            if isreal(LUT) && (all(size(LUT)==[256 3]) || all(size(LUT)==[1024 3]))
                 if any(LUT(:)>1) || any(LUT(:)<0)
                     error('LUT values must be normalized values between 0 and 1')
                 end
@@ -1685,6 +1685,7 @@ classdef trialManager
                 end
                 currentCLUT = Screen('ReadNormalizedGammaTable', 0);
                 
+                try
                 if all(all(abs(currentCLUT-LUT)<0.00001))
                     %pass
                 else
@@ -1694,7 +1695,10 @@ classdef trialManager
                     disp(currentCLUT-LUT); %error
                     error('the LUT is not what you think it is')
                 end
-                
+                catch
+                    sca;
+                    keyboard
+                end
                 switch tm.frameDropCorner{1}
                     case 'off'
                     case 'flickerRamp'

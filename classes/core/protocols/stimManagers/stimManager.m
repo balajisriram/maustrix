@@ -851,6 +851,39 @@ classdef stimManager
             analysisdata=[];
         end % end function
         
+        function ok = verifyLEDParamsOK(LEDParams)
+            ok = true;
+            if ~isstruct(LEDParams)
+                ok = ok && false;
+            end
+            
+            if LEDParams.numLEDs>0
+                % go through the Illumination Modes and check if they seem
+                % reasonable
+                cumulativeFraction = 0;
+                if LEDParams.active && isempty(LEDParams.IlluminationModes)
+                    disp('stimManager:verifyLEDParamsOK::LED was active but the illumination mode was absent!');
+                    ok = ok && false;
+                end
+                for i = 1:length(LEDParams.IlluminationModes)
+                    if any(LEDParams.IlluminationModes{i}.whichLED)>LEDParams.numLEDs
+                        disp('stimManager:verifyLEDParamsOK::asking for an LED that is greater than numLEDs');
+                        ok = ok && false;
+                    else
+                        if length(LEDParams.IlluminationModes{i}.whichLED)~= length(LEDParams.IlluminationModes{i}.intensity) || ...
+                                any(LEDParams.IlluminationModes{i}.intensity>1) || any(LEDParams.IlluminationModes{i}.intensity<0)
+                            disp('stimManager:verifyLEDParamsOK::specify a single intensity for each of the LEDs and these intensities hould lie between 0 and 1');
+                            ok = ok && false;
+                        end
+                    end
+                end
+                
+                if abs(cumulativeFraction(end)-1)>eps
+                    disp('stimManager:verifyLEDParamsOK::the cumulative fraction should sum to 1');
+                    ok = ok && false;
+                end
+            end    
+        end
+        
     end
 end
-

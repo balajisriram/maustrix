@@ -1,4 +1,9 @@
 classdef afcGratings<stimManager
+    % AFCGRATINGS
+    % This class is specifically designed for behavior. It does not incorporate
+    % many of the features usually present in GRATINGS like the ability to
+    % show multiple types of gratings in the same trial. It shows a single orientation
+    % somewhere "denoted in phaseDetails"
     
     properties
         pixPerCycs = [];
@@ -28,16 +33,13 @@ classdef afcGratings<stimManager
     
     methods
         function s=afcGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType, annuli,location,...
-                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doPostDiscrim, phaseDetails)
+                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, doPostDiscrim, phaseDetails)
             % AFCGRATINGS  class constructor.
-            % this class is specifically designed for behavior. It does not incorporate
-            % many of the features usually present in GRATINGS like the ability to
-            % show multiple types of gratings in the same trial.
+            % 
             % s = afcGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,annuli,location,
             %       waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance)
             % Each of the following arguments is a {[],[]} cell, each element is a
             % vector of size N
-            
             % pixPerCycs - pix/Cycle
             % driftfrequency - cyc/s
             % orientations - in radians
@@ -169,40 +171,11 @@ classdef afcGratings<stimManager
                 s.doPostDiscrim = false;
             end
             
-%             if nargin>=21
-%                 % LED state
-%                 if isstruct(LEDParams)
-%                     s.LEDParams = LEDParams;
-%                 else
-%                     error('LED state should be a structure');
-%                 end
-%                 if s.LEDParams.numLEDs>0
-%                     % go through the Illumination Modes and check if they seem
-%                     % reasonable
-%                     cumulativeFraction = 0;
-%                     if s.LEDParams.active && isempty(s.LEDParams.IlluminationModes)
-%                         error('need to provide atleast one illumination mode if LEDs is to be active');
-%                     end
-%                     for i = 1:length(s.LEDParams.IlluminationModes)
-%                         if any(s.LEDParams.IlluminationModes{i}.whichLED)>s.LEDParams.numLEDs
-%                             error('asking for an LED that is greater than numLEDs')
-%                         else
-%                             if length(s.LEDParams.IlluminationModes{i}.whichLED)~= length(s.LEDParams.IlluminationModes{i}.intensity) || ...
-%                                     any(s.LEDParams.IlluminationModes{i}.intensity>1) || any(s.LEDParams.IlluminationModes{i}.intensity<0)
-%                                 error('specify a single intensity for each of the LEDs and these intensities hould lie between 0 and 1');
-%                             else
-%                                 cumulativeFraction = [cumulativeFraction cumulativeFraction(end)+s.LEDParams.IlluminationModes{i}.fraction];
-%                             end
-%                         end
-%                     end
-%                     
-%                     if abs(cumulativeFraction(end)-1)>eps
-%                         error('the cumulative fraction should sum to 1');
-%                     else
-%                         s.LEDParams.cumulativeFraction = cumulativeFraction;
-%                     end
-%                 end
-%             end
+            if nargin>=21
+                assert(stimManager.verifyLEDParamsOK(LEDParams),'afcGratings:afcGratings:invalidInput','LEDparams not okay');
+            else
+                s.LEDParams = stimManager.getStandardLEDParams;
+            end
             
                 % phaseDetails
                 assert(isempty(phaseDetails)||...

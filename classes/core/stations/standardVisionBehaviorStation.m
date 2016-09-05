@@ -92,6 +92,10 @@ classdef standardVisionBehaviorStation < station
                 ports=status(s.sensorPins.bitLocs)=='0'; %need to set parity in station, assumes sensors emit +5V for unbroken beams
                 ports(s.sensorPins.invs)=~ports(s.sensorPins.invs);
         end
+        
+        function setStatePins(s)
+            % do nothing
+        end
           
         % valves
         function valves =getValves(s)
@@ -391,6 +395,10 @@ classdef standardVisionBehaviorStation < station
                 Screen('Flip',s.window);
                 
                 Screen('Close'); %leaving off second argument closes all textures
+                
+                Screen('Preference', 'TextRenderer', 1);  % consider moving to station.startPTB
+                Screen('Preference', 'TextAntiAliasing', 1); % consider moving to station.startPTB
+                Screen('Preference', 'TextAlphaBlending', 1);
                 
                 InitializePsychSound(true);
             catch ex

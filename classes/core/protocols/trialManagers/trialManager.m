@@ -97,6 +97,7 @@ classdef trialManager
         
         function [tm, updateTM, newSM, updateSM, stopEarly, tR, st, updateRM] = doTrial(tm,st,sm,sub,r,rn,tR,sessNo,cR)
             % This function handles most of the per-trial functionality, including stim creation and display, reward handling, and trialRecord recording.
+            % Mainly called by trainingStep.doTrial
             % Main functions called: calcStim, createStimSpecsFromParams, stimOGL
             % INPUTS:
             %   trialManager - the trial manager object
@@ -164,12 +165,12 @@ classdef trialManager
             tR(tRInd).subjectsInBox = r.getSubjectIDsForBoxID(r.getBoxIDForSubjectID(sub.id));
             tR(tRInd).trialManager = structize(decache(tm));
             tR(tRInd).stimManagerClass = class(sm);
-            tR(tRInd).stepName = getStepName(ts);
+            tR(tRInd).stepName = ts.stepName;
             tR(tRInd).trialManagerClass = class(tm);
-            tR(tRInd).scheduler = structize(getScheduler(ts));
-            tR(tRInd).criterion = structize(getCriterion(ts));
-            tR(tRInd).schedulerClass = class(getScheduler(ts));
-            tR(tRInd).criterionClass = class(getCriterion(ts));
+            tR(tRInd).scheduler = structize(ts.scheduler);
+            tR(tRInd).criterion = structize(ts.criterion);
+            tR(tRInd).schedulerClass = class(ts.scheduler);
+            tR(tRInd).criterionClass = class(ts.criterion);
             
             tR(tRInd).neuralEvents = [];
             
@@ -640,8 +641,8 @@ classdef trialManager
             %   - check for server and datanet commands
             %   - carry out airpuffs
             updateRM = false;
-            securePins(station);
-            %####setStatePins(station,'trial',true); % start the trial
+            station.securePins();
+            station.setStatePins('trial',true); % start the trial
             
             % =====================================================================================================================
             %   show movie following mario's 'ProgrammingTips' for the OpenGL version of PTB
@@ -657,12 +658,7 @@ classdef trialManager
             labelFrames = 1;            %print a frame ID on each frame (makes frame calculation slow!)
             textType = tm.showText;
             showText = ~strcmp(textType,'off'); %whether or not to call draw text to print any text on screen
-            
-            
-            Screen('Preference', 'TextRenderer', 1);  % consider moving to station.startPTB
-            Screen('Preference', 'TextAntiAliasing', 1); % consider moving to station.startPTB
-            Screen('Preference', 'TextAlphaBlending', 1);
-            
+
             if ismac
                 %http://psychtoolbox.org/wikka.php?wakka=FaqPerformanceTuning1
                 %Screen('DrawText'): This is fast and low-quality on MS-Windows and beautiful but slow on OS/X.

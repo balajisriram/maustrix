@@ -21,21 +21,12 @@ classdef goNoGo<trialManager
             t.responseLockoutMs=responseLockoutMs;
         end
         
-        function out = getPercentCorrectionTrials(tm)
-            out = tm.percentCorrectionTrials;
-        end
-        
-        function out=getRequestRewardSizeULorMS(trialManager)
-
-            out=trialManager.requestRewardSizeULorMS;
-        end
 
         function out = getResponseLockoutMs(tm)
             out=tm.responseLockoutMs;
         end
 
         function out=getResponsePorts(trialManager,totalPorts)
-
             out=setdiff(1:totalPorts,getRequestPorts(trialManager,totalPorts));
         end
         

@@ -142,7 +142,7 @@ classdef trainingStep
         
         function [graduate, keepWorking, secsRemainingTilStateFlip, sub, r, tR, st, manualTs] ...
                 =doTrial(ts,st,sub,r,rn,tR,sessNo,cR)
-            graduate=0;
+            graduate = false;
             
             manualTs=false;
             validateattributes(st,{'station'},{'nonempty'});
@@ -198,7 +198,6 @@ classdef trainingStep
                 end
             catch ex
                 display(ts)
-                %disp(['CAUGHT ERROR: ' getReport(ex,'extended')])
                 Screen('CloseAll');
                 rethrow(ex)
             end
@@ -211,56 +210,15 @@ classdef trainingStep
 
             tsName = [getNameFragment(ts.trialManager) '_' getNameFragment(ts.stimManager) '_' getNameFragment(ts.criterion) '_' getNameFragment(ts.scheduler)];
 
-            usersNameOfWholeStep=getStepName(ts); % optional name is used by physiology and could be used by BCore protocols.  defaults to '' when unspecified.
+            usersNameOfWholeStep=ts.stepName; % optional name is used by physiology and could be used by BCore protocols.  defaults to '' when unspecified.
             if ~strcmp(usersNameOfWholeStep,'')
                 tsName=[usersNameOfWholeStep '_' tsName];
             end
 
         end % end function
-        
-        function out=getCriterion(t)
-            out=t.criterion;
-        end
-        
-        function out=getScheduler(t)
-            out=t.scheduler;
-        end
-        
-        function out=getStepName(t)
-            out=t.stepName;
-        end
-        
-        function out=getStimManager(t)
-            out=t.stimManager;
-        end
-        
-        function out=getSVNCheckMode(t)
-            out=t.svnCheckMode;
-        end
-        
-        function out = getSVNRevNum(ts)
-            out=ts.svnRevNum;
-        end
-        
-        function out = getSVNRevURL(ts)
-            out=ts.svnRevURL;
-        end
-        
-        function out=getTrialManager(t)
-            out=t.trialManager;
-        end
-        
+
         function  out = sampleStimFrame(ts)
-            %returns a single image from calc stim movie
-
-            %out=sampleStimFrame(); one day?
-            if isa(ts.stimManager,'stimManager')
             out=sampleStimFrame(ts.stimManager,class(ts.trialManager));
-            else
-                out=[];
-                warning('not a stimManager:  maybe the current class definitions don''t match the BCore')
-            end
-
         end
         
         function ts=setReinforcementParam(ts,param,val)
@@ -270,30 +228,14 @@ classdef trainingStep
         end 
         
         function ts = setStimManager(ts, stim)
-            if isa(stim, 'stimManager')
-                ts.stimManager = stim ;
-            else
-                class(stim)
-                error('must be stimManager')
-
-            end
+            assert(isa(stim,'stimManager'),'trainingStep:setStimManager:improperDataType','must be stimManager. was: %s',class(stim));
+            ts.stimManager = stim ;
         end
         
         function ts=setTrialManager(ts,tm)
-            if(isa(tm, 'trialManager'))
-
-                    ts.trialManager = tm;
-
-            else
-                 class(tm)
-                error('input is not of type trialManager');
-            end
+            assert(isa(tm,'trialManager'),'trainingStep:setStimManager:improperDataType','must be trialManager. was: %s',class(tm));
+            ts.trialManager = tm;
         end
-        
-        function trainingStep=stopEyeTracking(trainingStep)
-
-            trainingStep.trialManager=stopEyeTracking(trainingStep.trialManager);
-        end   
         
     end
     

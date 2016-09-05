@@ -3,27 +3,20 @@ classdef stimManager
     properties
         maxWidth
         maxHeight
-        scaleFactor
         interTrialLuminance
         interTrialDuration
     end
     
     methods
         % CORE
-        function s=stimManager(maxWidth,maxHeight,scaleFactor,interTrialLuminance)
+        function s=stimManager(maxWidth,maxHeight,interTrialLuminance)
             % STIMMANAGER  class constructor. ABSTRACT CLASS -- DO NOT INSTANTIATE
-            % s = stimManager(maxWidth,maxHeight,scaleFactor,interTrialLuminance)
+            % s = stimManager(maxWidth,maxHeight,interTrialLuminance)
             if maxWidth>0 && maxHeight>0
                 s.maxWidth=maxWidth;
                 s.maxHeight=maxHeight;
             else
                 error('maxWidth and maxHeight must be positive')
-            end
-            
-            if (length(scaleFactor)==2 && all(scaleFactor>0)) || (length(scaleFactor)==1 && scaleFactor==0)
-                s.scaleFactor=scaleFactor;
-            else
-                error('scale factor is either 0 (for scaling to full screen) or [width height] positive values')
             end
             
             if isnumeric(interTrialLuminance)
@@ -705,7 +698,6 @@ classdef stimManager
             %   schedulerClass
             %   criterionClass
             %   reinforcementManagerClass
-            %   scaleFactor
             %   type
             %   targetPorts
             %   distractorPorts
@@ -738,7 +730,6 @@ classdef stimManager
             [out.schedulerClass, compiledLUT]                             =extractFieldAndEnsure(trialRecords,{'schedulerClass'},'scalarLUT',compiledLUT);
             [out.criterionClass, compiledLUT]                             =extractFieldAndEnsure(trialRecords,{'criterionClass'},'scalarLUT',compiledLUT);
             [out.reinforcementManagerClass, compiledLUT]                  =extractFieldAndEnsure(trialRecords,{'reinforcementManagerClass'},'scalarLUT',compiledLUT);
-            % [out.scaleFactor compiledLUT]                                =extractFieldAndEnsure(trialRecords,{'scaleFactor'},'equalLengthVects',compiledLUT);
             % [out.type compiledLUT]                                       =extractFieldAndEnsure(trialRecords,{'type'},'mixed',compiledLUT);
             [out.targetPorts, compiledLUT]                                =extractFieldAndEnsure(trialRecords,{'targetPorts'},{'bin2dec',num2cell(out.numPorts)},compiledLUT);
             [out.distractorPorts, compiledLUT]                            =extractFieldAndEnsure(trialRecords,{'distractorPorts'},{'bin2dec',num2cell(out.numPorts)},compiledLUT);
@@ -885,5 +876,9 @@ classdef stimManager
             end    
         end
         
+        function out = getStandardLEDParams()
+            out.numLEDs = 0;
+            out.active = false;
+        end
     end
 end

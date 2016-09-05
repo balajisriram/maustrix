@@ -13,6 +13,8 @@ classdef standardVisionBehaviorStation < station
         window = [];
         imagingTasks = [];
         ifi = [];
+        
+        arduinoCONN = [];
     end
     
     properties (Dependent)

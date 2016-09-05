@@ -848,4 +848,3 @@ classdef afcCoherentDots<stimManager
     end
     
 end
-

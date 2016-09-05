@@ -1200,7 +1200,7 @@ classdef trialManager
                         if window>=0 && showText
                             xTextPos = tm.drawText(window, labelFrames, subID, xOrigTextPos, yTextPos, normBoundsRect, stimID, protocolStr, ...
                                 textLabel, trialLabel, i, frameNum, manual, didManual, didAPause, phaseRecords(phaseNum).responseDetails.numMisses, ...
-                                phaseRecords(phaseNum).responseDetails.numApparentMisses, phaseInd, getStimType(spec),textType);
+                                phaseRecords(phaseNum).responseDetails.numApparentMisses, phaseInd, spec.stimType,textType);
                         end
                         
                         timestamps.textDrawn=GetSecs;

@@ -725,5 +725,6 @@ classdef BCoreUtil
                     devs{i,2} = com;
                 end
             end
+        end
     end
 end

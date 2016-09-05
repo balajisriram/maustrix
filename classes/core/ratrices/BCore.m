@@ -340,7 +340,7 @@ classdef BCore
             if index>0
                 b=r.boxes{index};
             else
-                error('request for box id not contained in BCore')
+                error('BCore:getBoxFromID:incompatibleValue','request for box id not contained in BCore')
             end
         end
         
@@ -387,7 +387,7 @@ classdef BCore
                 end
                 if ~foundSubj || isempty(out)
                     disp(s)
-                    warning('no box for given subject')
+                    warning('BCore:getBoxIDForSubjectID:unfilledValue','no box for given subject')
                 end
             else
                 error('no such subject id')

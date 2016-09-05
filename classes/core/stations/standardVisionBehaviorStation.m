@@ -378,7 +378,7 @@ classdef standardVisionBehaviorStation < station
                 end
                 
                 texture=Screen('MakeTexture', s.window, BlackIndex(s.window));
-                [resident texidresident] = Screen('PreloadTextures', s.window);
+                [resident, texidresident] = Screen('PreloadTextures', s.window);
                 
                 if resident ~= 1
                     disp(sprintf('error: blank texture not cached'));
@@ -392,6 +392,7 @@ classdef standardVisionBehaviorStation < station
                 
                 Screen('Close'); %leaving off second argument closes all textures
                 
+                InitializePsychSound(true);
             catch ex
                 s.ifi=[];
                 s.window=[];

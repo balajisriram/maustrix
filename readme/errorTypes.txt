@@ -6,3 +6,4 @@ errorTypes
 4. improperValue
 5. configurationUnavailable
 6. AccessUnavailable
+7. unfilledValue

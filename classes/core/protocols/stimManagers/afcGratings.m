@@ -22,6 +22,7 @@ classdef afcGratings<stimManager
         mean = 0;
         thresh = 0;
         doCombos = false;
+        doPostDiscrim = true;
         
         LUT =[];
         LUTbits=0;
@@ -33,7 +34,7 @@ classdef afcGratings<stimManager
     
     methods
         function s=afcGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType, annuli,location,...
-                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, phaseDetails, LEDParams)
+                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, doPostDiscrim, phaseDetails, LEDParams)
             % AFCGRATINGS  class constructor.
             % 
             % s = afcGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,annuli,location,
@@ -172,6 +173,9 @@ classdef afcGratings<stimManager
                     'afcGratings:afcGratings:incorrectvalue','phaseLengthInFrames must be numeric!');
             end
             s.phaseDetails = phaseDetails;
+            
+            assert(islogical(doPostDiscrim),'afcGratings:afcGratings:invalidInput','doPostDiscrim not logical');
+            s.doPostDiscrim = doPostDiscrim;
             
             if nargin>=21
                 assert(stimManager.verifyLEDParamsOK(LEDParams),'afcGratings:afcGratings:invalidInput','LEDparams not okay');

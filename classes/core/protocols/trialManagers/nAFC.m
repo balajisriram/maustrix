@@ -217,6 +217,14 @@ classdef nAFC<trialManager
                 error('need a station object')
             end
         end
+        
+        function sm = makeStandardSoundManager()
+            sm=soundManager({soundClip('correctSound','allOctaves',400,20000), ...
+                soundClip('keepGoingSound','allOctaves',300,20000), ...
+                soundClip('trySomethingElseSound','gaussianWhiteNoise'), ...
+                soundClip('wrongSound','tritones',[300 400],20000),...
+                soundClip('trialStartSound','empty')});
+        end
     end
     
     methods (Access = ?trialManager)

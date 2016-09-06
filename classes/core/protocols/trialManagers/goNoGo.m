@@ -3,16 +3,25 @@ classdef goNoGo<trialManager
     properties
         percentCorrectionTrials=0;
         responseLockoutMs=[];
+        fractionGo = 0.5;
+    end
+    
+    properties (Constant = true)
+        responsePorts = 2;
+        requestPorts = 2;
     end
     
     methods
         function t=goNoGo(sndMgr, reinfMgr, delMgr, frameDropCorner, dropFrames, requestPort, saveDetailedFrameDrops, ...
-                responseWindowMs, description, showText,percentCorrectionTrials,responseLockoutMs)
+                responseWindowMs, description, showText,fractionGo,percentCorrectionTrials,responseLockoutMs)
             % goNoGo  class constructor.
             % t=goNoGo(soundManager,percentCorrectionTrials,responseLockoutMs,rewardManager,
             %         [eyeController],[frameDropCorner],[dropFrames],[displayMethod],[requestPorts],[saveDetailedFramedrops],
             %		  [delayFunction],[responseWindowMs],[showText])
             t=t@trialManager(sndMgr,reinfMgr,delMgr,frameDropCorner,dropFrames,requestPort,saveDetailedFrameDrops,responseWindowMs,description,showText);
+            
+            assert((fractionGo>=0 && fractionGo<=1),'goNoGo:goNoGo:improperValue','fractionGo should be >=0 and <=1');
+            t.fractionGo=fractionGo;
             
             assert((percentCorrectionTrials>=0 && percentCorrectionTrials<=1),'goNoGo:goNoGo:improperValue','percentCorrectionTrials should be >=0 and <=1');
             t.percentCorrectionTrials=percentCorrectionTrials;
@@ -20,21 +29,9 @@ classdef goNoGo<trialManager
             assert(responseLockoutMs>=0 ,'goNoGo:goNoGo:improperValue','responseLockoutMs should be >=0');
             t.responseLockoutMs=responseLockoutMs;
         end
-
-        function out = getResponseLockoutMs(tm)
-            out=tm.responseLockoutMs;
-        end
-
-        function out=getResponsePorts(trialManager,totalPorts)
-            out=setdiff(1:totalPorts,getRequestPorts(trialManager,totalPorts));
-        end
         
         function out=stationOKForTrialManager(t,s)
-            if isa(s,'station')
-                out = getNumPorts(s)>=3;
-            else
-                error('need a station object')
-            end
+            out = true; % #### need to come up wirth rules to determine if gng stations are different
         end
         
         function [tm, trialDetails, result, spec, rewardSizeULorMS, requestRewardSizeULorMS, ...
@@ -72,10 +69,10 @@ classdef goNoGo<trialManager
                 targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
                 floatprecision, textures, destRect, requestRewardDone, punishResponses,compiledRecords);
             if isempty(possibleTimeout)
-                if ~isempty(result) && ~ischar(result) && isempty(correct) && strcmp(getPhaseLabel(spec),'reinforcement')
+                if ~isempty(result) && ~ischar(result) && isempty(correct) && strcmp(spec.phaseLabel,'reinforcement')
                     resp=find(result);
                     if length(resp)==1
-                        correct = ismember(resp,targetPorts);
+                        correct = strcmp(trialRecords.trialDetails.targetStim ,'go');
                         if punishResponses % this means we got a response, but we want to punish, not reward
                             correct=0; % we could only get here if we got a response (not by request or anything else), so it should always be correct=0
                         end
@@ -190,7 +187,7 @@ classdef goNoGo<trialManager
             
         end  % end function
         
-        function [targetPorts, distractorPorts, details]=assignPorts(details,lastTrialRec,responsePorts)
+        function [targetStim, details]=assignStim(tm,details,lastTrialRec)
             lastResult=[];
             lastCorrect=[];
             lastWasCorrection=0;
@@ -223,26 +220,24 @@ classdef goNoGo<trialManager
             end
             
             % determine correct port
-            if ~isempty(lastCorrect) && ~isempty(lastResult) && ~lastCorrect && length(lastTrialRec.targetPorts)==3 && (lastWasCorrection || rand<details.pctCorrectionTrials)
+            if ~isempty(lastCorrect) && ~isempty(lastResult) && ~lastCorrect && (lastWasCorrection || rand<details.pctCorrectionTrials)
                 details.correctionTrial=1;
                 %correction trials are a very strange brew for goNoGo... i
                 %doubt its what we want...
                 
                 %'correction trial!'
-                targetPorts=lastTrialRec.targetPorts; % same ports are correct
+                targetStim=lastTrialRec.trialDetails.targetStim; % same ports are correct
             else
                 details.correctionTrial=0;
-                targetPorts=responsePorts; %choose all response port to be correct answer
-                %pmm:  these apear to be all "go" trials how do we get "no go" trials?
-                % i guess the idea of a "trial" is bankrupt in this mode
-                % the noGos are all the momement in time of waiting, which
-                % could be trials... as long as there is no auditory cue and/or
-                % flanker that is correlated with the noGo stimulus
-            end
-            distractorPorts=setdiff(responsePorts,targetPorts);
-            
+                if rand<tm.fractionGo
+                    targetStim = 'go';
+                    details.targetStim = 'go';
+                else
+                    targetStim = 'noGo';
+                    details.targetStim = 'noGo';
+                end
+            end            
         end
-        
     end
     
     methods (Access = ?trialManager)
@@ -282,25 +277,18 @@ classdef goNoGo<trialManager
             which = strcmp('discrimStim',stimNames);
             validateattributes(stimParams{which},{'struct'},{'nonempty'});
             
-            addedPostDiscrimPhases=0;
             which = strcmp('postDiscrimStim',stimNames);
-            if ~isempty(stimParams{which})
-                addedPostDiscrimPhases=addedPostDiscrimPhases+length(stimParams{which});
-            end
-            
+            validateattributes(stimParams{which},{'struct'},{'nonempty'});
+
             framesUntilOnset=floor(tm.delayManager.calcAutoRequest()*hz/1000); % autorequest is in ms, convert to frames
             responseWindow=floor(tm.responseWindowMs*hz/1000);
             
             % figure out the indices
-            preRequestIndex = 1;last = 1;
-            discrimIndex = last+1;last = last+1;
-            if addedPostDiscrimPhases
-                postDiscrimIndices = last+1:last+1+addedPostDiscrimPhases;
-                last = last+addedPostDiscrimPhases;
-            end
-            reinforcementIndex = last+1; last = last+1;
-            itlIndex = last+1;
-            
+            preRequestIndex = 1;
+            discrimIndex = 2;
+            postDiscrimIndex = 3;
+            reinforcementIndex = 4;
+            itlIndex = 5;
             
             % now generate our stimSpecs
             startingStimSpecInd=1;
@@ -309,22 +297,18 @@ classdef goNoGo<trialManager
             doNothing = [];
             
             % preRequest
-            assert(~isempty(requestPorts) || ~isempty(framesUntilOnset),'nAFC:createStimSpecsFromParams:incompatibleInputs','requestPorts or framesUntilOnset should be non-empty');
+            assert(~isempty(framesUntilOnset),'goNoGo:createStimSpecsFromParams:incompatibleInputs','framesUntilOnset should be non-empty');
             which = strcmp('preRequestStim',stimNames);
             preRequestStim = stimParams{which};
-            if preRequestStim.punishResponses
-                criterion={doNothing,discrimIndex,requestPorts,discrimIndex,[targetPorts distractorPorts],reinforcementIndex};
-            else
-                criterion={doNothing,discrimIndex,requestPorts,discrimIndex};
-            end
+            assert(preRequestStim.punishResponses,'goNoGo:createStimSpecsFromParams:incompatibleInputs','framesUntilOnset should be non-empty');
+            criterion={doNothing,discrimIndex}; % preRequest responses are punished
             stimSpecs{i} = stimSpec(preRequestStim.stimulus,criterion,preRequestStim.stimType,preRequestStim.startFrame,...
                 framesUntilOnset,preRequestStim.autoTrigger,preRequestStim.scaleFactor,false,hz,'pre-request','pre-request',...
                 preRequestStim.punishResponses,false,[],preRequestStim.ledON);
             i=i+1;
             
             % discrim
-            criterion={doNothing,i+1,[targetPorts distractorPorts],reinforcementIndex};
-            % we dont know if 'i+1' is postDiscrim or reinforcement right now...but if you respond, go to reinforcement
+            criterion={doNothing,postDiscrimIndex,targetPorts,reinforcementIndex};
             which = strcmp('discrimStim',stimNames);
             discrimStim = stimParams{which};
             framesUntilTimeoutDiscrim=discrimStim.framesUntilTimeout;
@@ -335,24 +319,21 @@ classdef goNoGo<trialManager
             % #### what is the purpose of responseWindow in trialManager????
             
             % optional postDiscrim Phase
-            if addedPostDiscrimPhases
-                assert(~isinf(framesUntilTimeoutDiscrim),'nAFC:incompatbleParamValue','you are adding post-discrim phases while discrim doesn''t timeout');
-                which = strcmp('postDiscrimStim',stimNames);
-                postDiscrimStim = stimParams{which};
-                for k = 1:length(postDiscrimStim) % loop through the post discrim stims
-                    criterion={doNothing,i+1,[targetPorts distractorPorts],reinforcementIndex}; % any response in any part takes you to the reinf
-                    
-                    assert(~postDiscrimStim(k).punishResponses,'nAFC:createStimSpecsFromParams:incorrectValues','cannot punish responses in postDiscrimStim');
-                    if length(postDiscrimStim)>1
-                        postDiscrimName = sprintf('post-discrim%d',k);
-                    else
-                        postDiscrimName = 'post-discrim';
-                    end
-                    stimSpecs{i} = stimSpec(postDiscrimStim(k).stimulus,criterion,postDiscrimStim(k).stimType,postDiscrimStim(k).startFrame,...
-                        postDiscrimStim(k).framesUntilTimeout,postDiscrimStim(k).autoTrigger,postDiscrimStim(k).scaleFactor,false,hz,'post-discrim',postDiscrimName,...
-                        postDiscrimStim(k).punishResponses,false,[],postDiscrimStim(k).ledON);
-                    i=i+1;
+            which = strcmp('postDiscrimStim',stimNames);
+            postDiscrimStim = stimParams{which};
+            for k = 1:length(postDiscrimStim) % loop through the post discrim stims
+
+                criterion={doNothing,i+1,targetPorts,reinforcementIndex}; % any response in any part takes you to the reinf
+                
+                if length(postDiscrimStim)>1
+                    postDiscrimName = sprintf('post-discrim%d',k);
+                else
+                    postDiscrimName = 'post-discrim';
                 end
+                stimSpecs{i} = stimSpec(postDiscrimStim(k).stimulus,criterion,postDiscrimStim(k).stimType,postDiscrimStim(k).startFrame,...
+                    postDiscrimStim(k).framesUntilTimeout,postDiscrimStim(k).autoTrigger,postDiscrimStim(k).scaleFactor,false,hz,'post-discrim',postDiscrimName,...
+                    postDiscrimStim(k).punishResponses,false,[],postDiscrimStim(k).ledON);
+                i=i+1;
             end
 
             % required reinforcement phase
@@ -367,5 +348,16 @@ classdef goNoGo<trialManager
             stimSpecs{i} = stimSpec(interTrialStim.interTrialLuminance,criterion,'cache',0,interTrialStim.duration,[],0,true,hz,'itl','intertrial luminance',false,false,[],false); % do not punish responses here. itl has LED hardcoded to false
             i=i+1;
         end
+    end
+    
+    methods (Static)
+        function sm = makeStandardSoundManager()
+            sm=soundManager({soundClip('correctSound','allOctaves',400,20000), ...
+                soundClip('keepGoingSound','allOctaves',300,20000), ...
+                soundClip('trySomethingElseSound','gaussianWhiteNoise'), ...
+                soundClip('wrongSound','tritones',[300 400],20000),...
+                soundClip('stimOnSound','allOctaves',350,20000),...
+                soundClip('trialStartSound','allOctaves',200,20000)});
+        end 
     end
 end

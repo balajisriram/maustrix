@@ -18,7 +18,7 @@ classdef trialManager
     end
     
     methods
-        function t=trialManager(sndMgr,reinfMgr,delMgr,frameDropCorner,dropFrames,requestPorts,saveDetailedFramedrops,customDescription,responseWindowMs,showText)
+        function t=trialManager(sndMgr,reinfMgr,delMgr,frameDropCorner,dropFrames,requestPorts,saveDetailedFramedrops,responseWindowMs,customDescription,showText)
             % TRIALMANAGER  class constructor.  ABSTRACT CLASS-- DO NOT INSTANTIATE
             % t=trialManager(soundManager,reinforcementManager,eyeController,customDescription,
             %   frameDropCorner, dropFrames, displayMethod, requestPorts,saveDetailedFramedrops,delayManager,responseWindowMs[,showText])

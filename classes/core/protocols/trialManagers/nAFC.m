@@ -343,4 +343,3 @@ classdef nAFC<trialManager
         end
     end
 end
-

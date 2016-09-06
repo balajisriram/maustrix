@@ -97,8 +97,8 @@ classdef BCoreUtil
             reqPort = 'center';
             customDescription = 'trialNAFC';
             showText = 'full';
-            
-            tm=nAFC(sm,rm,noDelay,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,customDescription,[1 inf],showText,percentCorrectionTrials);
+            responseWindowMS = [1 inf];
+            tm=nAFC(sm,rm,noDelay,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,responseWindowMS,customDescription,showText,percentCorrectionTrials);
         end
         
         function rx = createDefaultBCore()

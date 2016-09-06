@@ -84,7 +84,7 @@ classdef stimManager
                         (any(ports) && isempty(requestOptions)))
                     % play white noise (when responsePort triggered during phase 1)
                     playLoopSounds{end+1} = 'trySomethingElseSound';
-                elseif ismember(phaseType,{'discrim','pre-response'}) && any(ports(requestOptions))
+                elseif ismember(phaseType,{'discrim','post-discrim','pre-response'}) && any(ports(requestOptions))
                     % play stim sound (when stim is requested during phase 2)
                     playLoopSounds{end+1} = 'keepGoingSound';
                 elseif strcmp(phaseType,'reinforced') && stepsInPhase <= 0 && trialDetails.correct

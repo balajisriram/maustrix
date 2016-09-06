@@ -829,16 +829,6 @@ classdef trialManager
             
             headroom=nan(1,responseDetails.numDetailedDrops);
             
-            if ~isempty(rn)
-                constants = getConstants(rn);
-            end
-            % ####
-%             if strcmp(station.rewardMethod,'serverPump')
-%                 if isempty(rn) || ~isa(rn,'rnet')
-%                     error('need an rnet for station with rewardMethod of serverPump')
-%                 end
-%             end
-            
             [keyIsDown,secs,keyCode]=KbCheck; %load mex files into ram + preallocate return vars
             GetSecs;
             Screen('Screens');

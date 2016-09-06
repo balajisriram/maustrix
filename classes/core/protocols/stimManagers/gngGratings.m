@@ -29,7 +29,7 @@ classdef gngGratings<afcGratings
             s = s@afcGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType, annuli,location,...
                 waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, doPostDiscrim, phaseDetails, LEDParams);
             
-            assert(~isinf(maxDuration),'gngGratings:gngGratings:improperValue','maxDuration cannot be infinity');
+            assert(~any(isinf([maxDuration{1} maxDuration{2}])),'gngGratings:gngGratings:improperValue','maxDuration cannot be infinity');
             
         end
         
@@ -39,12 +39,13 @@ classdef gngGratings<afcGratings
             
             assert(isa(tm,'goNoGo'),'gngGratings:calcStim:incompatibleType','gngGratimgs requires a goNoGo tm. You gave %s',class(tm));
             resolutions = st.resolutions;
-            LUTbits = st.getLUTBits();
+            LUTbits = st.getLUTbits();
             responsePorts = tm.responsePorts;
-            targetPorts = tm.targetPorts;
+            targetPorts = responsePorts;
             distractorPorts = [];
             indexPulses=[];
             imagingTasks=[];
+            scaleFactor = sm.scaleFactor;
             [LUT, sm, updateSM]=getLUT(sm,LUTbits);
             
             [resInd, height, width, hz] = st.chooseLargestResForHzsDepthRatio(resolutions,[60],32,sm.maxWidth,sm.maxHeight);
@@ -67,7 +68,7 @@ classdef gngGratings<afcGratings
             width = min(width,sm.maxWidth);
             
             % lets save some of the details for later
-            details.afcGratingType = sm.getType(structize(sm));
+%             details.afcGratingType = sm.getType(structize(sm));
             
             % whats the chosen stim?
             if strcmp(targetStim,'go')
@@ -82,10 +83,10 @@ classdef gngGratings<afcGratings
             
             stim.height = height;
             stim.width = width;
-            stim.rngMethod = sm.ordering.method;
-            if isempty(sm.ordering.seed)
-                stim.seedVal = sum(100*clock);
-            end
+%             stim.rngMethod = sm.ordering.method;
+%             if isempty(sm.ordering.seed)
+%                 stim.seedVal = sum(100*clock);
+%             end
             
             % whats the chosen stim?
             switch sm.doCombos
@@ -99,9 +100,12 @@ classdef gngGratings<afcGratings
                     stim.contrast           = chooseFrom(sm.contrasts{chosenStimIndex});
                     stim.radius             = chooseFrom(sm.radii{chosenStimIndex});
                     stim.annulus            = chooseFrom(sm.annuli{chosenStimIndex});
-                    stim.location           = chooseFrom(sm.location{chosenStimIndex});
                     stim.maxDuration        = round(chooseFrom(sm.maxDuration{chosenStimIndex})*hz);
                     stim.waveform           = sm.waveform;
+                    
+                    locations               = sm.location{chosenStimIndex};
+                    numLocations            = size(locations,1);
+                    stim.location           = locations(chooseFrom(1:numLocations),:);
                 case false
                     % #### need to use the seed val somehow not used here
                     tempVar = randperm(length(sm.pixPerCycs{chosenStimIndex}));
@@ -116,8 +120,11 @@ classdef gngGratings<afcGratings
                     stim.location           = sm.location{chosenStimIndex}(which,:);
                     stim.maxDuration        = round(sm.maxDuration{chosenStimIndex}(which)*hz);
                     stim.waveform           = sm.waveform;
+                otherwise
+                    sca;
+                    keyboard
             end
-            
+
             stim.radiusType = sm.radiusType;
             stim.normalizationMethod=sm.normalizationMethod;
             stim.height=height;
@@ -128,14 +135,14 @@ classdef gngGratings<afcGratings
             
             % have a version in ''details''
             details.doCombos            = stim.doCombos;
-            details.pixPerCycs          = stim.pixPerCycs;
-            details.driftfrequencies    = stim.driftfrequencies;
-            details.orientations        = stim.orientations;
-            details.phases              = stim.phases;
-            details.contrasts           = stim.contrasts;
+            details.pixPerCycs          = stim.pixPerCyc;
+            details.driftfrequencies    = stim.driftfrequency;
+            details.orientations        = stim.orientation;
+            details.phases              = stim.phase;
+            details.contrasts           = stim.contrast;
             details.maxDuration         = stim.maxDuration;
-            details.radii               = stim.radii;
-            details.annuli              = stim.annuli;
+            details.radii               = stim.radius;
+            details.annuli              = stim.annulus;
             details.waveform            = stim.waveform;
             
             TypeIsExpert = any(sm.driftfrequencies{1}>0)||any(sm.driftfrequencies{2}>0);
@@ -181,7 +188,7 @@ classdef gngGratings<afcGratings
                         stim.annuliMatrices = {[]};
                     end
                 case false
-                    type = 'static';
+                    type = 'cache';
                     grating = sm.computeGabor(stim); % #### new                    
             end
 
@@ -194,10 +201,10 @@ classdef gngGratings<afcGratings
             switch type
                 case 'expert'
                     discrimStim.stimulus=stim;
-                case 'static'
+                case 'cache'
                     discrimStim.stimulus=grating;
             end
-            
+
             discrimStim.stimType=type;
             discrimStim.scaleFactor=scaleFactor;
             discrimStim.startFrame=0;
@@ -209,7 +216,7 @@ classdef gngGratings<afcGratings
             
             preRequestDelay = 100;
             preRequestStim=[];
-            preRequestStim.stimulus=sm.getInterTrialLuminance();
+            preRequestStim.stimulus=sm.interTrialLuminance;
             preRequestStim.stimType='loop';
             preRequestStim.scaleFactor=0;
             preRequestStim.startFrame=0;
@@ -221,20 +228,20 @@ classdef gngGratings<afcGratings
             
             postDiscrimStim = preRequestStim;
             postDiscrimStim.framesUntilTimeout = tm.responseLockoutMs/1000*hz;
-            postDiscrimStim.punishResponses = punish;
+            postDiscrimStim.punishResponses = false;
             
-            interTrialStim.interTrialLuminance = sm.getInterTrialLuminance();
-            interTrialStim.duration = sm.getInterTrialDuration();
-            ITL = sm.getInterTrialLuminance();
+            interTrialStim.interTrialLuminance = sm.interTrialLuminance;
+            interTrialStim.duration = sm.interTrialDuration;
+            ITL = sm.interTrialLuminance;
             
             
-            details.interTrialDuration = sm.getInterTrialDuration();
+            details.interTrialDuration = sm.interTrialDuration;
             details.stimManagerClass = class(sm);
             details.trialManagerClass = class(tm);
             details.scaleFactor = scaleFactor;
             details.preRequestDelay = preRequestDelay;
             
-            if strcmp(trialManagerClass,'nAFC') && details.correctionTrial
+            if strcmp(class(tm),'nAFC') && details.correctionTrial
                 text='correction trial!';
             else
                 text=sprintf('thresh: %g',sm.thresh);

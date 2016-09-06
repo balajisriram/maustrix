@@ -93,7 +93,7 @@ classdef standardVisionBehaviorStation < station
                 ports(s.sensorPins.invs)=~ports(s.sensorPins.invs);
         end
         
-        function setStatePins(s)
+        function setStatePins(s,which,val)
             % do nothing
         end
           

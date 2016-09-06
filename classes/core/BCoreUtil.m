@@ -70,6 +70,15 @@ classdef BCoreUtil
                 soundClip('trialStartSound','empty')});
         end
         
+        function sm = makeStandardSoundManagerGNG()
+            sm=soundManager({soundClip('correctSound','allOctaves',400,20000), ...
+                soundClip('keepGoingSound','allOctaves',300,20000), ...
+                soundClip('trySomethingElseSound','gaussianWhiteNoise'), ...
+                soundClip('wrongSound','tritones',[300 400],20000),...
+                soundClip('stimOnSound','allOctaves',350,20000),...
+                soundClip('trialStartSound','allOctaves',200,20000)});
+        end
+        
         function rm = makeStandardReinforcementManager()
             rewardScalar          =1;
             requestRewardScalar   =0;
@@ -99,6 +108,28 @@ classdef BCoreUtil
             showText = 'full';
             responseWindowMS = [1 inf];
             tm=nAFC(sm,rm,noDelay,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,responseWindowMS,customDescription,showText,percentCorrectionTrials);
+        end
+        
+        function tm = makeStandardTrialManagerGNG()
+            % Create Sound Manager
+            sndm = BCoreUtil.makeStandardSoundManagerGNG();
+            
+            % Reward Manager
+            rm = BCoreUtil.makeStandardReinforcementManager();
+            
+            
+            dropFrames=false;
+            percentCorrectionTrials = 0.5;
+            frameDropCorner={'off'};
+            saveDetailedFrameDrops = false;
+            reqPort = 'center';
+            customDescription = 'trialGNG';
+            showText = 'full';
+            responseWindowMS = [1 inf];
+            fractionGo = 0.5;
+            responseLockoutMs = 1000;
+            tm=goNoGo(sndm,rm,noDelay,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,...
+                responseWindowMS,customDescription,showText,fractionGo,percentCorrectionTrials,responseLockoutMs);
         end
         
         function rx = createDefaultBCore()
@@ -147,6 +178,7 @@ classdef BCoreUtil
         end
         
         function r = setProtocolDEMOGNG(r,subjIDs)
+            
             assert(isa(r,'BCore'),'BCoreUtil:setProtocolDEMOGNG:invalidInput','need a BCore object. You sent object of class %s',class(r));
             % TrialManager
             tm = BCoreUtil.makeStandardTrialManagerGNG();
@@ -230,13 +262,15 @@ classdef BCoreUtil
             
             doPostDiscrim = true;
             phaseDetails = [];
-            LEDParams = [];
-            AFCGRAT = gngGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType,annuli,location,...
+            LEDParams.active = false;
+            LEDParams.numLEDs = 0;
+            
+            GNGGRAT = gngGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType,annuli,location,...
                 waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance,doCombos,doPostDiscrim,phaseDetails,LEDParams);
 
             
             % training step using other objects as passed in
-            ts = trainingStep(trialManager, AFCGRAT, performanceCrit, sch,stepName);
+            ts = trainingStep(trialManager, GNGGRAT, performanceCrit, sch,stepName);
         end
         
         %% trial processing

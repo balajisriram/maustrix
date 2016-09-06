@@ -8,7 +8,6 @@ classdef goNoGo<trialManager
     
     properties (Constant = true)
         responsePorts = 2;
-        requestPorts = 2;
     end
     
     methods
@@ -18,6 +17,7 @@ classdef goNoGo<trialManager
             % t=goNoGo(soundManager,percentCorrectionTrials,responseLockoutMs,rewardManager,
             %         [eyeController],[frameDropCorner],[dropFrames],[displayMethod],[requestPorts],[saveDetailedFramedrops],
             %		  [delayFunction],[responseWindowMs],[showText])
+            
             t=t@trialManager(sndMgr,reinfMgr,delMgr,frameDropCorner,dropFrames,requestPort,saveDetailedFrameDrops,responseWindowMs,description,showText);
             
             assert((fractionGo>=0 && fractionGo<=1),'goNoGo:goNoGo:improperValue','fractionGo should be >=0 and <=1');
@@ -64,8 +64,8 @@ classdef goNoGo<trialManager
             % because phased trial logic returns the 'result' from previous phase only if it matches a target/distractor
             % 3/13/09 - we rely on nAFC's phaseify to correctly assign stimSpec.phaseLabel to identify where to check for correctness
             % call parent's updateTrialState() to do the request reward handling and check for 'timeout' flag
-            [tm.trialManager, possibleTimeout, result, ~, ~, requestRewardSizeULorMS, ~, ~, ~, ~, ~, ~, ~, updateRM1] = ...
-                updateTrialState(tm.trialManager, sm, subject, result, spec, ports, lastPorts, ...
+            [tm, possibleTimeout, result, ~, ~, requestRewardSizeULorMS, ~, ~, ~, ~, ~, ~, ~, updateRM1] = ...
+                updateTrialState@trialManager(tm,sm, subject, result, spec, ports, lastPorts, ...
                 targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
                 floatprecision, textures, destRect, requestRewardDone, punishResponses,compiledRecords);
             if isempty(possibleTimeout)
@@ -88,7 +88,7 @@ classdef goNoGo<trialManager
             
             % ========================================================
             phaseType = spec.phaseType;
-            framesUntilTransition=getFramesUntilTransition(spec);
+            framesUntilTransition=spec.framesUntilTransition;
             % now, if phaseType is 'reinforced', use correct and call updateRewards(tm,correct)
             % this trialManager-specific method should do the following:
             % - call calcReinforcement(RM)
@@ -116,21 +116,21 @@ classdef goNoGo<trialManager
                         
                     elseif strcmp(getDisplayMethod(tm),'LED')
                         if isempty(framesUntilTransition)
-                            framesUntilTransition=ceil(getHz(spec)*rewardSizeULorMS/1000);
+                            framesUntilTransition=ceil(spec.hz*rewardSizeULorMS/1000);
                         else
                             framesUntilTransition
                             error('LED needs framesUntilTransition empty for reward')
                         end
-                        numCorrectFrames=ceil(getHz(spec)*rewardSizeULorMS/1000);
+                        numCorrectFrames=ceil(spec.hz*rewardSizeULorMS/1000);
                     else
                         error('huh?')
                     end
-                    spec=setFramesUntilTransition(spec,framesUntilTransition);
-                    [cStim correctScale] = correctStim(sm,numCorrectFrames);
-                    spec=setScaleFactor(spec,correctScale);
+                    spec.framesUntilTransition=framesUntilTransition;
+                    [cStim, correctScale] = sm.correctStim(numCorrectFrames);
+                    spec.scaleFactor=correctScale;
                     strategy='noCache';
                     if window>0
-                        [floatprecision cStim] = determineColorPrecision(tm, cStim, strategy);
+                        [floatprecision, cStim] = determineColorPrecision(tm, cStim, strategy);
                         textures = cacheTextures(tm,strategy,cStim,window,floatprecision);
                         destRect = determineDestRect(tm, window, correctScale, cStim, strategy);
                     elseif strcmp(getDisplayMethod(tm),'LED')

@@ -54,7 +54,7 @@ switch rx.subjectIDInBCore(lower(subjectID))
         rx=rx.addSubject(sub,auth);
 end
 
-if ~exist('setupFile','var') || isempty(setup)
+if ~exist('setup','var') || isempty(setup)
     setup=@BCoreUtil.setProtocolDEMO;
 elseif ~isa(setup,'function_handle')
     error('standAloneRun:incompatibleInput','you input setupFile thats not a function handle');

@@ -10,7 +10,7 @@ classdef nAFC<trialManager
             % t=nAFC(soundManager,percentCorrectionTrials,rewardManager,
             %         [eyeController],[frameDropCorner],[dropFrames],[displayMethod],[requestPorts],[saveDetailedFramedrops],
             %		  [delayManager],[responseWindowMs],[showText])
-            t=t@trialManager(sndMgr,reinfMgr,delayManager, frameDropCorner,dropFrames,requestPort,saveDetailedFrameDrops, customDescription,responseWindowMs,showText);
+            t=t@trialManager(sndMgr,reinfMgr,delayManager, frameDropCorner,dropFrames,requestPort,saveDetailedFrameDrops, responseWindowMs,customDescription,showText);
             
             assert(isscalar(percentCorrTrials)&&(percentCorrTrials>=0)&&(percentCorrTrials<1),'nAFC:incorrectValue','percentCorrTrials (value:[%s] should a scalar >0 and <1',num2str(percentCorrTrials));
             t.percentCorrectionTrials = percentCorrTrials;

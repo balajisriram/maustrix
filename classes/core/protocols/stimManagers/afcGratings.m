@@ -26,10 +26,9 @@ classdef afcGratings<stimManager
         
         LUT =[];
         LUTbits=0;
-        
-        doPostDiscrim = false;
-        
+                
         phaseDetails % will include LED details
+        LEDParams
     end
     
     methods
@@ -57,7 +56,7 @@ classdef afcGratings<stimManager
             % thresh - >0
             % doCombos
             
-            s=s@stimManager(maxWidth, maxHeight, interTrialLuminance);
+            s=s@stimManager(maxWidth, maxHeight, scaleFactor,interTrialLuminance);
             
             s.LEDParams = stimManager.getStandardLEDParams;
             s.doCombos = true;
@@ -230,10 +229,10 @@ classdef afcGratings<stimManager
             
             stim.height = height;
             stim.width = width;
-            stim.rngMethod = sm.ordering.method;
-            if isempty(sm.ordering.seed)
-                stim.seedVal = sum(100*clock);
-            end
+%             stim.rngMethod = sm.ordering.method;
+%             if isempty(sm.ordering.seed)
+%                 stim.seedVal = sum(100*clock);
+%             end
             
             % whats the chosen stim?
             switch sm.doCombos
@@ -559,7 +558,7 @@ classdef afcGratings<stimManager
         end
         
         function out = getType(sm,stim)
-            sweptParameters = getDetails(sm,stim,'sweptParameters');
+            sweptParameters = afcGratings.getDetails(stim,'sweptParameters');
             n= length(sweptParameters);
             switch n
                 case 0

@@ -108,72 +108,38 @@ classdef goNoGo<trialManager
                     msPenalty=0;
                     msPenaltySound=0;
                     
-                    if window>0
-                        if isempty(framesUntilTransition)
-                            framesUntilTransition = ceil((rewardSizeULorMS/1000)/ifi);
-                        end
-                        numCorrectFrames=ceil((rewardSizeULorMS/1000)/ifi);
-                        
-                    elseif strcmp(getDisplayMethod(tm),'LED')
-                        if isempty(framesUntilTransition)
-                            framesUntilTransition=ceil(spec.hz*rewardSizeULorMS/1000);
-                        else
-                            framesUntilTransition
-                            error('LED needs framesUntilTransition empty for reward')
-                        end
-                        numCorrectFrames=ceil(spec.hz*rewardSizeULorMS/1000);
-                    else
-                        error('huh?')
+                    if isempty(framesUntilTransition)
+                        framesUntilTransition = ceil((rewardSizeULorMS/1000)/ifi);
                     end
+                    numCorrectFrames=ceil((rewardSizeULorMS/1000)/ifi);
+                    
                     spec.framesUntilTransition=framesUntilTransition;
                     [cStim, correctScale] = sm.correctStim(numCorrectFrames);
                     spec.scaleFactor=correctScale;
-                    strategy='noCache';
-                    if window>0
-                        [floatprecision, cStim] = determineColorPrecision(tm, cStim, strategy);
-                        textures = cacheTextures(tm,strategy,cStim,window,floatprecision);
-                        destRect = determineDestRect(tm, window, correctScale, cStim, strategy);
-                    elseif strcmp(getDisplayMethod(tm),'LED')
-                        floatprecision=[];
-                    else
-                        error('huh?')
-                    end
+                    strategy='textureCache';
+                    [floatprecision, cStim] = tm.determineColorPrecision(cStim, strategy);
+                    textures = tm.cacheTextures(strategy,cStim,window,floatprecision);
+                    destRect = tm.determineDestRect(window, correctScale, cStim, strategy);
+                    
                     spec=setStim(spec,cStim);
                 else
                     rewardSizeULorMS=0;
                     msRewardSound=0;
                     msPuff=0; % for now, we don't want airpuffs to be automatic punishment, right?
                     
-                    if window>0
-                        if isempty(framesUntilTransition)
-                            framesUntilTransition = ceil((msPenalty/1000)/ifi);
-                        end
-                        numErrorFrames=ceil((msPenalty/1000)/ifi);
-                        
-                    elseif strcmp(getDisplayMethod(tm),'LED')
-                        if isempty(framesUntilTransition)
-                            framesUntilTransition=ceil(getHz(spec)*msPenalty/1000);
-                        else
-                            framesUntilTransition
-                            error('LED needs framesUntilTransition empty for reward')
-                        end
-                        numErrorFrames=ceil(getHz(spec)*msPenalty/1000);
-                    else
-                        error('huh?')
+                    if isempty(framesUntilTransition)
+                        framesUntilTransition = ceil((msPenalty/1000)/ifi);
                     end
-                    spec=setFramesUntilTransition(spec,framesUntilTransition);
-                    [eStim errorScale] = errorStim(sm,numErrorFrames);
-                    spec=setScaleFactor(spec,errorScale);
-                    strategy='noCache';
-                    if window>0
-                        [floatprecision eStim] = determineColorPrecision(tm, eStim, strategy);
-                        textures = cacheTextures(tm,strategy,eStim,window,floatprecision);
-                        destRect=Screen('Rect',window);
-                    elseif strcmp(getDisplayMethod(tm),'LED')
-                        floatprecision=[];
-                    else
-                        error('huh?')
-                    end
+                    numErrorFrames=ceil((msPenalty/1000)/ifi);
+                    
+                    
+                    spec.framesUntilTransition=framesUntilTransition;
+                    [eStim, errorScale] = sm.errorStim(numErrorFrames);
+                    spec.scaleFactor = errorScale;
+                    strategy='textureCache';
+                    [floatprecision, eStim] = tm.determineColorPrecision(eStim, strategy);
+                    textures = tm.cacheTextures(strategy,eStim,window,floatprecision);
+                    destRect=Screen('Rect',window);
                     spec=setStim(spec,eStim);
                 end
                 
@@ -181,9 +147,6 @@ classdef goNoGo<trialManager
             
             trialDetails.correct=correct;
             updateRM = updateRM1 || updateRM2;
-            
-            trialDetails
-            struct(spec)
             
         end  % end function
         

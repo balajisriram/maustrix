@@ -82,7 +82,7 @@ classdef BCoreUtil
             rm=constantReinforcement(rewardScalar,requestRewardScalar,penaltyScalar,puffScalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestMode);
         end
         
-        function tm = makeStandardTrialManager()
+        function tm = makeStandardTrialManagerNAFC()
             % Create Sound Manager
             sm = BCoreUtil.makeStandardSoundManager();
             
@@ -129,9 +129,29 @@ classdef BCoreUtil
         function r = setProtocolDEMO(r,subjIDs)
             assert(isa(r,'BCore'),'BCoreUtil:setProtocolDEMO:invalidInput','need a BCore object. You sent object of class %s',class(r));
             % TrialManager
-            tm = BCoreUtil.makeStandardTrialManager();
+            tm = BCoreUtil.makeStandardTrialManagerNAFC();
             
             ts = BCoreUtil.createDEMOTrainingStep(tm, repeatIndefinitely(),noTimeOff(), 'easyAFC');
+            
+            descriptiveString='DEMO protocol 4/5/2016';
+            
+            pElementaryVision100915 = protocol(descriptiveString,...
+                {ts});
+            stepNum = 1;
+            %%%%%%%%%%%%
+            for i=1:length(subjIDs)
+                subj=getSubjectFromID(r,subjIDs{i});
+                [~, r]=setProtocolAndStep(subj,pElementaryVision100915,true,false,true,stepNum,r,'call to setProtocolMIN','bas');
+            end
+            
+        end
+        
+        function r = setProtocolDEMOGNG(r,subjIDs)
+            assert(isa(r,'BCore'),'BCoreUtil:setProtocolDEMOGNG:invalidInput','need a BCore object. You sent object of class %s',class(r));
+            % TrialManager
+            tm = BCoreUtil.makeStandardTrialManagerGNG();
+            
+            ts = BCoreUtil.createDEMOTrainingStepGNG(tm, repeatIndefinitely(),noTimeOff(), 'easyAFC');
             
             descriptiveString='DEMO protocol 4/5/2016';
             
@@ -181,6 +201,42 @@ classdef BCoreUtil
             
             % training step using other objects as passed in
             ts = trainingStep(trialManager, AFCDOTS, performanceCrit, sch,stepName);
+        end
+        
+        function ts = createDEMOTrainingStepGNG(trialManager, performanceCrit, sch, stepName)
+            % makes a basic, easy gngGrating training step
+            % correct response = side toward which grating tilts
+            
+            % gratings stim manager
+            pixPerCycs={[256,128],[256,128]};
+            driftfrequencies={[0],[0]};
+            orientations={-deg2rad([45]),deg2rad([45])};
+            phases={[0],[0]};
+            contrasts={[1],[1]};
+            maxDuration={[1],[1]};
+            radii={[0.2],[0.2]};
+            radiusType = 'hardEdge';
+            annuli={[0],[0]};
+            location={[.5 .5],[0.5 0.5]};      % center of mask
+            waveform= 'sine';
+            normalizationMethod='normalizeDiagonal';
+            mean=0.5;
+            thresh=.00005;
+            maxWidth=1920;
+            maxHeight=1080;
+            scaleFactor=0;
+            interTrialLuminance=.5;
+            doCombos = true;
+            
+            doPostDiscrim = true;
+            phaseDetails = [];
+            LEDParams = [];
+            AFCGRAT = gngGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType,annuli,location,...
+                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance,doCombos,doPostDiscrim,phaseDetails,LEDParams);
+
+            
+            % training step using other objects as passed in
+            ts = trainingStep(trialManager, AFCGRAT, performanceCrit, sch,stepName);
         end
         
         %% trial processing

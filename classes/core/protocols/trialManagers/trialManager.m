@@ -873,31 +873,6 @@ classdef trialManager
             
             Priority(priorityLevel);
             
-            % =========================================================================
-            
-            if ~isempty(eyeTracker)
-                perTrialSyncing=false; %could pass this in if we ever decide to use it; now we don't
-                if perTrialSyncing && isa(eyeTracker,'eyeLinkTracker')
-                    status=Eyelink('message','SYNCTIME');
-                    if status~=0
-                        error('message error, status: %g',status)
-                    end
-                end
-                
-                framesPerAllocationChunk=getFramesPerAllocationChunk(eyeTracker);
-                
-                
-                if isa(eyeTracker,'eyeLinkTracker')
-                    eyeData=nan(framesPerAllocationChunk,length(getEyeDataVarNames(eyeTracker)));
-                    eyeDataFrameInds=nan(framesPerAllocationChunk,1);
-                    gaze=nan(framesPerAllocationChunk,2);
-                else
-                    error('no other methods')
-                end
-            end
-            
-            % =========================================================================
-            
             didAPause=0;
             didManual=false;
             paused=0;
@@ -1033,7 +1008,6 @@ classdef trialManager
                     punishResponses = spec.punishResponses;
                     
                     % =========================================================================
-                    
                     framesInPhase = 0;
                     if ~isempty(spec.startFrame)
                         i=spec.startFrame;
@@ -1096,6 +1070,7 @@ classdef trialManager
                     % here should be the function that also checks to see if we should assign trialRecords.correct
                     % and trialRecords.response, and also does tm-specific reward checks (nAFC should check to update reward/airpuff
                     % if first frame of a 'reinforced' phase)
+                    
                     [tm, trialRecords(trialInd).trialDetails, trialRecords(trialInd).result, spec, rewardSizeULorMS, requestRewardSizeULorMS, ...
                         msPuff, msRewardSound, msPenalty, msPenaltySound, floatprecision, textures, destRect, updateRMThisFrame] = ...
                         tm.updateTrialState(stimManager, subject, trialRecords(trialInd).result, spec, ports, lastPorts, ...

@@ -54,7 +54,7 @@ classdef goNoGo<trialManager
             %   - call RM's calcReinforcement as necessary
             %   - update the stimSpec as necessary (with correctStim() and errorStim())
             %   - update the TM's RM if neceesary
-            
+                    
             rewardSizeULorMS=0;
             msPuff=0;
             msRewardSound=0;
@@ -78,25 +78,22 @@ classdef goNoGo<trialManager
                 targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
                 floatprecision, textures, destRect, requestRewardDone, punishResponses,compiledRecords);
             targetStim = trialRecords(end).stimDetails.targetStim;
-            if isempty(possibleTimeout)
-                if ~isempty(result) && ~ischar(result) && isempty(correct) && strcmp(spec.phaseLabel,'reinforcement')
-                    resp=find(result);
-                    if length(resp)==1
-                        correct = strcmp(targetStim ,'go');
-                        if punishResponses % this means we got a response, but we want to punish, not reward
-                            correct=0; % we could only get here if we got a response (not by request or anything else), so it should always be correct=0
-                        end
-                        result = 'nominal';
-                    else
-                        correct = 0;
-                        result = 'multiple ports';
+            if ~isempty(result) && ~ischar(result) && isempty(correct) && strcmp(spec.phaseLabel,'reinforcement')
+                resp=find(result);
+                if length(resp)==1
+                    correct = strcmp(targetStim ,'go');
+                    if punishResponses % this means we got a response, but we want to punish, not reward
+                        correct=0; % we could only get here if we got a response (not by request or anything else), so it should always be correct=0
                     end
-                elseif ischar(result) && strcmp(result,'timedout')
-                    correct = strcmp(targetStim ,'noGo');                    
+                    result = 'nominal';
+                else
+                    correct = 0;
+                    result = 'multiple ports';
                 end
-            else
-                correct=possibleTimeout.correct;
+            elseif ischar(result) && strcmp(result,'timedout')
+                correct = strcmp(targetStim ,'noGo');
             end
+            
             
             % ========================================================
             phaseType = spec.phaseType;
@@ -116,8 +113,6 @@ classdef goNoGo<trialManager
                 end
                 
                 if correct
-                    sca;
-                    keyboard
                     msPuff=0;
                     msPenalty=0;
                     msPenaltySound=0;
@@ -164,7 +159,7 @@ classdef goNoGo<trialManager
             end % end reward handling
             
             trialDetails.correct=correct;
-            updateRM = updateRM1 || updateRM2;
+            updateRM = updateRM2;
             
         end  % end function
         

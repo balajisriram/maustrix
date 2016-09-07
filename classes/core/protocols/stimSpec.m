@@ -19,11 +19,12 @@ classdef stimSpec
         ledON = false;
         ledPulses
         punishResponses
+        soundPlayed
     end
     
     methods
         function spec=stimSpec(stimulus,transitions,stimType,startFrame,framesUntilTransition,autoTrigger,...
-                scaleFactor,isFinalPhase,hz,phaseType,phaseLabel,punishResponses,isStim,indexPulses,ledPulses)
+                scaleFactor,isFinalPhase,hz,phaseType,phaseLabel,punishResponses,isStim,indexPulses,ledPulses,soundPlayed)
             % stimSpec  class constructor.
             % spec=stimSpec(stimulus,transitions,stimType,startFrame,framesUntilTransition,
             %	autoTrigger,scaleFactor,isFinalPhase,hz,phaseType,phaseLabel,punishResponses,isStim,indexPulses)
@@ -162,6 +163,11 @@ classdef stimSpec
                 sca;keyboard
                 error('indexPulses must be logical vector same length as stimulus')
             end
+            
+            % soundPlayed
+            assert(isempty(soundPlayed) ||(iscell(soundPlayed) && length(soundPlayed)==2 && ischar(soundPlayed{1}) && isnumeric(soundPlayed{2})))
+            spec.soundPlayed = soundPlayed;
+            
         end
         
         function out=getIndexPulse(s,i)

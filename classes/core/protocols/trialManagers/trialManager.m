@@ -387,12 +387,12 @@ classdef trialManager
                 correct=[];
             end
             
-            if ~isempty(result) && ischar(result) && strcmp(result,'timeout') && isempty(correct) && strcmp(getPhaseLabel(spec),'reinforcement')
+            if ~isempty(result) && ischar(result) && strcmp(result,'timeout') && isempty(correct) && strcmp(spec.phaseLabel,'reinforcement')
                 correct=0;
                 result='timedout';
                 trialDetails=[];
                 trialDetails.correct=correct;
-            elseif ~isempty(result) && ischar(result) && strcmp(result,'timeout') && isempty(correct) && strcmp(getPhaseLabel(spec),'itl')
+            elseif ~isempty(result) && ischar(result) && strcmp(result,'timeout') && isempty(correct) && strcmp(spec.phaseLabel,'itl')
                 % timeout during 'itl' phase - neither correct nor incorrect (only happens when no stim is shown)
                 result='timedout';
                 trialDetails=[];

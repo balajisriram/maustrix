@@ -128,8 +128,11 @@ classdef BCoreUtil
             responseWindowMS = [1 inf];
             fractionGo = 0.5;
             responseLockoutMs = 1000;
+            rewardCorrectRejection = false;
+            punishIncorrectRejection = false;
             tm=goNoGo(sndm,rm,noDelay,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,...
-                responseWindowMS,customDescription,showText,fractionGo,percentCorrectionTrials,responseLockoutMs);
+                responseWindowMS,customDescription,showText,fractionGo,percentCorrectionTrials,responseLockoutMs,...
+                rewardCorrectRejection,punishIncorrectRejection);
         end
         
         function rx = createDefaultBCore()

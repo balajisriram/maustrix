@@ -4,6 +4,8 @@ classdef goNoGo<trialManager
         percentCorrectionTrials=0;
         responseLockoutMs=[];
         fractionGo = 0.5;
+        rewardCorrectRejection = false;
+        punishIncorrectRejection = false;
     end
     
     properties (Constant = true)
@@ -12,7 +14,8 @@ classdef goNoGo<trialManager
     
     methods
         function t=goNoGo(sndMgr, reinfMgr, delMgr, frameDropCorner, dropFrames, requestPort, saveDetailedFrameDrops, ...
-                responseWindowMs, description, showText,fractionGo,percentCorrectionTrials,responseLockoutMs)
+                responseWindowMs, description, showText,fractionGo,percentCorrectionTrials,responseLockoutMs,...
+                rewardCorrectRejection,punishIncorrectRejection)
             % goNoGo  class constructor.
             % t=goNoGo(soundManager,percentCorrectionTrials,responseLockoutMs,rewardManager,
             %         [eyeController],[frameDropCorner],[dropFrames],[displayMethod],[requestPorts],[saveDetailedFramedrops],
@@ -28,6 +31,12 @@ classdef goNoGo<trialManager
             
             assert(responseLockoutMs>=0 ,'goNoGo:goNoGo:improperValue','responseLockoutMs should be >=0');
             t.responseLockoutMs=responseLockoutMs;
+            
+            assert(islogical(rewardCorrectRejection) ,'goNoGo:goNoGo:improperValue','rewardCorrectRejection should be logical');
+            t.rewardCorrectRejection=rewardCorrectRejection;
+            
+            assert(islogical(punishIncorrectRejection) ,'goNoGo:goNoGo:improperValue','punishIncorrectRejection should be logical');
+            t.punishIncorrectRejection=punishIncorrectRejection;
         end
         
         function out=stationOKForTrialManager(t,s)
@@ -68,11 +77,12 @@ classdef goNoGo<trialManager
                 updateTrialState@trialManager(tm,sm, subject, result, spec, ports, lastPorts, ...
                 targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
                 floatprecision, textures, destRect, requestRewardDone, punishResponses,compiledRecords);
+            targetStim = trialRecords(end).stimDetails.targetStim;
             if isempty(possibleTimeout)
                 if ~isempty(result) && ~ischar(result) && isempty(correct) && strcmp(spec.phaseLabel,'reinforcement')
                     resp=find(result);
                     if length(resp)==1
-                        correct = strcmp(trialRecords.trialDetails.targetStim ,'go');
+                        correct = strcmp(targetStim ,'go');
                         if punishResponses % this means we got a response, but we want to punish, not reward
                             correct=0; % we could only get here if we got a response (not by request or anything else), so it should always be correct=0
                         end
@@ -81,6 +91,8 @@ classdef goNoGo<trialManager
                         correct = 0;
                         result = 'multiple ports';
                     end
+                elseif ischar(result) && strcmp(result,'timedout')
+                    correct = strcmp(targetStim ,'noGo');                    
                 end
             else
                 correct=possibleTimeout.correct;
@@ -104,10 +116,14 @@ classdef goNoGo<trialManager
                 end
                 
                 if correct
+                    sca;
+                    keyboard
                     msPuff=0;
                     msPenalty=0;
                     msPenaltySound=0;
-                    
+                    if strcmp(targetStim,'noGo')
+                        rewardSizeULorMS = rewardSizeULorMS*double(tm.rewardCorrectRejection);
+                    end
                     if isempty(framesUntilTransition)
                         framesUntilTransition = ceil((rewardSizeULorMS/1000)/ifi);
                     end
@@ -126,7 +142,9 @@ classdef goNoGo<trialManager
                     rewardSizeULorMS=0;
                     msRewardSound=0;
                     msPuff=0; % for now, we don't want airpuffs to be automatic punishment, right?
-                    
+                    if strcmp(targetStim,'go')
+                        msPenalty = msPenalty*double(tm.punishIncorrectRejection);
+                    end
                     if isempty(framesUntilTransition)
                         framesUntilTransition = ceil((msPenalty/1000)/ifi);
                     end
@@ -156,10 +174,17 @@ classdef goNoGo<trialManager
             lastWasCorrection=0;
             
             if ~isempty(lastTrialRec) % if there were previous trials
-                try
-                    lastResult=find(lastTrialRec.result);
-                catch
-                    lastResult=[];
+                if ~ischar(lastTrialRec.result)
+                    try
+                        lastResult=find(lastTrialRec.result);
+                    catch
+                        lastResult=[];
+                    end
+                    if length(lastResult)>1
+                        lastResult=lastResult(1);
+                    end
+                else
+                    lastResult=lastTrialRec.result;
                 end
                 if isfield(lastTrialRec,'trialDetails') && isfield(lastTrialRec.trialDetails,'correct')
                     lastCorrect=lastTrialRec.trialDetails.correct;
@@ -176,21 +201,18 @@ classdef goNoGo<trialManager
                 else
                     lastWasCorrection=0;
                 end
-                
-                if length(lastResult)>1
-                    lastResult=lastResult(1);
-                end
             end
             
             % determine correct port
-            if ~isempty(lastCorrect) && ~isempty(lastResult) && ~lastCorrect && (lastWasCorrection || rand<details.pctCorrectionTrials)
-                details.correctionTrial=1;
-                %correction trials are a very strange brew for goNoGo... i
-                %doubt its what we want...
-                
-                %'correction trial!'
-                targetStim=lastTrialRec.trialDetails.targetStim; % same ports are correct
-            else
+%             if ~isempty(lastCorrect) && ~isempty(lastResult) && ~lastCorrect && (lastWasCorrection || rand<details.pctCorrectionTrials)
+%                 details.correctionTrial=1;
+%                 %correction trials are a very strange brew for goNoGo... i
+%                 %doubt its what we want...
+%                 
+%                 %'correction trial!'
+%                 targetStim=lastTrialRec.stimDetails.targetStim; % same ports are correct
+%                 details.targetStim = targetStim;
+%             else
                 details.correctionTrial=0;
                 if rand<tm.fractionGo
                     targetStim = 'go';
@@ -199,7 +221,7 @@ classdef goNoGo<trialManager
                     targetStim = 'noGo';
                     details.targetStim = 'noGo';
                 end
-            end            
+%             end            
         end
     end
     
@@ -266,7 +288,7 @@ classdef goNoGo<trialManager
             assert(preRequestStim.punishResponses,'goNoGo:createStimSpecsFromParams:incompatibleInputs','framesUntilOnset should be non-empty');
             criterion={doNothing,discrimIndex}; % preRequest responses are punished
             stimSpecs{i} = stimSpec(preRequestStim.stimulus,criterion,preRequestStim.stimType,preRequestStim.startFrame,...
-                framesUntilOnset,preRequestStim.autoTrigger,preRequestStim.scaleFactor,false,hz,'pre-request','pre-request',...
+                preRequestStim.framesUntilTimeout,preRequestStim.autoTrigger,preRequestStim.scaleFactor,false,hz,'pre-request','pre-request',...
                 preRequestStim.punishResponses,false,[],preRequestStim.ledON);
             i=i+1;
             
@@ -310,6 +332,8 @@ classdef goNoGo<trialManager
             criterion={[],i+1};
             stimSpecs{i} = stimSpec(interTrialStim.interTrialLuminance,criterion,'cache',0,interTrialStim.duration,[],0,true,hz,'itl','intertrial luminance',false,false,[],false); % do not punish responses here. itl has LED hardcoded to false
             i=i+1;
+            
+
         end
     end
     

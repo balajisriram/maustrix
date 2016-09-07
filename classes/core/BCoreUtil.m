@@ -107,7 +107,7 @@ classdef BCoreUtil
             customDescription = 'trialNAFC';
             showText = 'full';
             responseWindowMS = [1 inf];
-            tm=nAFC(sm,rm,noDelay,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,responseWindowMS,customDescription,showText,percentCorrectionTrials);
+            tm=nAFC(sm,rm,noDelay,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,customDescription,responseWindowMS,showText,percentCorrectionTrials);
         end
         
         function tm = makeStandardTrialManagerGNG()
@@ -328,7 +328,6 @@ classdef BCoreUtil
                 % collection process
                 trialRecords = BCoreUtil.collectTrialRecords(tr);
                 trialNums=[trialRecords.trialNumber];
-                
                 % 3/17/09 - do the 'collection' and LUTizing here, then resave to local trialRecords.mat
                 % because the replicate processes uses movefile instead of matlab save
                 sessionLUT={};
@@ -372,16 +371,16 @@ classdef BCoreUtil
                                 frac=dt(6)-floor(dt(6));
                                 successM=movefile(fullfile(paths{j},subjectName,newFileName),fullfile(paths{j},subjectName,['old.' newFileName '.old.' datestr(dt,30) '.' sprintf('%03d',floor(frac*1000))]));
                                 success(j)=success(j) && successM;
-                                
-                                if success(j)
-                                    paths{j} = fullfile(paths{j},subjectName);
-                                    successC=copyfile(fullfile(filePath,fileName),fullfile(paths{j},newFileName));
-                                    if ~successC
-                                        error('couldn''t copy file')
-                                    end
-                                    success(j)=success(j) && successC;
-                                end
                             end
+                            if success(j)
+                                paths{j} = fullfile(paths{j},subjectName);
+                                successC=copyfile(fullfile(filePath,fileName),fullfile(paths{j},newFileName));
+                                if ~successC
+                                    error('couldn''t copy file')
+                                end
+                                success(j)=success(j) && successC;
+                            end
+                            
                         case 'MATLAB:MKDIR:OSError'
                             warning('BCoreUtil:replicateTrialRecords:UnableToAccess','file path is not accessible');
                             % ## need to find ways to check if file

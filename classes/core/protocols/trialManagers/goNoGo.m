@@ -116,14 +116,24 @@ classdef goNoGo<trialManager
                     msPuff=0;
                     msPenalty=0;
                     msPenaltySound=0;
-                    if strcmp(targetStim,'noGo')
-                        rewardSizeULorMS = rewardSizeULorMS*double(tm.rewardCorrectRejection);
-                    end
-                    if isempty(framesUntilTransition)
-                        framesUntilTransition = ceil((rewardSizeULorMS/1000)/ifi);
-                    end
-                    numCorrectFrames=ceil((rewardSizeULorMS/1000)/ifi);
                     
+                    switch targetStim
+                        case 'go'
+                            if isempty(framesUntilTransition)
+                                framesUntilTransition = ceil((rewardSizeULorMS/1000)/ifi);
+                            end
+                            numCorrectFrames=ceil((rewardSizeULorMS/1000)/ifi);
+                        case 'noGo'
+                            rewardSizeULorMS = rewardSizeULorMS*double(tm.rewardCorrectRejection);
+                            if isempty(framesUntilTransition)
+                                framesUntilTransition = ceil((rewardSizeULorMS/1000)/ifi);
+                                if framesUntilTransition==0
+                                    framesUntilTransition = 1;
+                                end
+                            end
+                            numCorrectFrames = framesUntilTransition;
+                    end
+
                     spec.framesUntilTransition=framesUntilTransition;
                     [cStim, correctScale] = sm.correctStim(numCorrectFrames);
                     spec.scaleFactor=correctScale;
@@ -137,15 +147,24 @@ classdef goNoGo<trialManager
                     rewardSizeULorMS=0;
                     msRewardSound=0;
                     msPuff=0; % for now, we don't want airpuffs to be automatic punishment, right?
-                    if strcmp(targetStim,'go')
-                        msPenalty = msPenalty*double(tm.punishIncorrectRejection);
-                    end
-                    if isempty(framesUntilTransition)
-                        framesUntilTransition = ceil((msPenalty/1000)/ifi);
-                    end
-                    numErrorFrames=ceil((msPenalty/1000)/ifi);
                     
-                    
+                    switch targetStim
+                        case 'go'
+                            msPenalty = msPenalty*double(tm.punishIncorrectRejection);
+                            if isempty(framesUntilTransition)
+                                framesUntilTransition = ceil((msPenalty/1000)/ifi);
+                                if framesUntilTransition==0
+                                    framesUntilTransition=1;
+                                end
+                            end
+                            numErrorFrames=framesUntilTransition;
+                        case 'noGo'
+                            if isempty(framesUntilTransition)
+                                framesUntilTransition = ceil((msPenalty/1000)/ifi);
+                            end
+                            numErrorFrames = framesUntilTransition;
+                    end
+
                     spec.framesUntilTransition=framesUntilTransition;
                     [eStim, errorScale] = sm.errorStim(numErrorFrames);
                     spec.scaleFactor = errorScale;

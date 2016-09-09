@@ -37,7 +37,7 @@ classdef gngGratings<afcGratings
         function [sm,updateSM,resInd,stimList,LUT,targetPorts,distractorPorts,details,text,indexPulses,imagingTasks,ITL] =...
                 calcStim(sm,tm,st,tR,~)
             
-            assert(isa(tm,'goNoGo'),'gngGratings:calcStim:incompatibleType','gngGratimgs requires a goNoGo tm. You gave %s',class(tm));
+            assert(isa(tm,'goNoGo'),'gngGratings:calcStim:incompatibleType','gngGratings requires a goNoGo tm. You gave %s',class(tm));
             resolutions = st.resolutions;
             LUTbits = st.getLUTbits();
             responsePorts = tm.responsePorts;

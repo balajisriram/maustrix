@@ -146,6 +146,41 @@ classdef nAFC<trialManager
 
         end  % end function
         
+        function [soundsToPlay, spec] = getSoundsToPlay(tm, ports, lastPorts, spec, phase, stepsInPhase,msRewardSound, msPenaltySound, ...
+                targetOptions, distractorOptions, requestOptions, playRequestSoundLoop, trialDetails)
+            % see doc in stimManager.calcStim.txt
+            
+            playLoopSounds={};
+            playSoundSounds={};
+            
+            if ~isempty(spec.soundPlayed) && ~spec.soundAlreadyPlayed
+                playSoundSounds{end+1} = spec.soundPlayed;
+                spec.soundAlreadyPlayed = true;
+            end
+            
+            if strcmp(spec.phaseType,'pre-request') && (any(ports(targetOptions)) || any(ports(distractorOptions)) || ...
+                    (any(ports) && isempty(requestOptions)))
+                % play white noise (when responsePort triggered during phase 1)
+                playLoopSounds{end+1} = 'trySomethingElseSound';
+            elseif ismember(spec.phaseType,{'discrim','pre-response'}) && any(ports(requestOptions))
+                % play stim sound (when stim is requested during phase 2)
+                playLoopSounds{end+1} = 'keepGoingSound';
+            elseif strcmp(spec.phaseType,'reinforced') && stepsInPhase <= 0 && trialDetails.correct
+                % play correct sound
+                playSoundSounds{end+1} = {'correctSound', msRewardSound};
+            elseif strcmp(spec.phaseType,'reinforced') && stepsInPhase <= 0 && ~trialDetails.correct
+                % play wrong sound
+                playSoundSounds{end+1} = {'wrongSound', msPenaltySound};
+            elseif strcmp(spec.phaseType,'earlyPenalty') %&& stepsInPhase <= 0 what does stepsInPhase do? I don't think we need this for this phase
+                % play wrong sound
+                playSoundSounds{end+1} = {'wrongSound', msPenaltySound};
+            end
+            
+            
+            soundsToPlay = {playLoopSounds, playSoundSounds};
+            
+        end % end function
+        
     end
     
     methods (Static)

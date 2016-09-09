@@ -224,7 +224,7 @@ classdef gngGratings<afcGratings
             preRequestStim.punishResponses=true;
             preRequestStim.framesUntilTimeout=preRequestDelay;
             preRequestStim.ledON = false; % #### presetting here
-            preRequestStim.soundPlayed = {'trialStartSound',50};
+            preRequestStim.soundPlayed = [];
             
             postDiscrimStim = preRequestStim;
             postDiscrimStim.framesUntilTimeout = tm.responseLockoutMs/1000*hz;
@@ -232,6 +232,7 @@ classdef gngGratings<afcGratings
             
             interTrialStim.interTrialLuminance = sm.interTrialLuminance;
             interTrialStim.duration = sm.interTrialDuration;
+            interTrialStim.soundPlayed = [];
             ITL = sm.interTrialLuminance;
             
             

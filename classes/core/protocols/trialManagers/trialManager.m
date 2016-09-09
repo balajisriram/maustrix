@@ -427,14 +427,12 @@ classdef trialManager
             
         end % end function
         
-        function [tm, done, newSpecInd, specInd, updatePhase, transitionedByTimeFlag, transitionedByPortFlag, result,...
+        function [tm, spec, done, newSpecInd, specInd, updatePhase, transitionedByTimeFlag, transitionedByPortFlag, result,...
                 isRequesting, lastSoundsLooped, getSoundsTime, soundsDoneTime, framesDoneTime, ...
                 portSelectionDoneTime, isRequestingDoneTime, goDirectlyToError] = ...
-                handlePhasedTrialLogic(tm, done, ...
-                ports, lastPorts, station, specInd, phaseType, transitionCriterion, framesUntilTransition, numFramesInStim,...
-                framesInPhase, isFinalPhase, trialDetails, stimDetails, result, ...
-                stimManager, msRewardSound, mePenaltySound, targetOptions, distractorOptions, requestOptions, ...
-                playRequestSoundLoop, isRequesting, soundNames, lastSoundsLooped)
+                handlePhasedTrialLogic(tm, done, ports, lastPorts, station, spec, specInd, numFramesInStim,...
+                framesInPhase, trialDetails, result, msRewardSound, mePenaltySound, targetOptions, distractorOptions, ...
+                requestOptions, playRequestSoundLoop, isRequesting, lastSoundsLooped)
             
             updatePhase=0;
             newSpecInd = specInd;
@@ -521,13 +519,13 @@ classdef trialManager
             % =================================================
             % SOUNDS
             % changed from newSpecInd to specInd (cannot anticipate phase transition b/c it hasnt called updateTrialState to set correctness)
-            soundsToPlay = getSoundsToPlay(stimManager, ports, lastPorts, specInd, phaseType, framesInPhase,msRewardSound, mePenaltySound, ...
-                targetOptions, distractorOptions, requestOptions, playRequestSoundLoop, class(tm), trialDetails, stimDetails);
+            [soundsToPlay, spec] = tm.getSoundsToPlay(ports, lastPorts, spec, specInd, framesInPhase,msRewardSound, mePenaltySound, ...
+                targetOptions, distractorOptions, requestOptions, playRequestSoundLoop, trialDetails);
             getSoundsTime=GetSecs;
             % soundsToPlay is a cell array of sound names {{playLoop sounds}, {playSound sounds}} to be played at current frame
             % validate soundsToPlay here (make sure they are all members of soundNames)
-            if ~isempty(setdiff(soundsToPlay{1},soundNames)) || ~all(cellfun(@(x) ismember(x{1},soundNames),soundsToPlay{2}))
-                error('getSoundsToPlay assigned sounds that are not in the soundManager!');
+            if ~isempty(setdiff(soundsToPlay{1},tm.soundMgr.getSoundNames)) || ~all(cellfun(@(x) ismember(x{1},tm.soundMgr.getSoundNames),soundsToPlay{2}))
+                error('trialManager:handlePhasedTrialLogic:improperValue','getSoundsToPlay assigned sounds that are not in the soundManager!');
             end
             
             % first end any loops that were looping last frame but should no longer be looped
@@ -653,7 +651,6 @@ classdef trialManager
             eyeData=[];
             eyeDataFrameInds=[];
             gaze=[];
-            soundNames=getSoundNames(tm.soundMgr);
             
             phaseInd = startingStimSpecInd; % which phase we are on (index for stimSpecs and phaseData)
             phaseNum = 0; % increasing counter for each phase that we visit (may not match phaseInd if we repeat phases) - start at 0 b/c we increment during updatePhase
@@ -780,7 +777,7 @@ classdef trialManager
             Screen('Screens');
             
             
-            if window>0
+            if window>0 % #### is this a reference to LED stuff
                 standardFontSize=12;
                 oldFontSize = Screen('TextSize',window,standardFontSize);
                 [normBoundsRect, offsetBoundsRect]= Screen('TextBounds', window, 'TEST');
@@ -1197,15 +1194,13 @@ classdef trialManager
                 
                 timestamps.enteringPhaseLogic=GetSecs;
                 if ~paused
-                    [tm, done, newSpecInd, phaseInd, updatePhase, transitionedByTimeFlag, ...
+                    [tm, spec, done, newSpecInd, phaseInd, updatePhase, transitionedByTimeFlag, ...
                         transitionedByPortFlag, trialRecords(trialInd).result, isRequesting, lastSoundsLooped, ...
                         timestamps.logicGotSounds, timestamps.logicSoundsDone, timestamps.logicFramesDone, ...
                         timestamps.logicPortsDone, timestamps.logicRequestingDone, goDirectlyToError] ...
-                        = handlePhasedTrialLogic(tm, done, ...
-                        ports, lastPorts, station, phaseInd, phaseType, transitionCriterion, framesUntilTransition, numFramesInStim, framesInPhase, isFinalPhase, ...
-                        trialRecords(trialInd).trialDetails, trialRecords(trialInd).stimDetails, trialRecords(trialInd).result, ...
-                        stimManager, msRewardSound, msPenaltySound, targetOptions, distractorOptions, requestOptions, ...
-                        playRequestSoundLoop, isRequesting, soundNames, lastSoundsLooped);
+                        = tm.handlePhasedTrialLogic(done, ports, lastPorts, station, spec, phaseInd, numFramesInStim, framesInPhase, ...
+                        trialRecords(trialInd).trialDetails, trialRecords(trialInd).result, msRewardSound, ...
+                        msPenaltySound, targetOptions, distractorOptions, requestOptions, playRequestSoundLoop, isRequesting, lastSoundsLooped);
                     % if goDirectlyToError, then reset newSpecInd to the first error phase in stimSpecs
                     if goDirectlyToError
                         newSpecInd=find(strcmp(cellfun(@(x) x.phaseType, stimSpecs,'UniformOutput',false),'reinforced'));
@@ -1312,42 +1307,6 @@ classdef trialManager
                 
                 timestamps.rewardDone=GetSecs;
                 
-%                 % also do datanet handling here
-%                 % this should only handle 'server Quit' commands for now.... (other stuff is caught by doTrial/bootstrap)
-%                 if ~isempty(station.datanet)
-%                     [~, Quit] = handleCommands(station.datanet,[]);
-%                 end
-%                 
-%                 timestamps.serverCommDone=GetSecs;
-                
-                % =========================================================================
-                % airpuff ####
-%                 if isempty(thisAirpuffPhaseNum)
-%                     thisAirpuffPhaseNum=phaseNum;
-%                 end
-%                 
-%                 if ~isempty(lastAirpuffTime) && airpuffOn
-%                     airpuffCheckTime = GetSecs();
-%                     elapsedTime = airpuffCheckTime - lastAirpuffTime;
-%                     msAirpuffOwed = msAirpuffOwed - elapsedTime*1000.0;
-%                     phaseRecords(thisAirpuffPhaseNum).actualAirpuffDuration = phaseRecords(thisAirpuffPhaseNum).actualAirpuffDuration + elapsedTime*1000.0;
-%                 end
-%                 
-%                 aStart = msAirpuffOwed > 0 && ~airpuffOn;
-%                 aStop = msAirpuffOwed <= 0 && airpuffOn; % msAirpuffOwed<=0 also catches doPuff==false, and will stop airpuff when k+a is lifted
-%                 if aStart || doPuff
-%                     thisAirpuffPhaseNum = phaseNum; % set default airpuff phase num
-%                     setPuff(station, true);
-%                     airpuffOn = true;
-%                 elseif aStop
-%                     doPuff = false;
-%                     airpuffOn = false;
-%                     setPuff(station, false);
-%                     airpuffCheckToSetPuffTime = GetSecs() - airpuffCheckTime; % time from the airpuff check to after setPuff returns
-%                     % increase actualAirpuffDuration by this 'lag' time...
-%                     phaseRecords(thisAirpuffPhaseNum).actualAirpuffDuration = phaseRecords(thisAirpuffPhaseNum).actualAirpuffDuration + airpuffCheckToSetPuffTime*1000.0;
-%                 end
-%                 lastAirpuffTime = GetSecs();
                 
                 % =========================================================================
                 
@@ -1417,35 +1376,6 @@ classdef trialManager
             
             Priority(originalPriority);
             
-            plotHeadroom=false;
-            if plotHeadroom
-                headroomfig=figure;
-                plot(headroom)
-                title('headroom')
-            end
-            
-            plotGaze=false;
-            if plotGaze
-                gazefig=figure;
-                subplot(2,1,1)
-                plot(gaze)
-                title('gaze')
-                legend({'gaze_x','gaze_y'})
-                subplot(2,1,2)
-                plot(eyeData(:,27:30))
-                legend({'raw_pupil_x','raw_pupil_y','raw_cr_x','raw_cr_y'})
-            end
-            
-            if plotGaze || plotHeadroom
-                fprintf('hit a key to close headroom and/or gaze figures')
-                pause
-                if plotHeadroom
-                    close(headroomfig)
-                end
-                if plotGaze
-                    close(gazefig)
-                end
-            end
         end % end function
         
         function [responseDetails, timestamps] = ...

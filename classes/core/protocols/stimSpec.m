@@ -21,6 +21,9 @@ classdef stimSpec
         punishResponses
         soundPlayed
     end
+    properties (Transient = true)
+        soundAlreadyPlayed = false
+    end
     
     methods
         function spec=stimSpec(stimulus,transitions,stimType,startFrame,framesUntilTransition,autoTrigger,...

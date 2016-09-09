@@ -284,7 +284,7 @@ classdef goNoGo<trialManager
             criterion={doNothing,discrimIndex}; % preRequest responses are punished
             stimSpecs{i} = stimSpec(preRequestStim.stimulus,criterion,preRequestStim.stimType,preRequestStim.startFrame,...
                 preRequestStim.framesUntilTimeout,preRequestStim.autoTrigger,preRequestStim.scaleFactor,false,hz,'pre-request','pre-request',...
-                preRequestStim.punishResponses,false,[],preRequestStim.ledON);
+                preRequestStim.punishResponses,false,[],preRequestStim.ledON, preRequestStim.soundPlayed);
             i=i+1;
             
             % discrim
@@ -294,7 +294,7 @@ classdef goNoGo<trialManager
             framesUntilTimeoutDiscrim=discrimStim.framesUntilTimeout;
             stimSpecs{i} = stimSpec(discrimStim.stimulus,criterion,discrimStim.stimType,discrimStim.startFrame,...
                 framesUntilTimeoutDiscrim,discrimStim.autoTrigger,discrimStim.scaleFactor,false,hz,'discrim','discrim',...
-                false,true,indexPulses,discrimStim.ledON); % do not punish responses here
+                false,true,indexPulses,discrimStim.ledON,discrimStim.soundPlayed); % do not punish responses here
             i=i+1;
             % #### what is the purpose of responseWindow in trialManager????
             
@@ -312,20 +312,20 @@ classdef goNoGo<trialManager
                 end
                 stimSpecs{i} = stimSpec(postDiscrimStim(k).stimulus,criterion,postDiscrimStim(k).stimType,postDiscrimStim(k).startFrame,...
                     postDiscrimStim(k).framesUntilTimeout,postDiscrimStim(k).autoTrigger,postDiscrimStim(k).scaleFactor,false,hz,'post-discrim',postDiscrimName,...
-                    postDiscrimStim(k).punishResponses,false,[],postDiscrimStim(k).ledON);
+                    postDiscrimStim(k).punishResponses,false,[],postDiscrimStim(k).ledON,postDiscrimStim(k).soundPlayed);
                 i=i+1;
             end
 
             % required reinforcement phase
             criterion={[],i+1};
-            stimSpecs{i} = stimSpec([],criterion,'cache',0,[],[],0,false,hz,'reinforced','reinforcement',false,false,[],false); % do not punish responses here, and LED is hardcoded to false (bad idea in general)
+            stimSpecs{i} = stimSpec([],criterion,'cache',0,[],[],0,false,hz,'reinforced','reinforcement',false,false,[],false,[]); % do not punish responses here, and LED is hardcoded to false (bad idea in general)
             i=i+1;
             
             % required final ITL phase
             which = strcmp('interTrialStim',stimNames);
             interTrialStim = stimParams{which};
             criterion={[],i+1};
-            stimSpecs{i} = stimSpec(interTrialStim.interTrialLuminance,criterion,'cache',0,interTrialStim.duration,[],0,true,hz,'itl','intertrial luminance',false,false,[],false); % do not punish responses here. itl has LED hardcoded to false
+            stimSpecs{i} = stimSpec(interTrialStim.interTrialLuminance,criterion,'cache',0,interTrialStim.duration,[],0,true,hz,'itl','intertrial luminance',false,false,[],false,[]); % do not punish responses here. itl has LED hardcoded to false
             i=i+1;
             
 

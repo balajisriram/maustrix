@@ -215,7 +215,7 @@ classdef trialManager
             %% check port logic (depends on trialManager class)
             tm.checkPortLogic(targetPorts,distractorPorts,st);
             tm.checkPorts(targetPorts,distractorPorts);
-            [stimSpecs, startingStimSpecInd] = createStimSpecsFromParams(tm,stimList,targetPorts,distractorPorts,tm.getRequestPorts(st.numPorts),...
+            [stimSpecs, startingStimSpecInd] = tm.createStimSpecsFromParams(stimList,targetPorts,distractorPorts,tm.getRequestPorts(st.numPorts),...
                 refreshRate,indexPulses);
             
             tm.validateStimSpecs(stimSpecs);
@@ -239,49 +239,11 @@ classdef trialManager
             end
 
             drawnow;
-            %currentValveStates=st.verifyValvesClosed(); % #### do we need this?
+            currentValveStates=st.verifyValvesClosed(); % #### do we need this?
             
             pStr=[tR(tRInd).protocolName 'a)' ' step:' num2str(tR(tRInd).trainingStepNum) '/' num2str(tR(tRInd).numStepsInProtocol) ];
             
             trialLabel=sprintf('session:%d trial:%d (%d)',sessNo,sum(tR(tRInd).sessionNumber == [tR.sessionNumber]),tR(tRInd).trialNumber);
-            
-            % #### removing datanet controls for now
-%             if ~isempty(st.datanet)
-%                 % 4/11/09 - also save the stimRecord here, before trial starts (but just the stimManagerClass)
-%                 % also send over the filename of the neuralRecords file (so we can create it on the phys side, and then append every 30 secs)
-%                 datanet_constants = getConstants(getDatanet(st));
-%                 if ~isempty(getDatanet(st))
-%                     [~, stopEarly] = handleCommands(getDatanet(st),[]);
-%                 end
-%                 if ~stopEarly
-%                     commands=[];
-%                     commands.cmd = datanet_constants.stimToDataCommands.S_TRIAL_START_EVENT_CMD;
-%                     cparams=[];
-%                     cparams.neuralFilename = sprintf('neuralRecords_%d-%s.mat',tR(tRInd).trialNumber,datestr(tR(tRInd).date,30));
-%                     cparams.stimFilename = sprintf('stimRecords_%d-%s.mat',tR(tRInd).trialNumber,datestr(tR(tRInd).date, 30));
-%                     cparams.time=datenum(tR(tRInd).date);
-%                     cparams.trialNumber=tR(tRInd).trialNumber;
-%                     cparams.stimManagerClass=tR(tRInd).stimManagerClass;
-%                     cparams.stepName=getStepName(ts);
-%                     cparams.stepNumber=t;
-%                     commands.arg=cparams;
-%                     [~] = sendCommandAndWaitForAck(getDatanet(st), commands);
-%                     
-%                     subID=sub.id;
-%                     trialStartTime=datestr(tR(tRInd).date, 30);
-%                     trialNum=tR(tRInd).trialNumber;
-%                     stimManagerClass=tR(tRInd).stimManagerClass;
-%                     stepName=tR(tRInd).stepName;
-%                     frameDropCorner=tm.frameDropCorner;
-%                     
-%                     try
-%                         stim_path = fullfile(getStorePath(getDatanet(st)), 'stimRecords');
-%                         save(fullfile(stim_path,cparams.stimFilename),'subID','trialStartTime','trialNum','stimManagerClass','stimulusDetails','frameDropCorner','refreshRate','stepName');
-%                     catch ex
-%                         error('unable to save to %s',stim_path);
-%                     end
-%                 end
-%             end
             
             tR(tRInd).stimDetails = stimulusDetails;
             
@@ -325,16 +287,6 @@ classdef trialManager
                 stopEarly = 1;
             end
             
-%             if ~isempty(st.datanet) %&& ~stopEarly ####
-%                 handleCommands(st.datanet,[]);
-%                 datanet_constants = getConstants(st.datanet);
-%                 commands=[];
-%                 commands.cmd = datanet_constants.stimToDataCommands.S_TRIAL_END_EVENT_CMD;
-%                 cparams=[];
-%                 cparams.time = now;
-%                 commands.arg=cparams;
-%                 [~] = sendCommandAndWaitForAck(st.datanet, commands);
-%             end
             
             tR(tRInd).reinforcementManager = structize(tm.reinforcementManager);
             tR(tRInd).reinforcementManagerClass = class(tm.reinforcementManager);
@@ -539,15 +491,9 @@ classdef trialManager
                     if isFinalPhase
                         done = 1;
                         updatePhase = 1;
-                        %              'we are done with this trial'
-                        %              specInd
                     else
                         % move to the next phase as specified by graduationCriterion
-                        %      specInd = transitionCriterion{gcInd+1};
                         newSpecInd = transitionCriterion{gcInd+1};
-                        %             if (specInd == newSpecInd)
-                        %                 error('same indices at %d', specInd);
-                        %             end
                         updatePhase = 1;
                     end
                     transitionedByPortFlag = true;
@@ -929,7 +875,6 @@ classdef trialManager
                 yTextPos = 20;
                 
                 if updatePhase == 1
-                    %wind=Screen('OpenWindow', 0, 0);
                     Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                     %####setStatePins(station,'stim',false);
                     %####setStatePins(station,'phase',true);
@@ -1183,61 +1128,11 @@ classdef trialManager
                     
                     timestamps.missesRecorded=GetSecs;
                 else
-%                     
-%                     if ~isempty(analogOutput) || window<=0 || strcmp(tm.displayMethod,'LED')
-%                         phaseRecords(phaseNum).LEDintermediateTimestamp=GetSecs; %need to preallocate
-%                         phaseRecords(phaseNum).intermediateSampsOutput=get(analogOutput,'SamplesOutput'); %need to preallocate
-%                         
-%                         if ~isempty(framesUntilTransition)
-%                             %framesUntilTransition is calculated off of the screen's ifi which is not correct when using LED
-%                             framesUntilTransition=framesInPhase+2; %prevent handlePhasedTrialLogic from tripping to next phase
-%                         end
-%                         
-%                         %note this logic is related to updateFrameIndexUsingTextureCache
-%                         if ~loop && (get(analogOutput,'SamplesOutput')>=numSamps || ~outputsamplesOK)
-%                             if isempty(responseOptions)
-%                                 done=1;
-%                             end
-%                             if ~isempty(framesUntilTransition)
-%                                 framesUntilTransition=framesInPhase+1; %cause handlePhasedTrialLogic to trip to next phase
-%                             end
-%                         end
-%                     end
                     
                 end
                 
                 % =========================================================================
-                
-                if ~isempty(eyeTracker)
-                    if ~checkRecording(eyeTracker)
-                        sca
-                        error('lost tracker connection!')
-                    end
-                    [gazeEstimates, samples] = getSamples(eyeTracker);
-                    % gazeEstimates should be a Nx2 matrix, samples should be Nx43 matrix, totalFrameNum is the frame number we are on
-                    numEyeTrackerSamples = size(samples,1);
-                    
-                    if (totalEyeDataInd+numEyeTrackerSamples)>length(eyeData) %if samples from this frame make us exceed size of eyeData
-                        
-                        %edf notes that this method is more expensive than necessary -- by expanding the matrix in this way, the old matrix still has to be copied in
-                        %instead, consider using a cell array and adding your new allocation chunk as an {end+1} cell with your matrix of nans, then no copying will be necessary
-                        %then you can concat all your cells at the end of the trial
-                        
-                        %  allocateMore
-                        newEnd=length(eyeData)+ framesPerAllocationChunk;
-                        %             disp(sprintf('did allocation to eyeTrack data; up to %d samples enabled',newEnd))
-                        eyeData(end+1:newEnd,:)=nan;
-                        eyeDataFrameInds(end+1:newEnd,:)=nan;
-                        gaze(end+1:newEnd,:)=nan;
-                    end
-                    
-                    if ~isempty(gazeEstimates) && ~isempty(samples)
-                        gaze(totalEyeDataInd:totalEyeDataInd+numEyeTrackerSamples-1,:) = gazeEstimates;
-                        eyeData(totalEyeDataInd:totalEyeDataInd+numEyeTrackerSamples-1,:) = samples;
-                        eyeDataFrameInds(totalEyeDataInd:totalEyeDataInd+numEyeTrackerSamples-1,:) = totalFrameNum;
-                        totalEyeDataInd = totalEyeDataInd + numEyeTrackerSamples;
-                    end
-                end
+                % eyeTracker stuff was here
                 
                 timestamps.eyeTrackerDone=GetSecs;
                 

@@ -63,8 +63,39 @@ classdef stimManager
             end
         end % end function
         
-        function soundsToPlay = getSoundsToPlay(stimManager, ports, lastPorts, phase, phaseType, stepsInPhase,msRewardSound, msPenaltySound, ...
-                targetOptions, distractorOptions, requestOptions, playRequestSoundLoop, trialManagerClass, trialDetails, stimDetails)
+        function [out, scale] = correctStim(stimManager,numFrames)
+            scale=0;
+            
+            out = stimManager.interTrialLuminance;
+        end
+        
+        function [out, scale] = errorStim(stimManager,numFrames)
+            scale=0;
+            x = double(rand(1,1,numFrames)>.5);
+            errorStimIsOnlyBlack = true;
+            if errorStimIsOnlyBlack
+                out = zeros(size(x));
+            else
+                out = x;
+            end
+        end
+        
+        function s=decache(s)
+        end
+        
+        function [t] = disp(stim)
+            t = class(stim);
+        end
+        
+        function expertPostTrialCleanUp(stimManager)
+            % this function is used in expert mode to perform user-defined cleanup tasks between phases
+            % default behavior is to call Screen('Close') to clear all textures and close offscreen windows (but leave onscreen window!)
+            
+            Screen('Close')
+        end
+        
+        function soundsToPlay = getSoundsToPlay(tm, ports, lastPorts, phase, phaseType, stepsInPhase,msRewardSound, msPenaltySound, ...
+                targetOptions, distractorOptions, requestOptions, playRequestSoundLoop, trialDetails)
             % see doc in stimManager.calcStim.txt
             
             playLoopSounds={};
@@ -127,37 +158,6 @@ classdef stimManager
             soundsToPlay = {playLoopSounds, playSoundSounds};
             
         end % end function
-        
-        function [out, scale] = correctStim(stimManager,numFrames)
-            scale=0;
-            
-            out = stimManager.interTrialLuminance;
-        end
-        
-        function [out, scale] = errorStim(stimManager,numFrames)
-            scale=0;
-            x = double(rand(1,1,numFrames)>.5);
-            errorStimIsOnlyBlack = true;
-            if errorStimIsOnlyBlack
-                out = zeros(size(x));
-            else
-                out = x;
-            end
-        end
-        
-        function s=decache(s)
-        end
-        
-        function [t] = disp(stim)
-            t = class(stim);
-        end
-        
-        function expertPostTrialCleanUp(stimManager)
-            % this function is used in expert mode to perform user-defined cleanup tasks between phases
-            % default behavior is to call Screen('Close') to clear all textures and close offscreen windows (but leave onscreen window!)
-            
-            Screen('Close')
-        end
         
         % ==================================================================
         % HELPER FUNCTIONS

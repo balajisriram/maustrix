@@ -2,11 +2,10 @@ classdef goNoGo<trialManager
     
     properties
         percentCorrectionTrials=0;
-        responseLockoutMs=[]; % the duration after stimulus onset for which the animal can respond
+        responseLockoutMs=[];
         fractionGo = 0.5;
         rewardCorrectRejection = false;
         punishIncorrectRejection = false;
-        preStimulusNoResponseDuration
     end
     
     properties (Constant = true)

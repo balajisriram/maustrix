@@ -361,12 +361,15 @@ classdef goNoGo<trialManager
             
             doNothing = [];
             
+            % spec=stimSpec(stimulus,transitions,stimType,startFrame,framesUntilTransition,
+            %	autoTrigger,scaleFactor,isFinalPhase,hz,phaseType,phaseLabel,punishResponses,isStim,indexPulses)
+            
             % preRequest
             assert(~isempty(framesUntilOnset),'goNoGo:createStimSpecsFromParams:incompatibleInputs','framesUntilOnset should be non-empty');
             which = strcmp('preRequestStim',stimNames);
             preRequestStim = stimParams{which};
             assert(preRequestStim.punishResponses,'goNoGo:createStimSpecsFromParams:incompatibleInputs','framesUntilOnset should be non-empty');
-            criterion={doNothing,discrimIndex}; % preRequest responses are punished
+            criterion={doNothing,discrimIndex,targetPorts,preRequestIndex}; % preRequest responses are punished
             stimSpecs{i} = stimSpec(preRequestStim.stimulus,criterion,preRequestStim.stimType,preRequestStim.startFrame,...
                 preRequestStim.framesUntilTimeout,preRequestStim.autoTrigger,preRequestStim.scaleFactor,false,hz,'pre-request','pre-request',...
                 preRequestStim.punishResponses,false,[],preRequestStim.ledON, preRequestStim.soundPlayed);

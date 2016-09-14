@@ -449,7 +449,7 @@ classdef trialManager
                 newSpecInd = transitionCriterion{find(cellfun('isempty',transitionCriterion))+1};
                 % this will always work as long as we guarantee the presence of this special indicator (checked in stimSpec constructor)
                 updatePhase = 1;
-                if isFinalPhase
+                if spec.isFinalPhase
                     done = 1;
                     %      error('we are done by time');
                 end
@@ -473,7 +473,7 @@ classdef trialManager
                 newSpecInd = transitionCriterion{cellfun('isempty',transitionCriterion)+1};
                 % this will always work as long as we guarantee the presence of this special indicator (checked in stimSpec constructor)
                 updatePhase = 1;
-                if isFinalPhase
+                if spec.isFinalPhase
                     done = 1;
                     %      error('we are done by time');
                 end
@@ -486,7 +486,7 @@ classdef trialManager
                 if ~isempty(transitionCriterion{gcInd}) && any(logical(ports(transitionCriterion{gcInd})))
                     % we found port in this port set
                     % first check if we are done with this trial, in which case we do nothing except set done to 1
-                    if isFinalPhase
+                    if spec.isFinalPhase
                         done = 1;
                         updatePhase = 1;
                     else

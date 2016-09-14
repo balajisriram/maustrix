@@ -439,12 +439,12 @@ classdef trialManager
             transitionedByTimeFlag = false;
             transitionedByPortFlag = false;
             goDirectlyToError=false;
-            
+            transitionCriterion = spec.transitions;
             % ===================================================
             % Check against framesUntilTransition - Transition BY TIME
             % if we are at grad by time, then manually set port to the correct one
             % note that we will need to flag that this was done as "auto-request"
-            if ~isempty(framesUntilTransition) && framesInPhase == framesUntilTransition - 1 % changed to framesUntilTransition-1 % 8/19/08
+            if ~isempty(spec.framesUntilTransition) && framesInPhase == spec.framesUntilTransition - 1 % changed to framesUntilTransition-1 % 8/19/08
                 % find the special 'timeout' transition (the port set should be empty)
                 newSpecInd = transitionCriterion{find(cellfun('isempty',transitionCriterion))+1};
                 % this will always work as long as we guarantee the presence of this special indicator (checked in stimSpec constructor)
@@ -1194,13 +1194,17 @@ classdef trialManager
                 
                 timestamps.enteringPhaseLogic=GetSecs;
                 if ~paused
+                    result = trialRecords(trialInd).result;
+                    tD = trialRecords(trialInd).trialDetails;
                     [tm, spec, done, newSpecInd, phaseInd, updatePhase, transitionedByTimeFlag, ...
-                        transitionedByPortFlag, trialRecords(trialInd).result, isRequesting, lastSoundsLooped, ...
+                        transitionedByPortFlag, result, isRequesting, lastSoundsLooped, ...
                         timestamps.logicGotSounds, timestamps.logicSoundsDone, timestamps.logicFramesDone, ...
                         timestamps.logicPortsDone, timestamps.logicRequestingDone, goDirectlyToError] ...
-                        = tm.handlePhasedTrialLogic(done, ports, lastPorts, station, spec, phaseInd, numFramesInStim, framesInPhase, ...
-                        trialRecords(trialInd).trialDetails, trialRecords(trialInd).result, msRewardSound, ...
-                        msPenaltySound, targetOptions, distractorOptions, requestOptions, playRequestSoundLoop, isRequesting, lastSoundsLooped);
+                        = tm.handlePhasedTrialLogic(done, ports, lastPorts, station, spec, phaseInd, numFramesInStim, framesInPhase, tD, result, ...
+                        msRewardSound, msPenaltySound, targetOptions, distractorOptions, requestOptions, playRequestSoundLoop, isRequesting, ...
+                        lastSoundsLooped);
+                    trialRecords(trialInd).result = result;
+                    trialRecords(trialInd).trialDetails = tD;
                     % if goDirectlyToError, then reset newSpecInd to the first error phase in stimSpecs
                     if goDirectlyToError
                         newSpecInd=find(strcmp(cellfun(@(x) x.phaseType, stimSpecs,'UniformOutput',false),'reinforced'));

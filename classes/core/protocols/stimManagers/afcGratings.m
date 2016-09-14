@@ -186,9 +186,9 @@ classdef afcGratings<stimManager
                 calcStim(sm,tm,st,tR,~)
             resolutions = st.resolutions;
             displaySize = st.getDisplaySize();
-            LUTbits = st.getLUTBits();
+            LUTbits = st.getLUTbits();
             responsePorts = tm.getResponsePorts(st.numPorts);
-            
+            scaleFactor = sm.scaleFactor;
             indexPulses=[];
             imagingTasks=[];
             [LUT, sm, updateSM]=getLUT(sm,LUTbits);
@@ -213,7 +213,7 @@ classdef afcGratings<stimManager
             width = min(width,sm.maxWidth);
             
             % lets save some of the details for later
-            details.afcGratingType = sm.getType(structize(sm));
+%             details.afcGratingType = sm.getType(structize(sm));
             
             % whats the chosen stim?
             if targetPorts==1
@@ -246,9 +246,12 @@ classdef afcGratings<stimManager
                     stim.contrast           = chooseFrom(sm.contrasts{chosenStimIndex});
                     stim.radius             = chooseFrom(sm.radii{chosenStimIndex});
                     stim.annulus            = chooseFrom(sm.annuli{chosenStimIndex});
-                    stim.location           = chooseFrom(sm.location{chosenStimIndex});
                     stim.maxDuration        = round(chooseFrom(sm.maxDuration{chosenStimIndex})*hz);
                     stim.waveform           = sm.waveform;
+                    
+                    locations               = sm.location{chosenStimIndex};
+                    numLocations            = size(locations,1);
+                    stim.location           = locations(chooseFrom(1:numLocations),:);
                 case false
                     % #### need to use the seed val somehow not used here
                     tempVar = randperm(length(sm.pixPerCycs{chosenStimIndex}));
@@ -275,14 +278,14 @@ classdef afcGratings<stimManager
             
             % have a version in ''details''
             details.doCombos            = stim.doCombos;
-            details.pixPerCycs          = stim.pixPerCycs;
-            details.driftfrequencies    = stim.driftfrequencies;
-            details.orientations        = stim.orientations;
-            details.phases              = stim.phases;
-            details.contrasts           = stim.contrasts;
+            details.pixPerCyc           = stim.pixPerCyc;
+            details.driftfrequency      = stim.driftfrequency;
+            details.orientation         = stim.orientation;
+            details.phase               = stim.phase;
+            details.contrast            = stim.contrast;
             details.maxDuration         = stim.maxDuration;
-            details.radii               = stim.radii;
-            details.annuli              = stim.annuli;
+            details.radius              = stim.radius;
+            details.annulus             = stim.annulus;
             details.waveform            = stim.waveform;
             
             TypeIsExpert = any(sm.driftfrequencies{1}>0)||any(sm.driftfrequencies{2}>0);
@@ -328,7 +331,7 @@ classdef afcGratings<stimManager
                         stim.annuliMatrices = {[]};
                     end
                 case false
-                    type = 'static';
+                    type = 'cache';
                     grating = sm.computeGabor(stim); % #### new                    
             end
             
@@ -348,7 +351,7 @@ classdef afcGratings<stimManager
             switch type
                 case 'expert'
                     discrimStim.stimulus=stim;
-                case 'static'
+                case 'cache'
                     discrimStim.stimulus=grating;
             end
             discrimStim.stimType=type;
@@ -358,39 +361,43 @@ classdef afcGratings<stimManager
             discrimStim.punishResponses=false;
             discrimStim.framesUntilTimeout=timeout;
             discrimStim.ledON = false; % #### presetting here
+            discrimStim.soundPlayed = []; 
             
             preRequestStim=[];
-            preRequestStim.stimulus=sm.getInterTrialLuminance();
+            preRequestStim.stimulus=sm.interTrialLuminance;
             preRequestStim.stimType='loop';
             preRequestStim.scaleFactor=0;
             preRequestStim.startFrame=0;
             preRequestStim.autoTrigger=[];
             preRequestStim.punishResponses=false;
             preRequestStim.ledON = false; % #### presetting here
-            
+            preRequestStim.soundPlayed = []; 
+            preRequestStim.framesUntilTimeout = 100;
             
             if sm.doPostDiscrim
                 postDiscrimStim = preRequestStim;
+                postDiscrimStim.framesUntilTimeout = inf;
             else
                 postDiscrimStim = [];
             end
             
-            interTrialStim.interTrialLuminance = sm.getInterTrialLuminance();
-            interTrialStim.duration = sm.getInterTrialDuration();
-            ITL = sm.getInterTrialLuminance();
+            interTrialStim.interTrialLuminance = sm.interTrialLuminance;
+            interTrialStim.duration = sm.interTrialDuration;
+            interTrialStim.soundPlayed = [];
+            ITL = sm.interTrialLuminance;
             
             
-            details.interTrialDuration = sm.getInterTrialDuration();
+            details.interTrialDuration = sm.interTrialDuration();
             details.stimManagerClass = class(sm);
             details.trialManagerClass = class(tm);
             details.scaleFactor = scaleFactor;
             
-            if strcmp(trialManagerClass,'nAFC') && details.correctionTrial
+            if strcmp(class(tm),'nAFC') && details.correctionTrial
                 text='correction trial!';
             else
                 text=sprintf('thresh: %g',sm.thresh);
             end
-            
+
             stimList = {...
                 'preRequestStim',preRequestStim;...
                 'discrimStim',discrimStim;...

@@ -11,9 +11,6 @@ classdef trialManager
         showText
         delayManager
         responseWindowMs
-    end
-    
-    properties (Constant = true)
         allowRepeats = true;
     end
     

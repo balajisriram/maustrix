@@ -30,129 +30,77 @@ classdef orientedGabors<stimManager
             s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
             
             % create object using specified values
+            assert(all(pixPerCycs)>0,'orientedGabors:orientedGabors:incorrectType','pixPerCycs must all be > 0');
+            s.pixPerCycs=pixPerCycs;
             
-            if all(pixPerCycs)>0
-                s.pixPerCycs=pixPerCycs;
-            else
-                error('pixPerCycs must all be > 0')
-            end
+            assert(all(isnumeric(targetOrientations)) && all(isnumeric(distractorOrientations)),...
+                'orientedGabors:orientedGabors:incorrectType','targetOrientations and distractorOrientations must all be numeric');
+            s.targetOrientations=targetOrientations;
+            s.distractorOrientations=distractorOrientations;
             
-            if all(isnumeric(targetOrientations)) && all(isnumeric(distractorOrientations))
-                s.targetOrientations=targetOrientations;
-                s.distractorOrientations=distractorOrientations;
-            else
-                error('target and distractor orientations must be numbers')
-            end
+            assert(mean >= 0 && mean<=1,'orientedGabors:orientedGabors:incorrectValue','mean must all be > 0 and < 1');
+            s.mean=mean;
             
-            if mean >= 0 && mean<=1
-                s.mean=mean;
-            else
-                error('0 <= mean <= 1')
-            end
-            
-            if radius >=0
-                s.radius=radius;
-            else
-                error('radius must be >= 0')
-            end
-            
-            if all(isnumeric(contrasts))
-                s.contrasts=contrasts;
-            else
-                error('contrasts must be numeric')
-            end
-            
-            if thresh >= 0
-                s.thresh=thresh;
-            else
-                error('thresh must be >= 0')
-            end
-            
-            if isnumeric(yPositionPercent)
-                s.yPosPct=yPositionPercent;
-            else
-                error('yPositionPercent must be numeric')
-            end
+            assert(radius >= 0,'orientedGabors:orientedGabors:incorrectValue','radius must all be >=0');
+            s.radius=radius;
             
             
-            if ~isempty(waveform)
-                if ismember(waveform,{'sine', 'square', 'none'})
-                    s.waveform=waveform;
-                else
-                    error('waveform must be ''sine'', ''square'', or ''none''')
-                end
-            end
-            if ~isempty(normalizedSizeMethod)
-                if ismember(normalizedSizeMethod,{'normalizeVertical', 'normalizeHorizontal', 'normalizeDiagonal' , 'none'})
-                    s.normalizedSizeMethod=normalizedSizeMethod;
-                else
-                    error('normalizeMethod must be ''normalizeVertical'', ''normalizeHorizontal'', or ''normalizeDiagonal'', or ''none''')
-                end
-            end
+            assert(isnumeric(contrasts),'orientedGabors:orientedGabors:incorrectType','contrasts must all be numeric');
+            s.contrasts=contrasts;
+            
+            assert(thresh>=0,'orientedGabors:orientedGabors:incorrectValue','thresh must be >0');
+            s.thresh=thresh;
+            
+            assert(isnumeric(yPositionPercent),'orientedGabors:orientedGabors:incorrectType','yPositionPercent must be numeric');
+            s.yPosPct=yPositionPercent;
+            
+            
+            assert(ismember(waveform,{'sine', 'square', 'none'}),'orientedGabors:orientedGabors:incorrectValue',...
+                'waveform must be one of ''sine'', ''square'', or ''none''');
+            s.waveform = waveform;
+            
+            assert(ismember(normalizedSizeMethod,{'normalizeVertical', 'normalizeHorizontal', 'normalizeDiagonal' , 'none'}),...
+                'orientedGabors:orientedGabors:incorrectValue',...
+                'normalizeMethod must be ''normalizeVertical'', ''normalizeHorizontal'', or ''normalizeDiagonal'', or ''none''');
+            s.normalizedSizeMethod = normalizedSizeMethod;
             
         end
         
-        function [stimulus,updateSM,resolutionIndex,stimList,LUT,targetPorts,distractorPorts,...
-                details,interTrialLuminance,text,indexPulses,imagingTasks] =...
-                calcStim(stimulus,trialManager,allowRepeats,resolutions,displaySize,LUTbits,...
-                responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
+        function [sm,updateSM,resInd,stimList,LUT,targetPorts,distractorPorts,details,text,indexPulses,imagingTasks,ITL] =...
+                calcStim(sm,tm,st,tR,~)
             % see BCorePath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
             % 1/3/0/09 - trialRecords now includes THIS trial
-            trialManagerClass = class(trialManager);
+            resolutions = st.resolutions;
+            displaySize = st.getDisplaySize();
+            LUTbits = st.getLUTbits();
+            responsePorts = tm.getResponsePorts(st.numPorts);
+            scaleFactor = sm.scaleFactor;
             indexPulses=[];
             imagingTasks=[];
-            LUTbits;
-            displaySize;
-            [LUT, stimulus, updateSM]=getLUT(stimulus,LUTbits);
-            mac = BCoreUtil.getMACaddressSafely;
-            switch mac
-                case {'A41F7278B4DE','A41F729213E2','A41F726EC11C','A41F729211B1' } %gLab-Behavior rigs 1,2,3
-                    [resolutionIndex, height, width, hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
-                case {'7845C4256F4C', '7845C42558DF'} %gLab-Behavior rigs 4,5
-                    [resolutionIndex, height, width, hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
-                otherwise
-                    [resolutionIndex, height, width, hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
-            end
+            [LUT, sm, updateSM]=getLUT(sm,LUTbits);
+
+            [resInd, height, width, hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
             
-            if isnan(resolutionIndex)
-                resolutionIndex=1;
+            if isnan(resInd)
+                resInd=1;
             end
-            
-            scaleFactor = getScaleFactor(stimulus);
-            interTrialLuminance = getInterTrialLuminance(stimulus);
-            interTrialDuration = getInterTrialDuration(stimulus);
+            interTrialLuminance = sm.interTrialLuminance();
+            interTrialDuration = sm.interTrialDuration;
             
             details.pctCorrectionTrials=trialManager.percentCorrectionTrials;
             details.bias = getRequestBias(trialManager);
             
-            if ~isempty(trialRecords) && length(trialRecords)>=2
-                lastRec=trialRecords(end-1);
+            if ~isempty(tR) && length(tR)>=2
+                lastRec=tR(end-1);
             else
                 lastRec=[];
             end
-            switch trialManagerClass
-                case 'freeDrinksAlternate'
-                    twoRecsAgo = [];
-                    if ~isempty(trialRecords) && length(trialRecords)>=3
-                        twoRecsAgo = trialRecords(end-2);
-                    end
-                    [targetPorts, distractorPorts, details]=assignPorts(details,{lastRec, twoRecsAgo},responsePorts,trialManagerClass,allowRepeats);
-                otherwise
-                    [targetPorts, distractorPorts, details]=assignPorts(details,lastRec,responsePorts,trialManagerClass,allowRepeats);
-            end
-            switch trialManagerClass
-                case {'freeDrinks','freeDrinksCenterOnly','freeDrinksSidesOnly','freeDrinksAlternate'}
-                    type='loop';
-                case 'nAFC'
-                    type={'trigger',true};
-                case 'autopilot'
-                    type='loop';
-                case 'goNoGo'
-                    type={'trigger',true};
-                otherwise
-                    error('unsupported trialManagerClass');
-            end
             
+            [targetPorts, distractorPorts, details]=tm.assignPorts(details,lastRec,responsePorts,trialManagerClass,allowRepeats);
+            % freeDrinks Alternate needs two records
+
+            type = sm.getStimType(tm);
+
             numFreqs=length(stimulus.pixPerCycs);
             details.pixPerCyc=stimulus.pixPerCycs(ceil(rand*numFreqs));
             
@@ -248,6 +196,21 @@ classdef orientedGabors<stimManager
             interTrialStim.duration = interTrialDuration;
             details.interTrialDuration = interTrialDuration;
         end % end function
+        
+        function type = getStimType(sm,tm)
+            switch class(tm)
+                case {'freeDrinks','freeDrinksCenterOnly','freeDrinksSidesOnly','freeDrinksAlternate'}
+                    type='loop';
+                case 'nAFC'
+                    type={'trigger',true};
+                case 'autopilot'
+                    type='loop';
+                case 'goNoGo'
+                    type={'trigger',true};
+                otherwise
+                    error('unsupported trialManagerClass');
+            end
+        end
         
         function d=display(s)
             d=['orientedGabors (n target, m distractor gabors, randomized phase, equal spatial frequency, p>=n+m horiz positions)\n'...
@@ -476,7 +439,7 @@ classdef orientedGabors<stimManager
             s.LUTbits=0;
         end
         
-        function [out s updateSM]=getLUT(s,bits)
+        function [out, s, updateSM]=getLUT(s,bits)
             if isempty(s.LUT) || s.LUTbits~=bits
                 updateSM=true;
                 s.LUTbits=bits;
@@ -498,23 +461,19 @@ classdef orientedGabors<stimManager
         end
         
         function out=stimMgrOKForTrialMgr(sm,tm)
-            if isa(tm,'trialManager')
-                switch class(tm)
-                    case {'freeDrinks','freeDrinksCenterOnly','freeDrinksSidesOnly','freeDrinksAlternate'}
-                        out=1;
-                    case 'nAFC'
-                        out=1;
-                    case 'goNoGo'
-                        out=1;
-                    otherwise
-                        out=0;
-                end
-            else
-                error('need a trialManager object')
+            assert(isa(tm,'trialManager'),'orientedGabors:stimMgrOKForTrialMgr:incorrectType','need a trialManager object');
+            switch class(tm)
+                case {'freeDrinks','freeDrinksCenterOnly','freeDrinksSidesOnly','freeDrinksAlternate'}
+                    out=true;
+                case 'nAFC'
+                    out=true;
+                case 'goNoGo'
+                    out=true;
+                otherwise
+                    out=false;
             end
         end
         
     end
     
 end
-

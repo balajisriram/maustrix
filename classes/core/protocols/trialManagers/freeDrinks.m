@@ -2,21 +2,21 @@ classdef freeDrinks<trialManager
     
     properties
         freeDrinkLikelihood=0;
-        allowRepeats=false;
     end
     
     methods
-        function t=freeDrinks(soundManager, freeDrinkLikelihood, allowRepeats, reinfMgr, eyeController, frameDropCorner, dropFrames, ...
-                displayMethod, requestPort, saveDetailedFrameDrops, delayManager, responseWindowMs, showText)
+        function t=freeDrinks(soundManager, reinfMgr, delayManager, frameDropCorner, dropFrames, requestPort, saveDetailedFrameDrops, ...
+            responseWindowMs, showText, freeDrinkLikelihood, allowRepeats)
             % FREEDRINKS  class constructor.
             % t=freeDrinks(soundManager,freeDrinkLikelihood,allowRepeats,reinforcementManager,
             %   [eyeController],[frameDropCorner],[dropFrames],[displayMethod],[requestPorts],[saveDetailedFramedrops],
             %	[delayManager],[responseWindowMs],[showText])
             
             
-            d=sprintf('free drinks\n\t\t\tfreeDrinkLikelihood: %g',freeDrinkLikelihood);
+            description=sprintf('free drinks\n\t\t\tfreeDrinkLikelihood: %g',freeDrinkLikelihood);
             
-            t=t@trialManager(soundManager,reinfMgr,eyeController,d,frameDropCorner,dropFrames,displayMethod,requestPort,saveDetailedFrameDrops,delayManager,responseWindowMs,showText);
+            t=t@trialManager(soundManager,reinfMgr,delayManager,frameDropCorner,dropFrames,requestPort,saveDetailedFrameDrops,...
+                responseWindowMs, description, showText);
             
             t.freeDrinkLikelihood=freeDrinkLikelihood;
             t.allowRepeats=allowRepeats;

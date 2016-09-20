@@ -131,6 +131,33 @@ classdef BCoreUtil
             tm=nAFC(sm,rm,dm,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,customDescription,responseWindowMS,showText,percentCorrectionTrials);
         end
         
+        function [tmAuto, tmEarned] = makeStandardTrialManagerFreeDrinksNoRequest()
+            % Create Sound Manager
+            sm = BCoreUtil.makeStandardSoundManager();
+            
+            % Reward Manager
+            rm = BCoreUtil.makeStandardReinforcementManager();
+            
+            % delayManager
+            dm = noDelay;
+            
+            dropFrames=false;
+            frameDropCorner={'off'};
+            saveDetailedFrameDrops = false;
+            reqPort = 'none';
+            showText = 'full';
+            responseWindowMS = [1 inf];
+            
+            freeDrinkLikelihood = 0.001;
+            allowRepeats = true;
+            tmAuto=freeDrinks(sm,rm,dm,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,responseWindowMS,showText,...
+                freeDrinkLikelihood,allowRepeats);
+            
+            freeDrinkLikelihood = 0;
+            tmEarned=freeDrinks(sm,rm,dm,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,responseWindowMS,showText,...
+                freeDrinkLikelihood,allowRepeats);
+        end
+        
         function tm = makeStandardTrialManagerGNG()
             % Create Sound Manager
             sndm = BCoreUtil.makeStandardSoundManagerGNG();
@@ -212,6 +239,30 @@ classdef BCoreUtil
             
             pElementaryVision100915 = protocol(descriptiveString,...
                 {ts});
+            stepNum = 1;
+            %%%%%%%%%%%%
+            for i=1:length(subjIDs)
+                subj=getSubjectFromID(r,subjIDs{i});
+                [~, r]=setProtocolAndStep(subj,pElementaryVision100915,true,false,true,stepNum,r,'call to setProtocolMIN','bas');
+            end
+            
+        end
+        
+        function r = setProtocolFreeDrinksHFNoRequest(r,subjIDs)
+            assert(isa(r,'BCore'),'BCoreUtil:setProtocolDEMONoRequest:invalidInput','need a BCore object. You sent object of class %s',class(r));
+            % TrialManager FreeDrinks
+            [tmStoch, tmEarned] = BCoreUtil.makeStandardTrialManagerFreeDrinksNoRequest();
+            ts1 = BCoreUtil.createFreeDrinksTrainingSteps(tmStoch,repeatIndefinitely(),noTimeOff(), 'Stochastic FreeDrinks');
+            ts2 = BCoreUtil.createFreeDrinksTrainingSteps(tmEarned,repeatIndefinitely(),noTimeOff(), 'Earned FreeDrinks');
+            
+            % TrialManager NAFC
+            tm = BCoreUtil.makeStandardTrialManagerNAFCNoRequest();
+            ts3 = BCoreUtil.createDEMOTrainingStepAFCGratings(tm, repeatIndefinitely(),noTimeOff(), 'easyAFC');
+            
+            descriptiveString='DEMO protocol 4/5/2016';
+            
+            pElementaryVision100915 = protocol(descriptiveString,...
+                {ts1,ts2,ts3});
             stepNum = 1;
             %%%%%%%%%%%%
             for i=1:length(subjIDs)
@@ -316,7 +367,33 @@ classdef BCoreUtil
             % training step using other objects as passed in
             ts = trainingStep(trialManager, AFCGRAT, performanceCrit, sch,stepName);
         end
-             
+        
+        function ts = createFreeDrinksTrainingSteps(trialManager, performanceCrit, sch, stepName)
+            % makes a basic, easy gngGrating training step
+            % correct response = side toward which grating tilts
+            
+            pixPerCycs              =[64];
+            targetOrientations      =[pi/2];
+            distractorOrientations  =[];
+            mean                    =.5;
+            radius                  =.075;
+            contrast                =1;
+            thresh                  =.00005;
+            yPosPct                 =.65;
+            maxWidth                =1024;
+            maxHeight               =768;
+            scaleFactor             =[1 1];
+            interTrialLuminance     =.5;
+            waveform = 'square';
+            normalizedSizeMethod = 'normalizeVertical';
+            FREESTIM = orientedGabors(pixPerCycs,targetOrientations,distractorOrientations,mean,radius,contrast,thresh,...
+                yPosPct,maxWidth,maxHeight,scaleFactor,interTrialLuminance,waveform,normalizedSizeMethod);
+            
+            
+            % training step using other objects as passed in
+            ts = trainingStep(trialManager, FREESTIM, performanceCrit, sch,stepName);
+        end
+        
         function ts = createDEMOTrainingStepGNG(trialManager, performanceCrit, sch, stepName)
             % makes a basic, easy gngGrating training step
             % correct response = side toward which grating tilts

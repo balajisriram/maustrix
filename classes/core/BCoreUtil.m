@@ -386,7 +386,7 @@ classdef BCoreUtil
             interTrialLuminance     =.5;
             waveform = 'square';
             normalizedSizeMethod = 'normalizeVertical';
-            FREESTIM = orientedGabors(pixPerCycs,targetOrientations,distractorOrientations,mean,radius,contrast,thresh,...
+            FREESTIM = orientedGaborsFreeDrinks(pixPerCycs,targetOrientations,distractorOrientations,mean,radius,contrast,thresh,...
                 yPosPct,maxWidth,maxHeight,scaleFactor,interTrialLuminance,waveform,normalizedSizeMethod);
             
             

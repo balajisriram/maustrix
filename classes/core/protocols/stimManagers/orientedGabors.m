@@ -87,8 +87,11 @@ classdef orientedGabors<stimManager
             interTrialLuminance = sm.interTrialLuminance();
             interTrialDuration = sm.interTrialDuration;
             
-            details.pctCorrectionTrials=trialManager.percentCorrectionTrials;
-            details.bias = getRequestBias(trialManager);
+            details.pctCorrectionTrials=tm.percentCorrectionTrials;
+            
+            if ismember(class(tm),{'biasedNAFC'})
+                details.bias = tm.bias;
+            end
             
             if ~isempty(tR) && length(tR)>=2
                 lastRec=tR(end-1);
@@ -157,22 +160,14 @@ classdef orientedGabors<stimManager
             discrimStim.scaleFactor=scaleFactor;
             discrimStim.startFrame=0;
             discrimStim.ledON = [false false];
-            switch trialManagerClass
+            switch class(tm)
                 case {'freeDrinks','freeDrinksCenterOnly','freeDrinksSidesOnly','freeDrinksAlternate'}
-                    fdLikelihood = getFreeDrinkLikelihood(trialManager);
-                    %         if fdLikelihood>0 && ~isempty(responsePorts)
-                    %             autoTrigger = {fdLikelihood,responsePorts};
-                    %         end
+                    fdLikelihood = tM.freeDrinkLikelihood;
                     autoTrigger = {};
                     for i = 1:length(responsePorts)
                         autoTrigger{end+1} = fdLikelihood;
                         autoTrigger{end+1} = responsePorts(i);
                     end
-                    %         if fdLikelihood>0 && ~isempty(responsePorts)
-                    %             discrimStim.autoTrigger = {fdLikelihood,responsePorts};
-                    %         else
-                    %             discrimStim.autoTrigger = [];
-                    %         end
                     discrimStim.autoTrigger = autoTrigger;
                 case {'nAFC','autopilot','goNoGo'}
                     discrimStim.autoTrigger=[];

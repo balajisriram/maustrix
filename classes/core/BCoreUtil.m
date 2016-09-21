@@ -248,7 +248,7 @@ classdef BCoreUtil
             
         end
         
-        function r = setProtocolFreeDrinksHFNoRequest(r,subjIDs)
+        function r = setProtocolHeadFixed(r,subjIDs)
             assert(isa(r,'BCore'),'BCoreUtil:setProtocolDEMONoRequest:invalidInput','need a BCore object. You sent object of class %s',class(r));
             % TrialManager FreeDrinks
             [tmStoch, tmEarned] = BCoreUtil.makeStandardTrialManagerFreeDrinksNoRequest();

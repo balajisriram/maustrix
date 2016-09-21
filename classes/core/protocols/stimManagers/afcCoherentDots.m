@@ -441,6 +441,7 @@ classdef afcCoherentDots<stimManager
             discrimStim.punishResponses=false;
             discrimStim.framesUntilTimeout=timeout;
             discrimStim.ledON = false; %% #### presetting here
+            discrimStim.soundPlayed = [];
             
             preRequestStim=[];
             preRequestStim.stimulus=sm.interTrialLuminance;
@@ -450,7 +451,7 @@ classdef afcCoherentDots<stimManager
             preRequestStim.autoTrigger=[];
             preRequestStim.punishResponses=false;
             preRequestStim.ledON = false; %% presetting here
-            
+            preRequestStim.soundPlayed = [];
            
             if sm.doPostDiscrim
                 postDiscrimStim = preRequestStim;
@@ -461,6 +462,7 @@ classdef afcCoherentDots<stimManager
            
             interTrialStim.interTrialLuminance = sm.interTrialLuminance;            
             interTrialStim.duration = sm.interTrialDuration;
+            interTrialStim.soundPlayed = [];
             ITL = sm.interTrialLuminance();
             
             details.interTrialDuration = sm.interTrialDuration;

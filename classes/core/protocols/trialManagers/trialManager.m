@@ -2455,6 +2455,9 @@ classdef trialManager
             
         end % end function
         
+        function out = percentCorrectionTrials()
+            out = 0;
+        end
     end
     
 end

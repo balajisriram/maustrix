@@ -80,7 +80,7 @@ classdef orientedGabors<stimManager
             imagingTasks=[];
             [LUT, sm, updateSM]=getLUT(sm,LUTbits);
 
-            [resInd, height, width, hz]=chooseLargestResForHzsDepthRatio(resolutions,[60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
+            [resInd, height, width, hz] = st.chooseLargestResForHzsDepthRatio(resolutions,[60],32,sm.maxWidth,sm.maxHeight);
             
             if isnan(resInd)
                 resInd=1;
@@ -100,30 +100,30 @@ classdef orientedGabors<stimManager
                 lastRec=[];
             end
             
-            [targetPorts, distractorPorts, details]=tm.assignPorts(details,lastRec,responsePorts,trialManagerClass,allowRepeats);
+            [targetPorts, distractorPorts, details] = tm.assignPorts(details,lastRec,responsePorts);
             % freeDrinks Alternate needs two records
 
             type = sm.getStimType(tm);
 
-            numFreqs=length(stimulus.pixPerCycs);
-            details.pixPerCyc=stimulus.pixPerCycs(ceil(rand*numFreqs));
+            numFreqs=length(sm.pixPerCycs);
+            details.pixPerCyc=sm.pixPerCycs(ceil(rand*numFreqs));
             
-            numTargs=length(stimulus.targetOrientations);
+            numTargs=length(sm.targetOrientations);
             % fixes 1xN versus Nx1 vectors if more than one targetOrientation
-            if size(stimulus.targetOrientations,1)==1 && size(stimulus.targetOrientations,2)>1
-                targetOrientations=stimulus.targetOrientations';
+            if size(sm.targetOrientations,1)==1 && size(sm.targetOrientations,2)>1
+                targetOrientations=sm.targetOrientations';
             else
-                targetOrientations=stimulus.targetOrientations;
+                targetOrientations=sm.targetOrientations;
             end
-            if size(stimulus.distractorOrientations,1)==1 && size(stimulus.distractorOrientations,2)>1
-                distractorOrientations=stimulus.distractorOrientations';
+            if size(sm.distractorOrientations,1)==1 && size(sm.distractorOrientations,2)>1
+                distractorOrientations=sm.distractorOrientations';
             else
-                distractorOrientations=stimulus.distractorOrientations;
+                distractorOrientations=sm.distractorOrientations;
             end
             
             details.orientations = targetOrientations(ceil(rand(length(targetPorts),1)*numTargs));
             
-            numDistrs=length(stimulus.distractorOrientations);
+            numDistrs=length(sm.distractorOrientations);
             if numDistrs>0
                 numGabors=length(targetPorts)+length(distractorPorts);
                 details.orientations = [details.orientations; distractorOrientations(ceil(rand(length(distractorPorts),1)*numDistrs))];
@@ -134,21 +134,21 @@ classdef orientedGabors<stimManager
             end
             details.phases=rand(numGabors,1)*2*pi;
             
-            xPosPcts = [linspace(0,1,totalPorts+2)]';
+            xPosPcts = [linspace(0,1,st.numPorts+2)]';
             xPosPcts = xPosPcts(2:end-1);
             details.xPosPcts = xPosPcts([targetPorts'; distractorLocs']);
             
-            details.contrast=stimulus.contrasts(ceil(rand*length(stimulus.contrasts))); % pick a random contrast from list
+            details.contrast=sm.contrasts(ceil(rand*length(sm.contrasts))); % pick a random contrast from list
             
             
             
-            params = [repmat([stimulus.radius details.pixPerCyc],numGabors,1) details.phases details.orientations repmat([details.contrast stimulus.thresh],numGabors,1) details.xPosPcts repmat([stimulus.yPosPct],numGabors,1)];
-            out(:,:,1)=computeGabors(params,stimulus.mean,min(width,getMaxWidth(stimulus)),min(height,getMaxHeight(stimulus)),stimulus.waveform, stimulus.normalizedSizeMethod,0);
+            params = [repmat([sm.radius details.pixPerCyc],numGabors,1) details.phases details.orientations repmat([details.contrast sm.thresh],numGabors,1) details.xPosPcts repmat([sm.yPosPct],numGabors,1)];
+            out(:,:,1)=computeGabors(params,sm.mean,min(width,sm.maxWidth),min(height,sm.maxHeight),sm.waveform, sm.normalizedSizeMethod,0);
             if iscell(type) && strcmp(type{1},'trigger')
-                out(:,:,2)=stimulus.mean;
+                out(:,:,2)=sm.mean;
             end
             
-            if strcmp(trialManagerClass,'nAFC') && details.correctionTrial
+            if strcmp(class(tm),'nAFC') && details.correctionTrial
                 text='correction trial!';
             else
                 text=sprintf('pixPerCyc: %g',details.pixPerCyc);
@@ -163,7 +163,7 @@ classdef orientedGabors<stimManager
             discrimStim.ledON = [false false];
             switch class(tm)
                 case {'freeDrinks','freeDrinksCenterOnly','freeDrinksSidesOnly','freeDrinksAlternate'}
-                    fdLikelihood = tM.freeDrinkLikelihood;
+                    fdLikelihood = tm.freeDrinkLikelihood;
                     autoTrigger = {};
                     for i = 1:length(responsePorts)
                         autoTrigger{end+1} = fdLikelihood;
@@ -191,6 +191,16 @@ classdef orientedGabors<stimManager
             
             interTrialStim.duration = interTrialDuration;
             details.interTrialDuration = interTrialDuration;
+            ITL = interTrialLuminance;
+
+            stimList = {...
+                'preRequestStim',preRequestStim;...
+                'discrimStim',discrimStim;...
+                'postDiscrimStim',postDiscrimStim;...
+                'preResponseStim',preResponseStim;...
+                'interTrialStim',interTrialStim};
+
+
         end % end function
         
         function type = getStimType(sm,tm)
@@ -387,7 +397,7 @@ classdef orientedGabors<stimManager
                     end
                 case 'localCalibStore'
                     try
-                        temp = load(fullfile(getBCorePath,'monitorCalibration','tempCLUT.mat'));
+                        temp = load(fullfile(BCoreUtil.getBCorePath,'monitorCalibration','tempCLUT.mat'));
                         uncorrected = temp.linearizedCLUT;
                         useUncorrected=1;
                     catch ex

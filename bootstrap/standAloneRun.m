@@ -83,6 +83,8 @@ catch ex
     message = {sprintf('Failed for subject::%s at time::%d:%d on %d-%d-%d',subjectID,c(4),c(5),c(2),c(3),c(1)),getReport(ex,'extended','hyperlinks','off')};
     BCoreUtil.notify(BCoreUtil.EXPERIMENTER,'Error in Rig',message);
     deleteOnSuccess = true;
+    [~, ~] = emptyAllBoxes(rx,'done running trials in standAloneRun',auth);
+    cleanup;
     BCoreUtil.replicateTrialRecords({rx.standAlonePath},deleteOnSuccess);
     cleanup;
     rethrow(ex)

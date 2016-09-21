@@ -1,5 +1,7 @@
 classdef orientedGabors<stimManager
-    
+    % ORIENTEDGABORS presents gabors of 
+    % "targetOrientations" in targetPorts and 
+    % "distractorOrientations" in distractorPorts
     properties
         pixPerCycs = [];
         targetOrientations = [];
@@ -15,7 +17,6 @@ classdef orientedGabors<stimManager
         LUTbits=0;
         waveform='square';
         normalizedSizeMethod='normalizeDiagonal';
-        
     end
     
     methods

@@ -45,7 +45,13 @@ classdef orientedGaborsFreeDrinks<orientedGabors
                 lastRec=[];
             end
             
-            [targetPorts, distractorPorts, details] = tm.assignPorts(details,lastRec,responsePorts);
+            if ~isempty(tR) && length(tR)>=3
+                prevRec=tR(end-2);
+            else
+                prevRec=[];
+            end
+            
+            [targetPorts, distractorPorts, details] = tm.assignPorts(details,{lastRec, prevRec},responsePorts);
             % freeDrinks Alternate needs two records
 
             numFreqs=length(sm.pixPerCycs);

@@ -64,6 +64,14 @@ classdef freeDrinks<trialManager
             msPenalty=0;
             msPenaltySound=0;
             updateRM = false;
+            
+            if isfield(trialRecords(end),'trialDetails') && isfield(trialRecords(end).trialDetails,'correct')
+                correct=trialRecords(end).trialDetails.correct;
+            else
+                correct=[];
+            end
+            
+            
             % ========================================================
             % if the result is a port vector, and we have not yet assigned correct, then the current result must be the trial response
             % because phased trial logic returns the 'result' from previous phase only if it matches a target/distractor
@@ -84,13 +92,10 @@ classdef freeDrinks<trialManager
                     correct=0;
                     result = 'multiple ports';
                 end
-                trialDetails.correct=correct;
             elseif ischar(result) && ismember(result,{'timedout','multiple ports'})
                 correct=0;
-                trialDetails.correct=correct;
             elseif ischar(result) && ismember(result,{'nominal'})
                 correct=1;
-                trialDetails.correct=correct;
             end
             
             % ========================================================
@@ -151,15 +156,12 @@ classdef freeDrinks<trialManager
                     spec=setStim(spec,eStim);
                 end
             end % end reward handling
-            
+            trialDetails.correct=correct;
             updateRM = updateRM1 || updateRM2;
-            
-            
-            trialDetails=[];
         end  % end function
         
         function [targetPorts, distractorPorts, details]=assignPorts(tm,details,lastTrialRec,responsePorts)
-            
+            lastTrialRec = lastTrialRec{1};
             if ~isempty(lastTrialRec)
                 try
                     pNum = find(strcmp('reinforcement',{lastTrialRec.phaseRecords.phaseLabel}));
@@ -200,6 +202,7 @@ classdef freeDrinks<trialManager
                 spec.soundAlreadyPlayed = true;
             end
             
+            try
             if strcmp(spec.phaseType,'pre-request') && (any(ports(targetOptions)) || any(ports(distractorOptions)) || ...
                     (any(ports) && isempty(requestOptions)))
                 % play white noise (when responsePort triggered during phase 1)
@@ -217,7 +220,10 @@ classdef freeDrinks<trialManager
                 % play wrong sound
                 playSoundSounds{end+1} = {'wrongSound', msPenaltySound};
             end
-            
+            catch
+                sca;
+                keyboard
+            end
             
             soundsToPlay = {playLoopSounds, playSoundSounds};
             

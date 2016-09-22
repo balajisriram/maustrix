@@ -149,12 +149,12 @@ classdef BCoreUtil
             responseWindowMS = [1 inf];
             
             freeDrinkLikelihood = 0.001;
-            allowRepeats = true;
-            tmAuto=freeDrinks(sm,rm,dm,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,responseWindowMS,showText,...
+            allowRepeats = false;
+            tmAuto=freeDrinksAlternate(sm,rm,dm,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,responseWindowMS,showText,...
                 freeDrinkLikelihood,allowRepeats);
             
             freeDrinkLikelihood = 0;
-            tmEarned=freeDrinks(sm,rm,dm,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,responseWindowMS,showText,...
+            tmEarned=freeDrinksAlternate(sm,rm,dm,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,responseWindowMS,showText,...
                 freeDrinkLikelihood,allowRepeats);
         end
         

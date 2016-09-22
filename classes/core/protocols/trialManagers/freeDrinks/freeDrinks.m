@@ -338,4 +338,3 @@ classdef freeDrinks<trialManager
         end
     end
 end
-

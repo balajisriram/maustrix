@@ -95,7 +95,7 @@ classdef freeDrinks<trialManager
             
             % ========================================================
             phaseType = spec.phaseType;
-            framesUntilTransition=getFramesUntilTransition(spec);
+            framesUntilTransition=spec.framesUntilTransition;
             % now, if phaseType is 'reinforced', use correct and call updateRewards(tm,correct)
             % this trialManager-specific method should do the following:
             % - call calcReinforcement(RM)
@@ -104,8 +104,8 @@ classdef freeDrinks<trialManager
             updateRM2 = false;
             if ~isempty(phaseType) && strcmp(phaseType,'reinforced') && framesInPhase==0
                 % we only check to do rewards on the first frame of the 'reinforced' phase
-                [rm, rewardSizeULorMS, garbage, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM2]=...
-                    calcReinforcement(getReinforcementManager(tm),subject, trialRecords,compiledRecords);
+                [rm, rewardSizeULorMS, ~, msPenalty, msPuff, msRewardSound, msPenaltySound, updateRM2]=...
+                    tm.reinforcementManager.calcReinforcement(subject, trialRecords,compiledRecords);
                 if updateRM2
                     tm.reinforcementManager = rm;
                 end
@@ -114,36 +114,18 @@ classdef freeDrinks<trialManager
                     msPenalty=0;
                     msPenaltySound=0;
                     
-                    if window>0
-                        if isempty(framesUntilTransition)
-                            framesUntilTransition = ceil((rewardSizeULorMS/1000)/ifi);
-                        end
-                        numCorrectFrames=ceil((rewardSizeULorMS/1000)/ifi);
-                        
-                    elseif strcmp(getDisplayMethod(tm),'LED')
-                        if isempty(framesUntilTransition)
-                            framesUntilTransition=ceil(getHz(spec)*rewardSizeULorMS/1000);
-                        else
-                            framesUntilTransition
-                            error('LED needs framesUntilTransition empty for reward')
-                        end
-                        numCorrectFrames=ceil(getHz(spec)*rewardSizeULorMS/1000);
-                    else
-                        error('huh?')
+                    if isempty(framesUntilTransition)
+                        framesUntilTransition = ceil((rewardSizeULorMS/1000)/ifi);
                     end
-                    spec=setFramesUntilTransition(spec,framesUntilTransition);
-                    [cStim correctScale] = correctStim(sm,numCorrectFrames);
-                    spec=setScaleFactor(spec,correctScale);
-                    strategy='noCache';
-                    if window>0
-                        [floatprecision cStim] = determineColorPrecision(tm, cStim, strategy);
-                        textures = cacheTextures(tm,strategy,cStim,window,floatprecision);
-                        destRect = determineDestRect(tm, window, correctScale, cStim, strategy);
-                    elseif strcmp(getDisplayMethod(tm),'LED')
-                        floatprecision=[];
-                    else
-                        error('huh?')
-                    end
+                    numCorrectFrames=ceil((rewardSizeULorMS/1000)/ifi);
+                    
+                    spec.framesUntilTransition = framesUntilTransition;
+                    [cStim, correctScale] = sm.correctStim(numCorrectFrames);
+                    spec.scaleFactor = correctScale;
+                    strategy='textureCache';
+                    [floatprecision, cStim] = determineColorPrecision(tm, cStim, strategy);
+                    textures = cacheTextures(tm,strategy,cStim,window,floatprecision);
+                    destRect = determineDestRect(tm, window, correctScale, cStim, strategy);
                     spec=setStim(spec,cStim);
                     
                 elseif ~correct
@@ -152,36 +134,20 @@ classdef freeDrinks<trialManager
                     msRewardSound=0;
                     msPuff=0; % for now, we don't want airpuffs to be automatic punishment, right?
                     
-                    if window>0
                         if isempty(framesUntilTransition)
                             framesUntilTransition = ceil((msPenalty/1000)/ifi);
                         end
                         numErrorFrames=ceil((msPenalty/1000)/ifi);
-                        
-                    elseif strcmp(getDisplayMethod(tm),'LED')
-                        if isempty(framesUntilTransition)
-                            framesUntilTransition=ceil(getHz(spec)*msPenalty/1000);
-                        else
-                            framesUntilTransition
-                            error('LED needs framesUntilTransition empty for reward')
-                        end
-                        numErrorFrames=ceil(getHz(spec)*msPenalty/1000);
-                    else
-                        error('huh?')
-                    end
-                    spec=setFramesUntilTransition(spec,framesUntilTransition);
-                    [eStim errorScale] = errorStim(sm,numErrorFrames);
-                    spec=setScaleFactor(spec,errorScale);
-                    strategy='noCache';
-                    if window>0
-                        [floatprecision eStim] = determineColorPrecision(tm, eStim, strategy);
-                        textures = cacheTextures(tm,strategy,eStim,window,floatprecision);
-                        destRect=Screen('Rect',window);
-                    elseif strcmp(getDisplayMethod(tm),'LED')
-                        floatprecision=[];
-                    else
-                        error('huh?')
-                    end
+
+                    
+                    spec.framesUntilTransition = framesUntilTransition;
+                    [eStim, errorScale] =sm.errorStim(numErrorFrames);
+                    spec.scaleFactor = errorScale;
+                    
+                    strategy='textureCache';
+                    [floatprecision, eStim] = determineColorPrecision(tm, eStim, strategy);
+                    textures = cacheTextures(tm,strategy,eStim,window,floatprecision);
+                    destRect=Screen('Rect',window);
                     spec=setStim(spec,eStim);
                 end
             end % end reward handling

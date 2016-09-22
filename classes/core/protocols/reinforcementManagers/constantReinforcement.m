@@ -93,4 +93,3 @@ classdef constantReinforcement<reinforcementManager
     end
     
 end
-

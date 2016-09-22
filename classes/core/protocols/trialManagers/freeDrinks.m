@@ -68,8 +68,8 @@ classdef freeDrinks<trialManager
             % if the result is a port vector, and we have not yet assigned correct, then the current result must be the trial response
             % because phased trial logic returns the 'result' from previous phase only if it matches a target/distractor
             % call parent's updateTrialState() to do the request reward handling and check for 'timeout' flag
-            [tm.trialManager, possibleTimeout, result, ~, ~, requestRewardSizeULorMS, ~, ~, ~, ~, ~, ~, ~, updateRM1] = ...
-                updateTrialState(tm.trialManager, sm, subject, result, spec, ports, lastPorts, ...
+            [tm, possibleTimeout, result, ~, ~, requestRewardSizeULorMS, ~, ~, ~, ~, ~, ~, ~, updateRM1] = ...
+                updateTrialState@trialManager(tm, sm, subject, result, spec, ports, lastPorts, ...
                 targetPorts, requestPorts, lastRequestPorts, framesInPhase, trialRecords, window, station, ifi, ...
                 floatprecision, textures, destRect, requestRewardDone,punishResponses,compiledRecords);
             if ~isempty(result) && ~ischar(result)
@@ -220,10 +220,47 @@ classdef freeDrinks<trialManager
             end
             distractorPorts=[];
         end
+        
+        
+        function [soundsToPlay, spec] = getSoundsToPlay(tm, ports, lastPorts, spec, phase, stepsInPhase,msRewardSound, msPenaltySound, ...
+                targetOptions, distractorOptions, requestOptions, playRequestSoundLoop, trialDetails)
+            % see doc in stimManager.calcStim.txt
+            
+            playLoopSounds={};
+            playSoundSounds={};
+            
+            if ~isempty(spec.soundPlayed) && ~spec.soundAlreadyPlayed
+                playSoundSounds{end+1} = spec.soundPlayed;
+                spec.soundAlreadyPlayed = true;
+            end
+            
+            if strcmp(spec.phaseType,'pre-request') && (any(ports(targetOptions)) || any(ports(distractorOptions)) || ...
+                    (any(ports) && isempty(requestOptions)))
+                % play white noise (when responsePort triggered during phase 1)
+                playLoopSounds{end+1} = 'trySomethingElseSound';
+            elseif ismember(spec.phaseType,{'discrim','pre-response'}) && any(ports(requestOptions))
+                % play stim sound (when stim is requested during phase 2)
+                playLoopSounds{end+1} = 'keepGoingSound';
+            elseif strcmp(spec.phaseType,'reinforced') && stepsInPhase <= 0 && trialDetails.correct
+                % play correct sound
+                playSoundSounds{end+1} = {'correctSound', msRewardSound};
+            elseif strcmp(spec.phaseType,'reinforced') && stepsInPhase <= 0 && ~trialDetails.correct
+                % play wrong sound
+                playSoundSounds{end+1} = {'wrongSound', msPenaltySound};
+            elseif strcmp(spec.phaseType,'earlyPenalty') %&& stepsInPhase <= 0 what does stepsInPhase do? I don't think we need this for this phase
+                % play wrong sound
+                playSoundSounds{end+1} = {'wrongSound', msPenaltySound};
+            end
+            
+            
+            soundsToPlay = {playLoopSounds, playSoundSounds};
+            
+        end % end function
+    
     end
     
     methods (Access = ?trialManager)
-        function [stimSpecs, startingStimSpecInd] = createStimSpecsFromParams(tm,stimList,targetPorts,distractorPorts,requestPorts,hz,indexPulses)
+        function [stimSpecs, startingStimSpecInd] = createStimSpecsFromParams(tm,stimList,targetPorts,distractorPorts,~,hz,indexPulses)
             %	INPUTS:
             %		trialManager - the trialManager object (contains the delayManager and responseWindow params)
             %		stimList - cell array ::
@@ -286,26 +323,6 @@ classdef freeDrinks<trialManager
             i=i+1;
             % #### what is the purpose of responseWindow in trialManager????
             
-            % optional postDiscrim Phase
-            if addedPostDiscrimPhases
-                assert(~isinf(framesUntilTimeoutDiscrim),'nAFC:incompatbleParamValue','you are adding post-discrim phases while discrim doesn''t timeout');
-                which = strcmp('postDiscrimStim',stimNames);
-                postDiscrimStim = stimParams{which};
-                for k = 1:length(postDiscrimStim) % loop through the post discrim stims
-                    criterion={doNothing,i+1,[targetPorts distractorPorts],reinforcementIndex}; % any response in any part takes you to the reinf
-                    
-                    assert(~postDiscrimStim(k).punishResponses,'nAFC:createStimSpecsFromParams:incorrectValues','cannot punish responses in postDiscrimStim');
-                    if length(postDiscrimStim)>1
-                        postDiscrimName = sprintf('post-discrim%d',k);
-                    else
-                        postDiscrimName = 'post-discrim';
-                    end
-                    stimSpecs{i} = stimSpec(postDiscrimStim(k).stimulus,criterion,postDiscrimStim(k).stimType,postDiscrimStim(k).startFrame,...
-                        postDiscrimStim(k).framesUntilTimeout,postDiscrimStim(k).autoTrigger,postDiscrimStim(k).scaleFactor,false,hz,'post-discrim',postDiscrimName,...
-                        postDiscrimStim(k).punishResponses,false,[],postDiscrimStim(k).ledON,postDiscrimStim(k).soundPlayed);
-                    i=i+1;
-                end
-            end
 
             % required reinforcement phase
             criterion={[],i+1};

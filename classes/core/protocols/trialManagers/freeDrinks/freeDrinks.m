@@ -123,9 +123,9 @@ classdef freeDrinks<trialManager
                     [cStim, correctScale] = sm.correctStim(numCorrectFrames);
                     spec.scaleFactor = correctScale;
                     strategy='textureCache';
-                    [floatprecision, cStim] = determineColorPrecision(tm, cStim, strategy);
-                    textures = cacheTextures(tm,strategy,cStim,window,floatprecision);
-                    destRect = determineDestRect(tm, window, correctScale, cStim, strategy);
+                    [floatprecision, cStim] = tm.determineColorPrecision(cStim, strategy);
+                    textures = tm.cacheTextures(strategy,cStim,window,floatprecision);
+                    destRect = tm.determineDestRect(window, correctScale, cStim, strategy);
                     spec=setStim(spec,cStim);
                     
                 elseif ~correct
@@ -145,8 +145,8 @@ classdef freeDrinks<trialManager
                     spec.scaleFactor = errorScale;
                     
                     strategy='textureCache';
-                    [floatprecision, eStim] = determineColorPrecision(tm, eStim, strategy);
-                    textures = cacheTextures(tm,strategy,eStim,window,floatprecision);
+                    [floatprecision, eStim] = tm.determineColorPrecision(eStim, strategy);
+                    textures = tm.cacheTextures(strategy,eStim,window,floatprecision);
                     destRect=Screen('Rect',window);
                     spec=setStim(spec,eStim);
                 end

@@ -4,15 +4,15 @@ classdef freeDrinksAlternate<freeDrinks
     end
     
     methods
-        function t=freeDrinksAlternate(soundManager, freeDrinkLikelihood, allowRepeats, reinforcementManager, eyeController, frameDropCorner, dropFrames, ...
-                displayMethod, requestPort, saveDetailedFrameDrops, delayManager, responseWindowMs, showText)
+        function t=freeDrinksAlternate(soundManager, reinfMgr, delayManager, frameDropCorner, dropFrames, requestPort, saveDetailedFrameDrops, ...
+                responseWindowMs, showText, freeDrinkLikelihood, allowRepeats)
             % FREEDRINKSALTERNATE  class constructor.
-            % t=freeDrinksAlternate(soundManager,freeDrinkLikelihood,allowRepeats,reinforcementManager, 
+            % t=freeDrinksAlternate(soundManager,freeDrinkLikelihood,allowRepeats,reinforcementManager,
             %   [eyeController],[frameDropCorner],[dropFrames],[displayMethod],[requestPorts],[saveDetailedFramedrops],
             %	[delayManager],[responseWindowMs],[showText])
-
-            t=t@freeDrinks(soundManager, freeDrinkLikelihood, allowRepeats, reinforcementManager, eyeController, frameDropCorner, dropFrames, ...
-                displayMethod, requestPort, saveDetailedFrameDrops, delayManager, responseWindowMs, showText);
+            
+            t=t@freeDrinks(soundManager, reinfMgr, delayManager, frameDropCorner, dropFrames, requestPort, saveDetailedFrameDrops, ...
+                responseWindowMs, showText, freeDrinkLikelihood, allowRepeats);
         end
     end
     

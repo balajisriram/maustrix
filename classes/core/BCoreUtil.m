@@ -361,7 +361,7 @@ classdef BCoreUtil
             LEDParams.numLEDs = 0;
             
             AFCGRAT = afcGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType,annuli,location,...
-                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance,doCombos,doPostDiscrim,phaseDetails,LEDParams);
+                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance,doCombos,doPostDiscrim);
 
             
             % training step using other objects as passed in

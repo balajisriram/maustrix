@@ -3,7 +3,7 @@ classdef afcGratings<stimManager
     % This class is specifically designed for behavior. It does not incorporate
     % many of the features usually present in GRATINGS like the ability to
     % show multiple types of gratings in the same trial. It shows a single orientation
-    % somewhere "denoted in phaseDetails"
+    % for the 'discrimStim'
     
     properties
         pixPerCycs = [];
@@ -26,14 +26,11 @@ classdef afcGratings<stimManager
         
         LUT =[];
         LUTbits=0;
-                
-        phaseDetails % will include LED details
-        LEDParams
     end
     
     methods
         function s=afcGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType, annuli,location,...
-                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, doPostDiscrim, phaseDetails, LEDParams)
+                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, doPostDiscrim)
             % AFCGRATINGS  class constructor.
             % 
             % s = afcGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,annuli,location,
@@ -153,33 +150,9 @@ classdef afcGratings<stimManager
             assert(thresh>=0,'afcGratings:afcGratings:invalidInput','thresh not in right format')
             s.thresh = thresh;
             
-            % phaseDetails
-            assert(isempty(phaseDetails)||...
-                (isstruct(phaseDetails) && ...
-                isfield(phaseDetails,'phaseType') && ...
-                isfield(phaseDetails,'phaseLengthInFrames') && ...
-                isfield(phaseDetails,'LEDON')),...
-                'afcGratings:afcGratings:incorrectvalue','phaseDetail not in the right format');
-            if ~isempty(phaseDetails)
-                % phaseType should have
-                % 'discrimStim','postDiscrim'/'postDiscrim1','postDiscrim2'
-                % assume that phaseLengthInFrames cannot be set for
-                % discrimStim but can be preset for
-                which = ismember({phaseDetails.phaseType},'discrimStim');
-                assert(any(which) && isnan(phaseDetails(which).phaseLengthInFrames),...
-                    'afcGratings:afcGratings:incorrectvalue','do not provide frame length for discrimStim');
-                assert(isnumeric([phaseDetails(~which).phaseLengthInFrames]),...
-                    'afcGratings:afcGratings:incorrectvalue','phaseLengthInFrames must be numeric!');
-            end
-            s.phaseDetails = phaseDetails;
-            
-            assert(islogical(doPostDiscrim),'afcGratings:afcGratings:invalidInput','doPostDiscrim not logical');
+            % doPostDiscrim
+            assert(islogical(doPostDiscrim),'afcGratings:afcGratings:invalidInput','doPostDiscrim should be logical')
             s.doPostDiscrim = doPostDiscrim;
-            
-            if nargin>=21
-                assert(stimManager.verifyLEDParamsOK(LEDParams),'afcGratings:afcGratings:invalidInput','LEDparams not okay');
-                s.LEDParams = LEDParams;
-            end
         end
         
         function [sm,updateSM,resInd,stimList,LUT,targetPorts,distractorPorts,details,text,indexPulses,imagingTasks,ITL] =...

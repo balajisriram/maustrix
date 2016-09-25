@@ -883,27 +883,33 @@ classdef stimManager
             % EXAMPLE
             % phaseDetails(1).phaseType = 'preRequestStim'
             % phaseDetails(1).phaseLabel = 'preRequestStim'
-            % phaseDetails(1).phaseLengthInFrames = NaN
+            % phaseDetails(1).phaseStim = ''
+            % phaseDetails(1).phaseLengthInFrames = NaN % has to be nan
             % phaseDetails(1).LEDON = false;
             % phaseDetails(1).IlluminationMode = {};
+            % phaseDetails(1).soundsPlayed = {};
             
             % phaseDetails(2).phaseType = 'discrimStim'
             % phaseDetails(2).phaseLabel = 'discrimStim'
-            % phaseDetails(2).phaseLengthInFrames = NaN
+            % phaseDetails(2).phaseStim = ''
+            % phaseDetails(2).phaseLengthInFrames = NaN % has to be nan!
             % phaseDetails(2).LEDON = false;
             % phaseDetails(2).IlluminationMode = {};
+            % phaseDetails(2).soundsPlayed = {};
             
             % phaseDetails(3).phaseType = 'postDiscrimStim'
             % phaseDetails(3).phaseLabel = 'postDiscrim'
+            % phaseDetails(3).phaseStim = 0.8 % 80% of max luminance or 'sameAsDiscrim'
             % phaseDetails(3).phaseLengthInFrames = 3
             % phaseDetails(3).LEDON = true;
             % phaseDetails(3).IlluminationModes = LEDParams;
+            % phaseDetails(3).soundsPlayed = {};
             
             ok = true;
             % ensure is a structure array with required fields
             if ~(isstruct(phaseDetails) && ...
                     length(fieldnames(phaseDetails))==5 && ...
-                    all(ismember(fieldnames(phaseDetails),{'phaseType','phaseLabel','phaseLengthInFrames','LEDON','IlluminationMode'})))
+                    all(ismember(fieldnames(phaseDetails),{'phaseType','phaseLabel','phaseStim','phaseLengthInFrames','LEDON','IlluminationMode','soundsPlayed'})))
                 disp('stimManager:verifyPhaseDetailsOK::phaseDetails not struct with correct fields!');
                 ok = ok && false;
             end
@@ -934,9 +940,13 @@ classdef stimManager
                 else
                     ok = ok && isempty(phaseDetails(i).IlluminationModes);
                 end
-            end  
+            end
+            
+            if ~all(cellfun(@iscell,{phaseDetails.soundsPlayed}))
+                disp('stimManager:verifyPhaseDetailsOK::LEDON not all cells!');
+                ok = ok && false;
+            end
         end
-        
         
         function out = getStandardLEDParams()
             out.numLEDs = 0;

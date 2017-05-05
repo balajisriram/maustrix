@@ -67,7 +67,7 @@ try
     rx=putSubjectInBox(rx,subjectID,boxIDs(1),auth);    
     b=getBoxIDForSubjectID(rx,sub.id);
     st=getStationsForBoxID(rx,b);
-    maxTrialsPerSession = 250;
+    maxTrialsPerSession = Inf;
     exitByFinishingTrialQuota = true;
     while exitByFinishingTrialQuota
         [rx,exitByFinishingTrialQuota]=st.doTrials(rx,maxTrialsPerSession,[]);

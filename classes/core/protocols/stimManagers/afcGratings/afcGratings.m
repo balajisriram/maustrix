@@ -26,6 +26,8 @@ classdef afcGratings<stimManager
         
         LUT =[];
         LUTbits=0;
+        
+        LEDParams
     end
     
     methods

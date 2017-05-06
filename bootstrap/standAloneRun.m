@@ -73,9 +73,9 @@ try
         [rx,exitByFinishingTrialQuota]=st.doTrials(rx,maxTrialsPerSession,[]);
         deleteOnSuccess = true;
         BCoreUtil.replicateTrialRecords({rx.standAlonePath},deleteOnSuccess);
-        BCoreUtil.compileDetailedRecords
     end
     [~, ~] = emptyAllBoxes(rx,'done running trials in standAloneRun',auth);
+    %BCoreUtil.compileDetailedRecords
     cleanup;
 catch ex
     disp(['CAUGHT ERROR: ' getReport(ex,'extended')])

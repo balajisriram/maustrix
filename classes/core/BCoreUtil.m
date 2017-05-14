@@ -380,8 +380,8 @@ classdef BCoreUtil
             contrast                =1;
             thresh                  =.00005;
             yPosPct                 =.65;
-            maxWidth                =1024;
-            maxHeight               =768;
+            maxWidth                =1920;
+            maxHeight               =1080;
             scaleFactor             =[1 1];
             interTrialLuminance     =.5;
             waveform = 'square';

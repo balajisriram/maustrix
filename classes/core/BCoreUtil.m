@@ -700,9 +700,9 @@ classdef BCoreUtil
                 %getTrialRecordFiles from the Os... less reliable if server is taxed...
                 %but okay on local computer and has less dependency on the oracle db
                 if subjectSpecificPermStore
-                    fullFileNames=getTrialRecordFiles(permanentStorePath);
+                    fullFileNames=BCoreUtil.getTrialRecordFiles(permanentStorePath);
                 else
-                    fullFileNames=getTrialRecordFiles(fullfile(permanentStorePath,subjectID));
+                    fullFileNames=BCoreUtil.getTrialRecordFiles(fullfile(permanentStorePath,subjectID));
                 end
                 if ~isempty(fullFileNames)
                     for i=1:length(fullFileNames)
@@ -722,7 +722,7 @@ classdef BCoreUtil
                 return
             end
 
-            goodRecs=getRangesFromTrialRecordFileNames(fileNames);
+            goodRecs=BCoreUtil.getRangesFromTrialRecordFileNames(fileNames);
             
             [files lowestTrialNum highestTrialNum]=applyTrialFilter(goodRecs,filter);
             if iscell(filter)

@@ -40,7 +40,7 @@ classdef BCore
         function r = set.standAlonePath(r,path)
             assert(isdir(path),'BCore:set.standAlonePath:incorrectValue','Argument to permanentStorePath (%s) is not a directory',path)
             r.standAlonePath = path;
-            saveDB(r,0);  %alsoReplaceSubjectData = false
+            %saveDB(r,0);  %alsoReplaceSubjectData = false
         end
         
         function r = addBox(r,b)

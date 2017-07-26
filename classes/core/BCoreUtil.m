@@ -1663,6 +1663,53 @@ classdef BCoreUtil
         end
         %% Infrastructure
         
+        function notify(WHO,SUBJECT,PARAMS)
+            assert(ischar(SUBJECT),'BCoreUtil:notify:invalidInput','SUBJECT needs to be a char. instead is : %s',class(SUBJECT));
+            assert(ischar(PARAMS)||iscell(PARAMS),'BCoreUtil:notify:invalidInput','PARAMS needs to be a char or cell. instead is : %s',class(PARAMS));
+            switch WHO
+                case BCoreUtil.EXPERIMENTER
+                    BCoreUtil.mail(BCoreUtil.EXPERIMENTER,SUBJECT,PARAMS);
+                case BCoreUtil.SWAPPER
+                case 'all'
+            end
+        end
+        
+        function mail(address,subject,message,attachment)
+            if ~exist('attachment','var') || isempty(attachment)
+                attachment = '';
+            end
+            if ~exist('address','var')
+                error('BCoreUtil:mail:variableRequired','address is missing');
+            end
+            if ~exist('subject','var')
+                error('BCoreUtil:mail:variableRequired','subject is missing');
+            end
+            if ~exist('message','var')
+                warning('BCoreUtil:mail:variablePreferred','message is missing.using default message');
+                message = '';
+            end
+            % Define these variables appropriately:
+            mail = 'ghoshlab@gmail.com'; %Your GMail email address
+            password = 'visualcortex'; %Your GMail password
+            
+            % Then this code will set up the preferences properly:
+            setpref('Internet','E_mail',mail);
+            setpref('Internet','SMTP_Server','smtp.gmail.com');
+            setpref('Internet','SMTP_Username',mail);
+            setpref('Internet','SMTP_Password',password);
+            props = java.lang.System.getProperties;
+            props.setProperty('mail.smtp.auth','true');
+            props.setProperty('mail.smtp.socketFactory.class', 'javax.net.ssl.SSLSocketFactory');
+            props.setProperty('mail.smtp.socketFactory.port','465');
+            
+            % Send the email
+            if ~isempty(attachment)
+                sendmail(address,subject,message,attachment);
+            else
+                sendmail(address,subject,message);
+            end
+        end
+        
         function devs = getAttachedSerialDevices()
             devs = {};
             Skey = 'HKEY_LOCAL_MACHINE\HARDWARE\DEVICEMAP\SERIALCOMM';

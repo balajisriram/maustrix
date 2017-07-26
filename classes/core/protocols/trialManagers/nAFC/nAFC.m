@@ -276,8 +276,6 @@ classdef nAFC<trialManager
             %	2) the trialManager's delayManager/responseWindow params are set so that the responseWindow starts at 0
             %		- NOTE that this cannot affect the preOnset phase (if you dont want a preOnset, you have to pass an empty out of calcstim)
             
-            % should the stimSpecs we return be dependent on the trialManager class? - i think so...because autopilot does not have reinforcement, but for now nAFC/freeDrinks are the same...
-            
             stimNames = stimList(:,1);
             stimParams = stimList(:,2);
             

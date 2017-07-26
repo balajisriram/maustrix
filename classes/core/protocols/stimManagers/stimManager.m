@@ -10,44 +10,36 @@ classdef stimManager
     
     methods
         % CORE
-        function s=stimManager(maxWidth,maxHeight,scaleFactor,interTrialLuminance)
+        function s=stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance)
             % STIMMANAGER  class constructor. ABSTRACT CLASS -- DO NOT INSTANTIATE
             % s = stimManager(maxWidth,maxHeight,interTrialLuminance)
-            if maxWidth>0 && maxHeight>0
-                s.maxWidth=maxWidth;
-                s.maxHeight=maxHeight;
-            else
-                error('maxWidth and maxHeight must be positive')
-            end
+            assert(maxWidth>0 && maxHeight>0,'stimManager:stimManager:incomaptibleValue','maxWidth and maxHeight must be positive');
+            s.maxWidth=maxWidth;
+            s.maxHeight=maxHeight;
             
-            if (length(scaleFactor)==2 && all(scaleFactor>0)) || (length(scaleFactor)==1 && scaleFactor==0)
-                s.scaleFactor=scaleFactor;
-            else
-                error('scale factor is either 0 (for scaling to full screen) or [width height] positive values')
-            end
+            assert(((length(scaleFactor)==2 && all(scaleFactor>0)) || (length(scaleFactor)==1 && scaleFactor==0)),...
+                'stimManager:stimManager:incomaptibleValue',...
+                'scale factor is either 0 (for scaling to full screen) or [width height] positive values');
+            s.scaleFactor=scaleFactor;
             
+            % if numeric intertrialLuminance, the intertrial duration is 1
+            % second. else it is a cell of size 2 with #1 being the
+            % luminance and the #2 being duration
             if isnumeric(interTrialLuminance)
-                if interTrialLuminance>=0 && interTrialLuminance<=1
-                    s.interTrialLuminance=interTrialLuminance;
-                    s.interTrialDuration=1;
-                else
-                    error('interTrailLuminance must be >=0 and <=1')
-                end
-            elseif iscell(interTrialLuminance) && length(interTrialLuminance)==2
-                if interTrialLuminance{1}>=0 && interTrialLuminance{1}<=1
-                    s.interTrialLuminance=interTrialLuminance{1};
-                else
-                    error('interTrailLuminance must be >=0 and <=1')
-                end
+                assert(interTrialLuminance>=0 && interTrialLuminance<=1,'stimManager:stimManager:incomaptibleValue','interTrailLuminance must be >=0 and <=1')
+                s.interTrialLuminance=interTrialLuminance;
+                s.interTrialDuration=1;
                 
-                if interTrialLuminance{2}>0
-                    s.interTrialDuration=interTrialLuminance{2};
-                else
-                    error('interTrialDuration must be >=0')
-                end
+            elseif iscell(interTrialLuminance) && length(interTrialLuminance)==2
+                assert(interTrialLuminance{1}>=0 && interTrialLuminance{1}<=1,'stimManager:stimManager:incomaptibleValue','interTrailLuminance must be >=0 and <=1')
+                s.interTrialLuminance=interTrialLuminance{1};
+                
+                assert(interTrialLuminance{2}>0,'stimManager:stimManager:incomaptibleValue','interTrialDuration must be >=0');
+                s.interTrialDuration=interTrialLuminance{2};
             else
                 error('either numeric background only or cell with background and duration')
-            end
+            end            
+            
         end
         
         function out = boxOKForStimManager(stimManager,b,r)
@@ -872,6 +864,87 @@ classdef stimManager
                     disp('stimManager:verifyLEDParamsOK::the cumulative fraction should sum to 1');
                     ok = ok && false;
                 end
+            end
+        end
+        
+        function ok = verifyPhaseDetailsOK(phaseDetails)
+            % Phase details should be a struct which directs calcStim to
+            % create appropriate stims. It should be of the following form:
+            %     phaseType: available stimSpec phaseType
+            %     phaseLabel: label for the phase
+            %     phaseLengthInFrames: numeric integer or NaN or Inf
+            %     LEDON: logical 
+            %     IlluminationMode: provides a way to choose illumination mode
+            
+            % this just checks if the data is compatible with potential
+            % phaseDetails. your stimManager.CalcStim should decide how to
+            % use this in an approproiate manner
+            
+            % EXAMPLE
+            % phaseDetails(1).phaseType = 'preRequestStim'
+            % phaseDetails(1).phaseLabel = 'preRequestStim'
+            % phaseDetails(1).phaseStim = ''
+            % phaseDetails(1).phaseLengthInFrames = NaN % has to be nan
+            % phaseDetails(1).LEDON = false;
+            % phaseDetails(1).IlluminationMode = {};
+            % phaseDetails(1).soundsPlayed = {};
+            
+            % phaseDetails(2).phaseType = 'discrimStim'
+            % phaseDetails(2).phaseLabel = 'discrimStim'
+            % phaseDetails(2).phaseStim = ''
+            % phaseDetails(2).phaseLengthInFrames = NaN % has to be nan!
+            % phaseDetails(2).LEDON = false;
+            % phaseDetails(2).IlluminationMode = {};
+            % phaseDetails(2).soundsPlayed = {};
+            
+            % phaseDetails(3).phaseType = 'postDiscrimStim'
+            % phaseDetails(3).phaseLabel = 'postDiscrim'
+            % phaseDetails(3).phaseStim = 0.8 % 80% of max luminance or 'sameAsDiscrim'
+            % phaseDetails(3).phaseLengthInFrames = 3
+            % phaseDetails(3).LEDON = true;
+            % phaseDetails(3).IlluminationModes = LEDParams;
+            % phaseDetails(3).soundsPlayed = {};
+            
+            ok = true;
+            % ensure is a structure array with required fields
+            if ~(isstruct(phaseDetails) && ...
+                    length(fieldnames(phaseDetails))==5 && ...
+                    all(ismember(fieldnames(phaseDetails),{'phaseType','phaseLabel','phaseStim','phaseLengthInFrames','LEDON','IlluminationMode','soundsPlayed'})))
+                disp('stimManager:verifyPhaseDetailsOK::phaseDetails not struct with correct fields!');
+                ok = ok && false;
+            end
+                
+            if ~all(cellfun(@isstr,{phaseDetails.phaseType}))
+                disp('stimManager:verifyPhaseDetailsOK::phaseType not all strings!');
+                ok = ok && false;
+            end
+            
+            if ~all(cellfun(@isstr,{phaseDetails.phaseLabel}))
+                disp('stimManager:verifyPhaseDetailsOK::phaseLabel not all strings!');
+                ok = ok && false;
+            end
+            
+            if ~all(cellfun(@isnumeric,{phaseDetails.phaseLengthInFrames}))
+                disp('stimManager:verifyPhaseDetailsOK::phaseLengthInFrames not all numeric!');
+                ok = ok && false;
+            end
+            
+            if ~all(cellfun(@islogical,{phaseDetails.LEDON}))
+                disp('stimManager:verifyPhaseDetailsOK::LEDON not all logical!');
+                ok = ok && false;
+            end
+            
+            for i = 1:length(phaseDetails)
+                if phaseDetails(i).LEDON
+                    ok = ok && stimManager.verifyLEDParamsOK(phaseDetails(i).IlluminationModes);
+                else
+                    ok = ok && isempty(phaseDetails(i).IlluminationModes);
+                end
+            end
+            
+            if ~all(cellfun(@iscell,{phaseDetails.soundsPlayed}))
+                disp('stimManager:verifyPhaseDetailsOK::LEDON not all cells!');
+                ok = ok && false;
             end
         end
         

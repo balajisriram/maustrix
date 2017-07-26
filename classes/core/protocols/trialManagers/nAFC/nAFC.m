@@ -235,7 +235,8 @@ classdef nAFC<trialManager
                 targetPorts=responsePorts(ceil(rand*length(responsePorts))); %choose random response port to be correct answer
             end
             distractorPorts=setdiff(responsePorts,targetPorts);
-            
+            details.targetPorts = targetPorts;
+            details.distractorPorts = distractorPorts;
             
         end
         

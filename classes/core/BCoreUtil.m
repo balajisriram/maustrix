@@ -31,6 +31,11 @@ classdef BCoreUtil
             compiledDataPath = fullfile(p,'CompiledTrialRecords');
         end
         
+        function permanentDataPath = getLocalPermanentDataPath()
+            p = BCoreUtil.getBCoreDataPath();
+            permanentDataPath = fullfile(p,'PermanentTrialRecords');
+        end
+        
         function [success, mac]=getMACaddress()
             success=false;
             switch computer
@@ -211,6 +216,95 @@ classdef BCoreUtil
             rx.standAlonePath=permStorePath;
             fprintf('created new BCore\n')
         end
+        
+        function rx = createDefaultPhysiologyBCore()
+            % create base BCore
+            remake = true;
+            rx = BCore(BCoreUtil.getServerDataPath,remake);
+            
+            % create station
+            id = '1U';
+            mac=BCoreUtil.getMACaddressSafely();
+            physicalLocation = uint8([1 1 1]);
+            stationPath = fullfile(BCoreUtil.getBCoreDataPath,'Stations','station1');
+            st = BCoreUtil.makeDefaultPhysiologyStation(id,stationPath,mac,physicalLocation);
+            
+            % create and add box; add station to box.
+            boxes=box(int8(1),fullfile(BCoreUtil.getBCoreDataPath,'Boxes','box1'));
+            rx=addBox(rx,boxes);
+            rx=addStationToBoxID(rx,st,boxes.id);
+            
+            % set perm storage;
+            permStorePath=fullfile(BCoreUtil.getBCoreDataPath,'PermanentTrialRecordStore');
+            warning off; mkdir(permStorePath); warning on; % sets the already exists warning off
+            rx.standAlonePath=permStorePath;
+            fprintf('created new BCore\n')
+        end
+        
+        function st=makeDefaultStation(id,path,mac,physicalLocation,~,~,~,~,~)
+            
+            % our standard parallel port pin assignments
+            % pin register	invert	dir	purpose
+            %---------------------------------------------------
+            % 1   control	inv     i/o	NA
+            % 2   data              i/o right reward valve (cooldrive valve 1)
+            % 3   data              i/o	center reward valve (cooldrive valve 2)
+            % 4   data              i/o	left reward valve (cooldrive valve 3)
+            % 5   data              i/o	NA
+            % 6   data              i/o NA
+            % 7   data              i/o	NA
+            % 8   data              i/o NA
+            % 9   data              i/o NA
+            % 10  status            i   center lick sensor
+            % 11  status    inv     i	NA
+            % 12  status            i   right lick sensor
+            % 13  status            i   left lick sensor
+            % 14  control	inv     i/o	NA
+            % 15  status            i
+            % 16  control           i/o NA
+            % 17  control	inv     i/o NA
+            % STILL AVAILABLE: 
+            
+            switch computer
+                case {'PCWIN64','PCWIN32','PCWIN'}
+                    st=standardVisionBehaviorStation(id, path, mac, physicalLocation, '0378', int8([4,3,2]), int8([13,10,12]));
+                case 'MACI64'
+                    st = standardOSXStation(id, path, mac, physicalLocation);
+            end
+        end
+        
+        function st=makeDefaultPhysiologyStation(id,path,mac,physicalLocation,~,~,~,~,~)
+            
+            % our standard parallel port pin assignments
+            % pin register	invert	dir	purpose
+            %---------------------------------------------------
+            % 1   control	inv     i/o	NA
+            % 2   data              i/o right reward valve (cooldrive valve 1)
+            % 3   data              i/o	center reward valve (cooldrive valve 2)
+            % 4   data              i/o	left reward valve (cooldrive valve 3)
+            % 5   data              i/o	LED
+            % 6   data              i/o NA
+            % 7   data              i/o	NA
+            % 8   data              i/o indexPulse
+            % 9   data              i/o framePulse
+            % 10  status            i   center lick sensor
+            % 11  status    inv     i	localPump motorRunning
+            % 12  status            i   right lick sensor
+            % 13  status            i   left lick sensor
+            % 14  control	inv     i/o	NA
+            % 15  status            i   NA
+            % 16  control           i/o phasePulse
+            % 17  control	inv     i/o stimPulse
+            
+            switch computer
+                case {'PCWIN64','PCWIN32','PCWIN'}
+                    st=standardVisionPhysiologyStationWithLED(id, path, mac, physicalLocation, '0378', int8([4,3,2]), int8([13,10,12]));
+                case 'MACI64'
+                    st = standardOSXStation(id, path, mac, physicalLocation);
+            end
+        end
+
+
         
         %% standard protocol List
         function r = setProtocolDEMO(r,subjIDs)
@@ -878,13 +972,9 @@ classdef BCoreUtil
         end
         
         function out = getLastTrialNum(subjectID)
-            p = BCoreUtil.getLocalCompiledDataPath();
-            d = dir(fullfile(p,[subjectID '*.mat']));
-            if length(d) ~=1
-                error('BCoreUtil:getLastTrialNum:incorrectValue','found %d compiledRecords but expected 1',length(d));
-            end
-            temp = load(fullfile(p,d.name));
-            out = temp.compiledTrialRecords.trialNumber(end);
+            p = fullfile(BCoreUtil.getLocalPermanentDataPath(),subjectID);
+            [~,ranges] = BCoreUtil.getTrialRecordFiles(p,true);
+            out = max(ranges(2,:));
         end
         
         function failures = compileDetailedRecords(server_name,ids,recompile,source,destination)
@@ -1475,8 +1565,104 @@ classdef BCoreUtil
             end
             
         end
-
+        
+        function [verifiedHistoryFiles, ranges]=getTrialRecordFiles(permanentStore, doWarn)
+            
+            if ~exist('doWarn','var') || isempty(doWarn)
+                doWarn = true;
+            end
+            
+            if ~isempty(findstr('\\',permanentStore)) && doWarn
+                warning('this function is dangerous when used remotely -- dir can silently fail or return a subset of existing files')
+            end
+            
+            %this needs to trust the FS in standalone conditions, but consider relying
+            %solely on oracle for this listing when possible
+            %consider merging with getTrialRecordsFromPermanentStore (using the trustOsRecordFiles flag)
+            historyFiles=dir(fullfile(permanentStore,'trialRecords_*.mat'));
+            
+            try
+                fileRecs=BCoreUtil.getRangesFromTrialRecordFileNames({historyFiles.name},true);
+            catch ex
+                permanentStore
+                rethrow(ex)
+            end
+            
+            if ~isempty(fileRecs)
+                ranges=[[fileRecs.trialStart];[fileRecs.trialStop]];
+                
+                verifiedHistoryFiles={};
+                for i=1:length(fileRecs)
+                    verifiedHistoryFiles{end+1}=fullfile(permanentStore,fileRecs(i).name);
+                end
+            else
+                permanentStore
+                ranges=[];
+                verifiedHistoryFiles={};
+                warning('no filenames')
+            end
+        end
+        
+        function goodRecs=getRangesFromTrialRecordFileNames(fileNames,checkRanges)
+            
+            if ~exist('checkRanges','var') || isempty(checkRanges)
+                checkRanges=true;
+            end
+            
+            goodRecs=[];
+            for i=1:length(fileNames)
+                goodRecs(end+1).name=fileNames{i};
+                [ranges len]= textscan(goodRecs(end).name,'trialRecords_%d-%d_%15s-%15s.mat');
+                if length(goodRecs(end).name)== len && ~isempty(ranges) && length(ranges)==4 && ~any(cellfun(@isempty,ranges))
+                    goodRecs(end).trialStart = ranges{1};
+                    goodRecs(end).trialStop = ranges{2};
+                    goodRecs(end).dateStart = datenumFor30(ranges{3}{1});
+                    goodRecs(end).dateStop = datenumFor30(ranges{4}{1});
+                else
+                    % 2006b on osx ppc can't do: [ranges len]= textscan('3-9','%d-%d') - it misses the 9
+                    [a1 b1 c1 d1]=sscanf(goodRecs(end).name','%[trialRecords_]%*d%[-]%*d%[_]%*15s%[-]%*15s%[.mat]');
+                    [a2 b2 c2 d2]=sscanf(goodRecs(end).name','%*[trialRecords_]%d%*[-]%d%*[_]%*15s%*[-]%*15s%*[.mat]');
+                    [a3 b3 c3 d3]=sscanf(goodRecs(end).name','%*[trialRecords_]%*d%*[-]%*d%*[_]%15s%*[-]%*15s%*[.mat]');
+                    [a4 b4 c4 d4]=sscanf(goodRecs(end).name','%*[trialRecords_]%*d%*[-]%*d%*[_]%*15s%*[-]%15s%*[.mat]');
+                    if strcmp(char(a1)','trialRecords_-_-.mat') && length(a2)==2 && length(a3)==15 && length(a4)==15 && all(1+length(goodRecs(end).name)==[d1 d2 d3 d4]) &&...
+                            all(cellfun(@isempty,{c1 c2 c3 c4})) && all([b1 b2 b3 b4]==[5 2 1 1])
+                        goodRecs(end).trialStart = a2(1);
+                        goodRecs(end).trialStop = a2(2);
+                        goodRecs(end).dateStart = datenumFor30(char(a3)');
+                        goodRecs(end).dateStop = datenumFor30(char(a4)');
+                    else
+                        goodRecs(end).name
+                        ranges
+                        len
+                        error('can''t parse filename')
+                    end
+                end
+            end
+            
+            if ~isempty(goodRecs)
+                if checkRanges
+                    [sorted order]=sort([goodRecs.trialStart]);
+                    goodRecs=goodRecs(order);
+                    ranges=[[goodRecs.trialStart];[goodRecs.trialStop]];
+                    
+                    if goodRecs(1).trialStart ~= 1
+                        ranges
+                        error('first file doesn''t start at 1')
+                    end
+                    
+                    if ~all(ranges(1,:)==([1 ranges(2,1:end-1)+1])) || ~all(ranges(2,:)>=ranges(1,:))
+                        ranges
+                        ranges(:,find(ranges(1,:)~=([1 ranges(2,1:end-1)+1])))
+                        error('ranges don''t follow consecutively')
+                    end
+                end
+            else
+                fileNames
+                warning('no files?')
+            end
+        end
         %% Infrastructure
+        
         function devs = getAttachedSerialDevices()
             devs = {};
             Skey = 'HKEY_LOCAL_MACHINE\HARDWARE\DEVICEMAP\SERIALCOMM';

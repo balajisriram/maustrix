@@ -870,8 +870,8 @@ classdef trialManager
                 
                 if updatePhase == 1
                     Screen('BlendFunction', window, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                    %####setStatePins(station,'stim',false);
-                    %####setStatePins(station,'phase',true);
+                    setStatePins(station,'stim',false);
+                    setStatePins(station,'phase',true);
                     
                     startTime=GetSecs(); % startTime is now per-phase instead of per trial, since corresponding times in responseDetails are also per-phase
                     phaseNum=phaseNum+1;
@@ -986,9 +986,9 @@ classdef trialManager
                     
                     % =========================================================================
                     
-                    %####setStatePins(station,'phase',false);
+                    setStatePins(station,'phase',false);
                     if spec.isStim
-                        %####setStatePins(station,'stim',true);
+                        setStatePins(station,'stim',true);
                     end
                     
                     if any(spec.ledON)
@@ -1079,7 +1079,7 @@ classdef trialManager
                                 error('unrecognized strategy');
                         end
                         
-                        %####setStatePins(station,'index',indexPulse);
+                        setStatePins(station,'index',indexPulse);
                         
                         timestamps.frameDrawn=GetSecs;
                         
@@ -1114,7 +1114,7 @@ classdef trialManager
                         end
                     end
                     
-                    [timestamps, headroom(totalFrameNum)] = tm.flipFrameAndDoPulse(window, dontclear, framesPerUpdate, ifi, paused, doFramePulse,station,timestamps);
+                    [timestamps, headroom(totalFrameNum)] = tm.flipFrameAndDoPulse(window, dontclear, framesPerUpdate, ifi, paused, doFramePulse,station,timestamps,spec.isStim);
                     lastI=i;
                     
                     [phaseRecords(phaseNum).responseDetails, timestamps] = ...
@@ -2398,7 +2398,7 @@ classdef trialManager
             
         end % end function
         
-        function [timestamps, headroom] = flipFrameAndDoPulse(window, dontclear, framesPerUpdate, ifi, paused, doFramePulse,station,timestamps)
+        function [timestamps, headroom] = flipFrameAndDoPulse(window, dontclear, framesPerUpdate, ifi, paused, doFramePulse,station,timestamps,isStim)
             
             timeStamps.enteredFlipFrameAndDoPulse=GetSecs;
             
@@ -2418,15 +2418,15 @@ classdef trialManager
             
             
             
-            if doFramePulse && ~paused
-                %####setStatePins(station,'frame',true);
+            if doFramePulse && ~paused && isStim
+                setStatePins(station,'frame',true);
             end
             
             timestamps.prePulses=GetSecs;
             headroom=(timestamps.vbl+(framesPerUpdate)*ifi)-timestamps.prePulses;
             
             if window>=0
-                [timestamps.vbl sos timestamps.ft timestamps.missed]=Screen('Flip',window,timestamps.when,dontclear);
+                [timestamps.vbl, sos, timestamps.ft, timestamps.missed]=Screen('Flip',window,timestamps.when,dontclear);
                 %http://psychtoolbox.org/wikka.php?wakka=FaqFlipTimestamps
                 %vbl=vertical blanking time, when bufferswap occurs (corrected by beampos logic if available/reliable)
                 %sos=stimulus onset time -- vbl + a computed constant corresponding to the duration of the vertical blanking (a delay in when, after vbl, that the swap actually happens, depends on a lot of guts)
@@ -2441,8 +2441,8 @@ classdef trialManager
                 timestamps.missed=0;
             end
             
-            if doFramePulse && ~paused
-                %####setStatePins(station,'frame',false);
+            if doFramePulse && ~paused && isStim
+                setStatePins(station,'frame',false);
             end
             
             

@@ -1105,7 +1105,7 @@ classdef BCore
                 doIt=0;
                 
                 if isempty(found)
-                    fprintf('BCore::saveDB::didn''t find existing database, writing new one\n')
+                    fprintf('BCore:saveDB:didn''t find existing database, writing new one\n')
                     doIt=1;
                 elseif length(found)==1
                     

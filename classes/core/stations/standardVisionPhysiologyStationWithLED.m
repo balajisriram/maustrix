@@ -49,7 +49,7 @@ classdef standardVisionPhysiologyStationWithLED < standardVisionBehaviorStation
         end
         
         function setStatePins(s,pin,state)
-            assert(isscalar(state),'standardVisionPhysiologyStationWithLED::setStatePins::state must be scalar')
+            assert(isscalar(state),'standardVisionPhysiologyStationWithLED:setStatePins:state must be scalar')
             state=logical(state);            
             
             possibles={ ...

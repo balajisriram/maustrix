@@ -303,8 +303,6 @@ classdef BCoreUtil
                     st = standardOSXStation(id, path, mac, physicalLocation);
             end
         end
-
-
         
         %% standard protocol List
         function r = setProtocolDEMO(r,subjIDs)

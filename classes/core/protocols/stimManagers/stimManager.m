@@ -844,24 +844,24 @@ classdef stimManager
                 % reasonable
                 cumulativeFraction = 0;
                 if LEDParams.active && isempty(LEDParams.IlluminationModes)
-                    disp('stimManager:verifyLEDParamsOK::LED was active but the illumination mode was absent!');
+                    disp('stimManager:verifyLEDParamsOK:LED was active but the illumination mode was absent!');
                     ok = ok && false;
                 end
                 for i = 1:length(LEDParams.IlluminationModes)
                     if any(LEDParams.IlluminationModes{i}.whichLED)>LEDParams.numLEDs
-                        disp('stimManager:verifyLEDParamsOK::asking for an LED that is greater than numLEDs');
+                        disp('stimManager:verifyLEDParamsOK:asking for an LED that is greater than numLEDs');
                         ok = ok && false;
                     else
                         if length(LEDParams.IlluminationModes{i}.whichLED)~= length(LEDParams.IlluminationModes{i}.intensity) || ...
                                 any(LEDParams.IlluminationModes{i}.intensity>1) || any(LEDParams.IlluminationModes{i}.intensity<0)
-                            disp('stimManager:verifyLEDParamsOK::specify a single intensity for each of the LEDs and these intensities hould lie between 0 and 1');
+                            disp('stimManager:verifyLEDParamsOK:specify a single intensity for each of the LEDs and these intensities hould lie between 0 and 1');
                             ok = ok && false;
                         end
                     end
                 end
                 
                 if abs(cumulativeFraction(end)-1)>eps
-                    disp('stimManager:verifyLEDParamsOK::the cumulative fraction should sum to 1');
+                    disp('stimManager:verifyLEDParamsOK:the cumulative fraction should sum to 1');
                     ok = ok && false;
                 end
             end
@@ -910,27 +910,27 @@ classdef stimManager
             if ~(isstruct(phaseDetails) && ...
                     length(fieldnames(phaseDetails))==5 && ...
                     all(ismember(fieldnames(phaseDetails),{'phaseType','phaseLabel','phaseStim','phaseLengthInFrames','LEDON','IlluminationMode','soundsPlayed'})))
-                disp('stimManager:verifyPhaseDetailsOK::phaseDetails not struct with correct fields!');
+                disp('stimManager:verifyPhaseDetailsOK:phaseDetails not struct with correct fields!');
                 ok = ok && false;
             end
                 
             if ~all(cellfun(@isstr,{phaseDetails.phaseType}))
-                disp('stimManager:verifyPhaseDetailsOK::phaseType not all strings!');
+                disp('stimManager:verifyPhaseDetailsOK:phaseType not all strings!');
                 ok = ok && false;
             end
             
             if ~all(cellfun(@isstr,{phaseDetails.phaseLabel}))
-                disp('stimManager:verifyPhaseDetailsOK::phaseLabel not all strings!');
+                disp('stimManager:verifyPhaseDetailsOK:phaseLabel not all strings!');
                 ok = ok && false;
             end
             
             if ~all(cellfun(@isnumeric,{phaseDetails.phaseLengthInFrames}))
-                disp('stimManager:verifyPhaseDetailsOK::phaseLengthInFrames not all numeric!');
+                disp('stimManager:verifyPhaseDetailsOK:phaseLengthInFrames not all numeric!');
                 ok = ok && false;
             end
             
             if ~all(cellfun(@islogical,{phaseDetails.LEDON}))
-                disp('stimManager:verifyPhaseDetailsOK::LEDON not all logical!');
+                disp('stimManager:verifyPhaseDetailsOK:LEDON not all logical!');
                 ok = ok && false;
             end
             
@@ -943,7 +943,7 @@ classdef stimManager
             end
             
             if ~all(cellfun(@iscell,{phaseDetails.soundsPlayed}))
-                disp('stimManager:verifyPhaseDetailsOK::LEDON not all cells!');
+                disp('stimManager:verifyPhaseDetailsOK:LEDON not all cells!');
                 ok = ok && false;
             end
         end

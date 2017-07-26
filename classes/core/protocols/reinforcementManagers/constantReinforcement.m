@@ -16,25 +16,25 @@ classdef constantReinforcement<reinforcementManager
             % r=constantReinforcement(rewardScalar,requestRewardScalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestMode)
             r=r@reinforcementManager();
             
-            assert(isscalar(rewardScalar)&&rewardScalar>=0,'reinforcementManager::reinforcementManager::incorrectValue','rewardScalar must a single real number be >=0')
+            assert(isscalar(rewardScalar)&&rewardScalar>=0,'reinforcementManager:reinforcementManager:incorrectValue','rewardScalar must a single real number be >=0')
             r.rewardScalar=rewardScalar;
             
-            assert(isscalar(requestRewardScalar)&&requestRewardScalar>=0,'reinforcementManager::reinforcementManager::incorrectValue','requestRewardScalar must a single real number be >=0')
+            assert(isscalar(requestRewardScalar)&&requestRewardScalar>=0,'reinforcementManager:reinforcementManager:incorrectValue','requestRewardScalar must a single real number be >=0')
             r.requestRewardScalar=requestRewardScalar;
             
-            assert(isscalar(penaltyScalar)&&penaltyScalar>=0,'reinforcementManager::reinforcementManager::incorrectValue','penaltyScalar must a single real number be >=0')
+            assert(isscalar(penaltyScalar)&&penaltyScalar>=0,'reinforcementManager:reinforcementManager:incorrectValue','penaltyScalar must a single real number be >=0')
             r.penaltyScalar=penaltyScalar;
             
-            assert(isscalar(puffScalar)&&puffScalar>=0,'reinforcementManager::reinforcementManager::incorrectValue','puffScalar must a single real number be >=0')
+            assert(isscalar(puffScalar)&&puffScalar>=0,'reinforcementManager:reinforcementManager:incorrectValue','puffScalar must a single real number be >=0')
             r.puffScalar=puffScalar;
             
-            assert(isscalar(fractionOpenTimeSoundIsOn)&&fractionOpenTimeSoundIsOn>=0&&fractionOpenTimeSoundIsOn<=1,'reinforcementManager::reinforcementManager::incorrectValue','fractionOpenTimeSoundIsOn must a single real number be >=0')
+            assert(isscalar(fractionOpenTimeSoundIsOn)&&fractionOpenTimeSoundIsOn>=0&&fractionOpenTimeSoundIsOn<=1,'reinforcementManager:reinforcementManager:incorrectValue','fractionOpenTimeSoundIsOn must a single real number be >=0')
             r.fractionOpenTimeSoundIsOn=fractionOpenTimeSoundIsOn;
             
-            assert(isscalar(fractionPenaltySoundIsOn)&&fractionPenaltySoundIsOn>=0&&fractionPenaltySoundIsOn<=1,'reinforcementManager::reinforcementManager::incorrectValue','fractionPenaltySoundIsOn must a single real number be >=0')
+            assert(isscalar(fractionPenaltySoundIsOn)&&fractionPenaltySoundIsOn>=0&&fractionPenaltySoundIsOn<=1,'reinforcementManager:reinforcementManager:incorrectValue','fractionPenaltySoundIsOn must a single real number be >=0')
             r.fractionPenaltySoundIsOn=fractionPenaltySoundIsOn;    
 
-            assert(ischar(requestMode) && ismember(requestMode,{'first','nonrepeats','all'}),'reinforcementManager::reinforcementManager::incorrectValue','requestMode must be ''first'',''nonrepeats'',or ''all''');
+            assert(ischar(requestMode) && ismember(requestMode,{'first','nonrepeats','all'}),'reinforcementManager:reinforcementManager:incorrectValue','requestMode must be ''first'',''nonrepeats'',or ''all''');
             r.requestMode=requestMode;
             
         end

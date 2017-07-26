@@ -127,9 +127,9 @@ classdef stimSpec
             spec.hz=hz;
                 
             % phaseType - we need this so that runRealTimeLoop knows whether or not this phase should do a reward/airpuff, etc
-            potentialPhaseTypes = {'reinforced','pre-request','pre-response','discrim','post-discrim','itl','earlyPenalty'};
+            potentialPhaseTypes = {'reinforced','pre-request','pre-response','discrim','pre-dicrim','post-discrim','itl','earlyPenalty'};
             assert(any(~cellfun(@isempty,strfind(potentialPhaseTypes,phaseType))),'stimSpec:stimSpec:incorrectValue',...
-                'phaseType must be ''reinforced'', ''pre-request'', ''pre-response'', ''discrim'', ''itl'', ''earlyPenalty''')
+                'phaseType must be ''reinforced'', ''pre-request'', ''pre-response'', ''discrim'', ''pre-dicrim'', ''post-dicrim'', ''itl'', ''earlyPenalty''')
                 spec.phaseType=phaseType;
             
             

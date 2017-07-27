@@ -25,7 +25,7 @@ classdef autopilotGratings<stimManager
         LUT =[];
         LUTbits=0;
         
-        LEDParams
+        phaseDetails
     end
     
     methods
@@ -159,6 +159,7 @@ classdef autopilotGratings<stimManager
             indexPulses=[];
             imagingTasks=[];
             [LUT, sm, updateSM]=getLUT(sm,LUTbits);
+            responsePorts = [];
             
             [resInd, height, width, hz] = st.chooseLargestResForHzsDepthRatio(resolutions,[60],32,sm.maxWidth,sm.maxHeight);
             
@@ -236,21 +237,27 @@ classdef autopilotGratings<stimManager
             details.annulus             = stim.annulus;
             details.waveform            = stim.waveform;
             details.location            = stim.location;
+            details.radiusType          = stim.radiusType;
+            details.normalizationMethod = stim.normalizationMethod;
+            details.height              = stim.height;
+            details.width               = stim.width;
+            details.mean                = stim.mean;
+            details.thresh              = stim.thresh;
             
-            TypeIsExpert = any(sm.driftfrequencies{1}>0)||any(sm.driftfrequencies{2}>0);
+            TypeIsExpert = any(sm.driftfrequencies>0);
             
             switch TypeIsExpert
                 case true
                     type = 'expert';
                     % radii
-                    if stim.radii==Inf
+                    if stim.radius==Inf
                         stim.masks={[]};
                     else
                         mask=[];
-                        maskParams=[stim.radii 999 0 0 ...
+                        maskParams=[stim.radius 999 0 0 ...
                             1.0 stim.thresh stim.location(1) stim.location(2)]; %11/12/08 - for some reason mask contrast must be 2.0 to get correct result
                         
-                        switch details.chosenStim.radiusType
+                        switch details.radiusType
                             case 'gaussian'
                                 mask(:,:,1)=ones(height,width,1)*stim.mean;
                                 mask(:,:,2)=computeGabors(maskParams,0,width,height,...
@@ -261,14 +268,14 @@ classdef autopilotGratings<stimManager
                             case 'hardEdge'
                                 mask(:,:,1)=ones(height,width,1)*sm.mean;
                                 [WIDTH, HEIGHT] = meshgrid(1:width,1:height);
-                                mask(:,:,2)=double((((WIDTH-width*details.chosenStim.location(1)).^2)+((HEIGHT-height*details.chosenStim.location(2)).^2)-((stim.radii)^2*(height^2)))>0);
+                                mask(:,:,2)=double((((WIDTH-width*details.location(1)).^2)+((HEIGHT-height*details.location(2)).^2)-((stim.radius)^2*(height^2)))>0);
                                 stim.masks{1}=mask;
                         end
                     end
                     % annulus
-                    if ~(stim.annuli==0)
+                    if ~(stim.annulus==0)
                         annulusCenter=stim.location;
-                        annulusRadius=stim.annuli;
+                        annulusRadius=stim.annulus;
                         annulusRadiusInPixels=sqrt((height/2)^2 + (width/2)^2)*annulusRadius;
                         annulusCenterInPixels=[width height].*annulusCenter;
                         [x,y]=meshgrid(-width/2:width/2,-height/2:height/2);
@@ -376,17 +383,17 @@ classdef autopilotGratings<stimManager
             gray = (white-black)/2;
             
             %stim.velocities is in cycles per second
-            cycsPerFrameVel = stim.driftfrequencies*ifi; % in units of cycles/frame
+            cycsPerFrameVel = stim.driftfrequency*ifi; % in units of cycles/frame
             offset = 2*pi*cycsPerFrameVel*i;
             
             % Create a 1D vector x based on the frequency pixPerCycs
             % make the grating twice the normal width (to cover entire screen if rotated)
-            x = (1:stim.width*2)*2*pi/stim.pixPerCycs;
+            x = (1:stim.width*2)*2*pi/stim.pixPerCyc;
             switch stim.waveform
                 case 'sine'
-                    grating=stim.contrasts*cos(x + offset+stim.phases)/2+stimulus.mean;
+                    grating=stim.contrast*cos(x + offset+stim.phase)/2+stimulus.mean;
                 case 'square'
-                    grating=stim.contrasts*square(x + offset+stim.phases)/2+stimulus.mean;
+                    grating=stim.contrast*square(x + offset+stim.phase)/2+stimulus.mean;
             end
             % Make grating texture
             gratingtex=Screen('MakeTexture',window,grating,0,0,floatprecision);
@@ -399,7 +406,7 @@ classdef autopilotGratings<stimManager
             destHeight = destRect(4)-destRect(2);
             destRectForGrating = [destRect(1)-destWidth/2, destRect(2)-destHeight, destRect(3)+destWidth/2,destRect(4)+destHeight];
             Screen('DrawTexture', window, gratingtex, srcRect, destRectForGrating, ...
-                (180/pi)*stim.orientations, filtMode);
+                (180/pi)*stim.orientation, filtMode);
             try
                 if ~isempty(stim.masks{1})
                     % Draw gaussian mask over grating: We need to subtract 0.5 from

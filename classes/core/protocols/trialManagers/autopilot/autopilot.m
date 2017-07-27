@@ -46,7 +46,7 @@ classdef autopilot<trialManager
             updateRM = false;
 
             trialDetails=[];
-            if strcmp(getPhaseLabel(spec),'intertrial luminance') && ischar(result) && strcmp(result,'timeout')
+            if strcmp(spec.phaseLabel,'intertrial luminance') && ischar(result) && strcmp(result,'timeout')
                 % this should be the only allowable result in autopilot
                 result='timedout'; % so we continue to next trial
             end
@@ -100,8 +100,8 @@ classdef autopilot<trialManager
             
             addedPreDicrimPhases = 0;
             which = strcmp('preDiscrimStim',stimNames);
-            if ~isempty(stimParams{which})
-                addedPreDicrimPhases = addedPreDicrimPhases+length(stimParams{which});
+            if ~isempty(stimParams(which))
+                addedPreDicrimPhases = addedPreDicrimPhases+length(stimParams(which));
             end
             
             which = strcmp('discrimStim',stimNames);
@@ -109,22 +109,9 @@ classdef autopilot<trialManager
             
             addedPostDiscrimPhases=0;
             which = strcmp('postDiscrimStim',stimNames);
-            if ~isempty(stimParams{which})
-                addedPostDiscrimPhases=addedPostDiscrimPhases+length(stimParams{which});
+            if ~isempty(stimParams(which))
+                addedPostDiscrimPhases=addedPostDiscrimPhases+length(stimParams(which));
             end
-            
-            
-                       
-            % figure out the indices
-            preDiscrimIndex = 1;last = 1;
-            discrimIndex = last+1;last = last+1;
-            if addedPostDiscrimPhases
-                postDiscrimIndices = last+1:last+1+addedPostDiscrimPhases;
-                last = last+addedPostDiscrimPhases;
-            end
-            reinforcementIndex = last+1; last = last+1;
-            itlIndex = last+1;
-            
             
             % now generate our stimSpecs
             startingStimSpecInd=1;
@@ -162,7 +149,7 @@ classdef autopilot<trialManager
             
             % optional postDiscrim Phase
             if addedPostDiscrimPhases
-                assert(~isinf(framesUntilTimeoutDiscrim),'autopilot:incompatbleParamValue','stimuli have to time out');
+                assert(~isinf(framesUntilTimeoutDiscrim),'autopilot:incompatibleParamValue','stimuli have to time out');
                 which = strcmp('postDiscrimStim',stimNames);
                 postDiscrimStim = stimParams{which};
                 for k = 1:length(postDiscrimStim) % loop through the post discrim stims

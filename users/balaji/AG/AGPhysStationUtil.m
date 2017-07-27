@@ -83,7 +83,7 @@ classdef AGPhysStationUtil
                 end
                 [~, ~] = emptyAllBoxes(rx,'done running trials in standAloneRun',auth);
                 %BCoreUtil.compileDetailedRecords
-                cleanup;
+                AGPhysStationUtil.cleanup;
             catch ex
                 disp(['CAUGHT ERROR: ' getReport(ex,'extended')])
                 
@@ -208,7 +208,7 @@ classdef AGPhysStationUtil
                         % gratings stim manager
             pixPerCycs=128;
             driftfrequencies=2;
-            orientations=[-pi/4,pi/4]
+            orientations=[-pi/4,pi/4];
             phases=0;
             contrasts=[1,0.15];
             maxDuration=2;
@@ -235,10 +235,10 @@ classdef AGPhysStationUtil
         function ts = makeShortDurationTS(trialManager, performanceCrit, sch, stepName)
                         % gratings stim manager
             pixPerCycs=128;
-            driftfrequencies=2;
-            orientations=[-pi:pi/8:pi];
+            driftfrequencies=0;
+            orientations=[-pi/4,pi/4];
             phases=0;
-            contrasts=1;
+            contrasts=[1,0.15];
             maxDuration=[0.05,0.1 0.15,0.2,0.5];
             radii=1;annuli=0;location=[.5,.5];
             radiusType = 'hardEdge';waveform= 'sine';normalizationMethod='normalizeDiagonal';
@@ -246,7 +246,7 @@ classdef AGPhysStationUtil
             maxWidth=1920;
             maxHeight=1080;
             scaleFactor=0;
-            interTrialLuminance={.5, 15};
+            interTrialLuminance={.5, 60};
             doCombos = true;
             
             phaseDetails = [];
@@ -273,7 +273,8 @@ classdef AGPhysStationUtil
             descriptiveString='Headfix protocol 7/26/2017';
             
             pHeadFix = protocol(descriptiveString,...
-                {ts1,ts2,ts3});
+                {ts3});
+%                 {ts1,ts2,ts3});
             stepNum = 1;
             %%%%%%%%%%%%
             for i=1:length(subjIDs)

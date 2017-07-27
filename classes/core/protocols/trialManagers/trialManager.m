@@ -1058,7 +1058,7 @@ classdef trialManager
                                     = tm.updateFrameIndexUsingTextureCache(frameIndexed, loop, trigger, timeIndexed, frameIndex, indexedFrames, size(stim,3), isRequesting, ...
                                     i, frameNum, timedFrames, responseOptions, done, doFramePulse, didPulse, scheduledFrameNum);
                                 indexPulse=getIndexPulse(spec,i);
-
+                                fprintf('\ndone is %d\n',done)
                                 switch strategy
                                     case 'textureCache'
                                         tm.drawFrameUsingTextureCache(window, i, frameNum, size(stim,3), lastI, dontclear, textures(i), destRect, ...
@@ -1190,6 +1190,7 @@ classdef trialManager
                 end
                 
                 timestamps.enteringPhaseLogic=GetSecs;
+                fprintf('\ndone is %d\n',done)
                 if ~paused
                     result = trialRecords(trialInd).result;
                     tD = trialRecords(trialInd).trialDetails;
@@ -2311,11 +2312,16 @@ classdef trialManager
                     case 'timedFrames'
                         timeIndexed = 1;
                         timedFrames = type{2};
+                        try
                         if isinteger(timedFrames) && isvector(timedFrames) && size(stim,3)==length(timedFrames) && all(timedFrames(1:end-1)>=1) && timedFrames(end)>=0
                             strategy = 'textureCache';
                             %dontclear = 1;  %might save time, but breaks on lame graphics cards (such as integrated gfx on asus mobos?)
                         else
                             error('bad vector for timedFrames type: must be a vector of length equal to stim dim 3 of integers > 0 (number or refreshes to display each frame). A zero in the final entry means hold display of last frame.')
+                        end
+                        catch
+                            sca;
+                            keyboard
                         end
                     case 'trigger'   %2 static frames -- if request, show frame 1; else show frame 2
                         strategy = 'textureCache';

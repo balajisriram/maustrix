@@ -287,7 +287,7 @@ classdef autopilotGratings<stimManager
                         stim.annuliMatrices = {[]};
                     end
                 case false
-                    type = 'cache';
+                    type = 'timedFrames';
                     grating = sm.computeGabor(stim); % #### new                    
             end
             
@@ -301,15 +301,19 @@ classdef autopilotGratings<stimManager
             switch type
                 case 'expert'
                     discrimStim.stimulus=stim;
-                case 'cache'
+                    discrimStim.stimType=type;
+                    discrimStim.framesUntilTimeout=timeout;
+                case 'timedFrames'
                     discrimStim.stimulus=grating;
+                    discrimStim.stimType={type,uint8(timeout)};
+                    discrimStim.framesUntilTimeout=timeout;
             end
-            discrimStim.stimType=type;
+            
             discrimStim.scaleFactor=scaleFactor;
             discrimStim.startFrame=0;
             discrimStim.autoTrigger=[];
             discrimStim.punishResponses=false;
-            discrimStim.framesUntilTimeout=timeout;
+            
             discrimStim.ledON = false;
             discrimStim.soundPlayed = [];
             

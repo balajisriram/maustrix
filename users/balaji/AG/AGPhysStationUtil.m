@@ -246,7 +246,7 @@ classdef AGPhysStationUtil
             maxWidth=1920;
             maxHeight=1080;
             scaleFactor=0;
-            interTrialLuminance={.5, 60};
+            interTrialLuminance={.5, 15};
             doCombos = true;
             
             phaseDetails = [];
@@ -273,8 +273,7 @@ classdef AGPhysStationUtil
             descriptiveString='Headfix protocol 7/26/2017';
             
             pHeadFix = protocol(descriptiveString,...
-                {ts3});
-%                 {ts1,ts2,ts3});
+                 {ts1,ts2,ts3});
             stepNum = 1;
             %%%%%%%%%%%%
             for i=1:length(subjIDs)

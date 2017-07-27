@@ -21,10 +21,6 @@ classdef autopilot<trialManager
             
         end
         
-        function out = getPercentCorrectionTrials(tm)
-            out = tm.percentCorrectionTrials;
-        end
-        
         function out=getResponsePorts(trialManager,totalPorts)
 
             out=setdiff(1:totalPorts,getRequestPorts(trialManager,totalPorts));
@@ -40,7 +36,7 @@ classdef autopilot<trialManager
             rewardSizeULorMS=0;
             requestRewardSizeULorMS=0;
             msPuff=0;
-            msRewardSound=0;
+            msRewardSound=50; % #### this is an attempt at trying soundsToPlay
             msPenalty=0;
             msPenaltySound=0;
             updateRM = false;
@@ -52,7 +48,21 @@ classdef autopilot<trialManager
             end
         end  % end function
 
-        
+        function [soundsToPlay, spec] = getSoundsToPlay(tm, ports, lastPorts, spec, phase, stepsInPhase,msRewardSound, msPenaltySound, ...
+                targetOptions, distractorOptions, requestOptions, playRequestSoundLoop, trialDetails)
+            % see doc in stimManager.calcStim.txt
+            
+            playLoopSounds={};
+            playSoundSounds={};
+            
+            if ~isempty(spec.soundPlayed) && ~spec.soundAlreadyPlayed
+                playSoundSounds{end+1} = spec.soundPlayed;
+                spec.soundAlreadyPlayed = true;
+            end           
+            
+            soundsToPlay = {playLoopSounds, playSoundSounds};
+            
+        end % end function
     end
     
     methods(Static)
@@ -142,9 +152,10 @@ classdef autopilot<trialManager
             which = strcmp('discrimStim',stimNames);
             discrimStim = stimParams{which};
             framesUntilTimeoutDiscrim = discrimStim.framesUntilTimeout;
+            soundPlayedDiscrim = {'keepGoing',50};
             stimSpecs{i} = stimSpec(discrimStim.stimulus,criterion,discrimStim.stimType,discrimStim.startFrame,...
                 discrimStim.framesUntilTimeout,discrimStim.autoTrigger,discrimStim.scaleFactor,false,hz,'discrim','discrim',...
-                false,true,indexPulses,discrimStim.ledON,discrimStim.soundPlayed); % do not punish responses here
+                false,true,indexPulses,discrimStim.ledON,soundPlayedDiscrim); % discrimSoundPlayed is preset
             i=i+1;
             
             % optional postDiscrim Phase
@@ -168,7 +179,8 @@ classdef autopilot<trialManager
 
             % required reinforcement phase
             criterion={[],i+1};
-            stimSpecs{i} = stimSpec([],criterion,'cache',0,[],[],0,false,hz,'reinforced','reinforcement',false,false,[],false,[]); % do not punish responses here, and LED is hardcoded to false (bad idea in general)
+            soundPlayedReinforcment = {'correctSound',50};
+            stimSpecs{i} = stimSpec([],criterion,'cache',0,[],[],0,false,hz,'reinforced','reinforcement',false,false,[],false,soundPlayedReinforcment); % do not punish responses here, and LED is hardcoded to false (bad idea in general)
             i=i+1;
             
             % required final ITL phase
@@ -181,4 +193,3 @@ classdef autopilot<trialManager
     end
     
 end
-

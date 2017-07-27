@@ -991,13 +991,10 @@ classdef trialManager
                         setStatePins(station,'stim',true);
                     end
                     
-                    if any(spec.ledON)
-                        LEDStatus = getLED(spec);
-                        %####setStatePins(station,'LED1',LEDStatus(1));
-                        %####if length(LEDStatus)==2, setStatePins(station,'LED2',LEDStatus(2)); end
+                    if spec.ledON
+                        station.setLED(true);
                     else
-                        %####setStatePins(station,'LED1',false);
-                        %####setStatePins(station,'LED2',false);
+                        station.setLED(false);
                     end
                     
                 end % fininshed with phaseUpdate

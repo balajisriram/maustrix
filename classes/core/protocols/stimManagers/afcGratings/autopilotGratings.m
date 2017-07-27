@@ -25,12 +25,13 @@ classdef autopilotGratings<stimManager
         LUT =[];
         LUTbits=0;
         
-        phaseDetails
+        phaseDetails = [];
+        LEDParams = [];
     end
     
     methods
         function s=autopilotGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType, annuli,location,...
-                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, phaseDetails)
+                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, phaseDetails,LEDParams)
             % AUTOPILOTGRATINGS  class constructor.
             % 
             % s = autopilotGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,annuli,location,
@@ -138,15 +139,28 @@ classdef autopilotGratings<stimManager
             
             % phaseDetails
             if ~isempty(phaseDetails)
-                assert(stimManager.verifyPhaseDetailsOK(phaseDetails),'autopilotGratings:autopilotGratings:invalidInput','phaseDetails not OK! Look at stimManager.verifyPhaseDetailsOK for details');
+                [ok, requestsLED] = stimManager.verifyPhaseDetailsOK(phaseDetails);
+                assert(ok,'autopilotGratings:autopilotGratings:invalidInput','phaseDetails not OK! Look at stimManager.verifyPhaseDetailsOK for details');
                 % some sanity checks about the phaseDetails:
                 % phaseDetails can only have preDiscrimStim, discrimStim and postDiscrimStim
                 if ~all(ismember({phaseDetails.phaseType},{'preDiscrimStim','discrimStim','postDiscrimStim'}))
                     error('autopilotGratings:autopilotGratings:invalidInput','phaseDetails can only have ''preDiscrimStim'', ''discrimStim'' and ''postDiscrimStim''');
                 end
+            else
+                requestsLED = false;
             end
             s.phaseDetails = phaseDetails;
             
+            % LEDParams
+            if ~isempty(LEDParams)
+                if isempty(phaseDetails)
+                    error('autopilotGratings:autopilotGratings:invalidInput','LEDParams is not empty but phaseDetails is! Sad!!');
+                end
+                assert(stimManager.verifyLEDParamsOK(LEDParams),'autopilotGratings:autopilotGratings:invalidInput','LEDParams not OK! Look at stimManager.verifyLEDParamsOK for details');
+            elseif isempty(LEDParams) && requestsLED
+                error('autopilotGratings:autopilotGratings:invalidInput','LEDParams is empty but phaseDetails asks for LEDs. Disgusting and Illegal!!');
+            end
+            s.LEDParams = LEDParams;
             
         end
         
@@ -294,9 +308,6 @@ classdef autopilotGratings<stimManager
             timeout=stim.maxDuration;
             
             
-            % LEDParams
-            %[details, stim] = setupLED(details, stim, sm.LEDParams,arduinoCONN);
-            
             discrimStim=[];
             switch type
                 case 'expert'
@@ -309,33 +320,15 @@ classdef autopilotGratings<stimManager
                     discrimStim.framesUntilTimeout=timeout;
             end
             
+            % discrimStim is standard
             discrimStim.scaleFactor=scaleFactor;
             discrimStim.startFrame=0;
             discrimStim.autoTrigger=[];
             discrimStim.punishResponses=false;
-            
             discrimStim.ledON = false;
             discrimStim.soundPlayed = [];
             
-
-            postDiscrimStim=[];
-            postDiscrimStim.stimulus=sm.interTrialLuminance;
-            postDiscrimStim.stimType='loop';
-            postDiscrimStim.scaleFactor=0;
-            postDiscrimStim.startFrame=0;
-            postDiscrimStim.autoTrigger=[];
-            postDiscrimStim.punishResponses=false;
-            postDiscrimStim.ledON = false; 
-            postDiscrimStim.soundPlayed = []; 
-            postDiscrimStim.framesUntilTimeout = 100;
-            
-%             if sm.doPostDiscrim
-%                 postDiscrimStim = preDicrimStim;
-%                 postDiscrimStim.framesUntilTimeout = inf;
-%             else
-%                 postDiscrimStim = [];
-%             end
-            
+            % interTrialStim is standard
             interTrialStim.interTrialLuminance = sm.interTrialLuminance;
             interTrialStim.duration = sm.interTrialDuration;
             interTrialStim.soundPlayed = [];
@@ -354,8 +347,13 @@ classdef autopilotGratings<stimManager
 
             stimList = {...
                 'discrimStim',discrimStim;...
-                'postDiscrimStim',postDiscrimStim;...
                 'interTrialStim',interTrialStim};
+            
+            % setupLED
+            [details, LEDDetails] = sm.setupLED(details, st);
+            
+            % phaseDetails
+            [details, stimList] = sm.setupPhases(details, stimList, LEDDetails);
         end
         
         function [doFramePulse, expertCache, dynamicDetails, textLabel, i, dontclear, indexPulse] = ...
@@ -589,6 +587,125 @@ classdef autopilotGratings<stimManager
             end
         end
         
+        function [details, stimList] = setupPhases(s, details, stimList, LEDDetails)
+            % this is run only after we setup LEDs(assumption)
+            % return if phaseDetail is empty
+            details.phaseDetails = struct;
+            if isempty(s.phaseDetail)
+                return
+            end
+            stimListOld = stimList;
+            stimListNew = {};
+            discrimStim = stimList{1,2}; % in autopilot, discrim comes first
+            
+            % are we adding new phases?
+            % preDiscrimStim
+            whichPreDiscrim = strcmp({s.phaseDetails.phaseType},'preDiscrimStim');
+            numPreDiscrim = sum(whichPreDiscrim);
+            preDiscrimPhaseDetails = s.phaseDetails(whichPreDiscrim);
+            for i = 1:numPreDiscrim
+                if strcmp(preDiscrimPhaseDetails(i).phaseStim,'sameAsDiscrim')
+                    preDiscrimStim = discrimStim;
+                    preDiscrimStim.framesUntilTimeout = preDiscrimPhaseDetails(i).phaseLengthInFrames;
+                    preDiscrimStim.ledON = preDiscrimPhaseDetails(i).LEDON & LEDDetails.LEDON;
+                    preDiscrimStim.soundPlayed = preDiscrimPhaseDetails(i).soundsPlayed;
+                    
+                    preDiscrimLabel = preDiscrimPhaseDetails(i).phaseLabel;
+                else
+                    preDiscrimStim=[];
+                    preDiscrimStim.stimulus=preDiscrimPhaseDetails(i).phaseStim;
+                    preDiscrimStim.stimType={'timedFrames',preDiscrimPhaseDetails(i).phaseLengthInFrames};
+                    preDiscrimStim.framesUntilTimeout=preDiscrimPhaseDetails(i).phaseLengthInFrames;
+                    preDiscrimStim.scaleFactor=discrimStim.scaleFactor; % scale factor remains the same
+                    preDiscrimStim.startFrame=0;
+                    preDiscrimStim.autoTrigger=[];
+                    preDiscrimStim.punishResponses=false;
+                    preDiscrimStim.ledON = preDiscrimPhaseDetails(i).LEDON & LEDDetails.LEDON;
+                    preDiscrimStim.soundPlayed = preDiscrimPhaseDetails(i).soundsPlayed;
+                    
+                    preDiscrimLabel = preDiscrimPhaseDetails(i).phaseLabel;
+                end
+                details.phaseDetails(end+1).phaseLabel = preDiscrimLabel;
+                details.phaseDetails(end).phaseType = 'preDiscrimStim';
+                details.phaseDetails(end).phaseLengthInFrames = preDiscrimStim.framesUntilTimeout;
+                details.phaseDetails(end).ledON = preDiscrimStim.ledON;
+                details.phaseDetails(end).ledIntensity = LEDDetails.LEDIntensity;
+                
+                stimListNew(end+1,:) = {preDiscrimLabel, preDiscrimStim};
+            end
+            
+            % discrimStim
+            whichDiscrim = strcmp({s.phaseDetails.phaseType},'discrimStim');
+            numPreDiscrim = sum(whichDiscrim);
+            assert(numPreDiscrim==1,'autopilotGratings:setupPhases:improperValue','only one discrimStim is allowed. Found::%d',numPreDiscrim);
+            discrimPhaseDetails = s.phaseDetails(whichDiscrim);
+            % only look at LED
+            discrimStim.ledON = discrimPhaseDetails.LEDON & LEDDetails.LEDON;
+            details.phaseDetails(end+1).phaseLabel = 'discrimStim';
+            details.phaseDetails(end).phaseType = 'discrimStim';
+            details.phaseDetails(end).phaseLengthInFrames = discrimStim.framesUntilTimeout;
+            details.phaseDetails(end).ledON = discrimStim.ledON;
+            details.phaseDetails(end).ledIntensity = LEDDetails.LEDIntensity;
+            
+            % postDiscrim
+            whichPostDiscrim = strcmp({s.phaseDetails.phaseType},'postDiscrimStim');
+            numPostDiscrim = sum(whichPostDiscrim);
+            postDiscrimPhaseDetails = s.phaseDetails(whichPostDiscrim);
+            for i = 1:numPostDiscrim
+                if strcmp(postDiscrimPhaseDetails(i).phaseStim,'sameAsDiscrim')
+                    postDiscrimStim = discrimStim;
+                    postDiscrimStim.framesUntilTimeout = postDiscrimPhaseDetails(i).phaseLengthInFrames;
+                    postDiscrimStim.ledON = postDiscrimPhaseDetails(i).LEDON & LEDDetails.LEDON;
+                    postDiscrimStim.soundPlayed = postDiscrimPhaseDetails(i).soundsPlayed;
+                    
+                    postDiscrimLabel = postDiscrimPhaseDetails(i).phaseLabel;
+                else
+                    postDiscrimStim=[];
+                    postDiscrimStim.stimulus=postDiscrimPhaseDetails(i).phaseStim;
+                    postDiscrimStim.stimType={'timedFrames',postDiscrimPhaseDetails(i).phaseLengthInFrames};
+                    postDiscrimStim.framesUntilTimeout=postDiscrimPhaseDetails(i).phaseLengthInFrames;
+                    postDiscrimStim.scaleFactor=discrimStim.scaleFactor; % scale factor remains the same
+                    postDiscrimStim.startFrame=0;
+                    postDiscrimStim.autoTrigger=[];
+                    postDiscrimStim.punishResponses=false;
+                    postDiscrimStim.ledON = postDiscrimPhaseDetails(i).LEDON & LEDDetails.LEDON;
+                    postDiscrimStim.soundPlayed = postDiscrimPhaseDetails(i).soundsPlayed;
+                    
+                    postDiscrimLabel = postDiscrimPhaseDetails(i).phaseLabel;
+                end
+                details.phaseDetails(end+1).phaseLabel = postDiscrimLabel;
+                details.phaseDetails(end).phaseType = 'preDiscrimStim';
+                details.phaseDetails(end).phaseLengthInFrames = postDiscrimStim.framesUntilTimeout;
+                details.phaseDetails(end).ledON = postDiscrimStim.ledON;
+                details.phaseDetails(end).ledIntensity = LEDDetails.LEDIntensity;
+                
+                stimListNew(end+1,:) = {postDiscrimLabel, postDiscrimStim};
+            end
+            
+            
+        end
+        
+        function [details, LEDDetails]= setupLED(s,details,st)
+            if isempty(s.LEDParams)
+                LEDDetails.LEDON  = false;
+                LEDDetails.whichLED  = NaN;
+                LEDDetails.LEDIntensity  = NaN;
+                
+                details.LEDDetails = LEDDetails;
+                return;
+            end
+            
+            whichRND = rand;
+            modesCumProb = [s.LEDParams.IlluminationModes.probability];
+            chosenMode = s.LEDParams.IlluminationModes(find(modesCumProb<whichRND==1,1,'last'));
+            
+            LEDDetails.LEDON = true;
+            LEDDetails.whichLED = chosenMode.whichLED;
+            LEDDetails.LEDIntensity = chosenMode.intensity;
+            details.LEDDetails = LEDDetails;
+            % send info to arduino
+            fwrite(st.arduinoConn, uint8(LEDDetails.LEDIntensity*255));
+        end
     end
     
     methods(Static)

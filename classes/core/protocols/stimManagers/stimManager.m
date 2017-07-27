@@ -834,6 +834,18 @@ classdef stimManager
         end % end function
         
         function ok = verifyLEDParamsOK(LEDParams)
+            % providing example of valid LEDParams
+            %
+            % LEDParams.numLEDs = 1;
+            % LEDParams.active = true;
+            % temp1.whichLED = 1;
+            % temp1.intensity = 1;
+            % temp1.probability = 0.5;
+            % temp2.whichLED = 1;
+            % temp2.intensity = 0;
+            % temp2.probability = 0.5;
+            % LEDParams.IlluminationModes = [temp1,temp2];
+            
             ok = true;
             if ~isstruct(LEDParams)
                 ok = ok && false;
@@ -842,38 +854,33 @@ classdef stimManager
             if LEDParams.numLEDs>0
                 % go through the Illumination Modes and check if they seem
                 % reasonable
-                cumulativeFraction = 0;
                 if LEDParams.active && isempty(LEDParams.IlluminationModes)
                     disp('stimManager:verifyLEDParamsOK:LED was active but the illumination mode was absent!');
                     ok = ok && false;
                 end
-                for i = 1:length(LEDParams.IlluminationModes)
-                    if any(LEDParams.IlluminationModes{i}.whichLED)>LEDParams.numLEDs
+                if any([LEDParams.IlluminationModes.whichLED]>LEDParams.numLEDs)
                         disp('stimManager:verifyLEDParamsOK:asking for an LED that is greater than numLEDs');
                         ok = ok && false;
-                    else
-                        if length(LEDParams.IlluminationModes{i}.whichLED)~= length(LEDParams.IlluminationModes{i}.intensity) || ...
-                                any(LEDParams.IlluminationModes{i}.intensity>1) || any(LEDParams.IlluminationModes{i}.intensity<0)
-                            disp('stimManager:verifyLEDParamsOK:specify a single intensity for each of the LEDs and these intensities hould lie between 0 and 1');
-                            ok = ok && false;
-                        end
-                    end
                 end
                 
-                if abs(cumulativeFraction(end)-1)>eps
+                if any([LEDParams.IlluminationModes.intensity]>1) || any([LEDParams.IlluminationModes.intensity]<0)
+                        disp('stimManager:verifyLEDParamsOK:intensity lies between 0 1nd 1');
+                        ok = ok && false;
+                end
+                cumulativeProbability = [LEDParams.IlluminationModes.probability];
+                if abs(cumulativeProbability(end)-1)>eps
                     disp('stimManager:verifyLEDParamsOK:the cumulative fraction should sum to 1');
                     ok = ok && false;
                 end
             end
         end
         
-        function ok = verifyPhaseDetailsOK(phaseDetails)
+        function [ok, requestsLED]= verifyPhaseDetailsOK(phaseDetails)
             % Phase details should be a struct which directs calcStim to
             % create appropriate stims. It should be of the following form:
             %     phaseType: available stimSpec phaseType
             %     phaseLabel: label for the phase
             %     phaseLengthInFrames: numeric integer or NaN or Inf
-            %     LEDON: logical 
             %     IlluminationMode: provides a way to choose illumination mode
             
             % this just checks if the data is compatible with potential
@@ -886,30 +893,28 @@ classdef stimManager
             % phaseDetails(1).phaseStim = ''
             % phaseDetails(1).phaseLengthInFrames = NaN % has to be nan
             % phaseDetails(1).LEDON = false;
-            % phaseDetails(1).IlluminationMode = {};
             % phaseDetails(1).soundsPlayed = {};
             
             % phaseDetails(2).phaseType = 'discrimStim'
             % phaseDetails(2).phaseLabel = 'discrimStim'
             % phaseDetails(2).phaseStim = ''
             % phaseDetails(2).phaseLengthInFrames = NaN % has to be nan!
-            % phaseDetails(2).LEDON = false;
-            % phaseDetails(2).IlluminationMode = {};
+            % phaseDetails(2).LEDON = true;
             % phaseDetails(2).soundsPlayed = {};
             
             % phaseDetails(3).phaseType = 'postDiscrimStim'
             % phaseDetails(3).phaseLabel = 'postDiscrim'
             % phaseDetails(3).phaseStim = 0.8 % 80% of max luminance or 'sameAsDiscrim'
             % phaseDetails(3).phaseLengthInFrames = 3
-            % phaseDetails(3).LEDON = true;
-            % phaseDetails(3).IlluminationModes = LEDParams;
+            % phaseDetails(3).LEDON = false;
             % phaseDetails(3).soundsPlayed = {};
             
             ok = true;
+            
             % ensure is a structure array with required fields
             if ~(isstruct(phaseDetails) && ...
-                    length(fieldnames(phaseDetails))==5 && ...
-                    all(ismember(fieldnames(phaseDetails),{'phaseType','phaseLabel','phaseStim','phaseLengthInFrames','LEDON','IlluminationMode','soundsPlayed'})))
+                    length(fieldnames(phaseDetails))==6 && ...
+                    all(ismember(fieldnames(phaseDetails),{'phaseType','phaseLabel','phaseStim','phaseLengthInFrames','LEDON','soundsPlayed'})))
                 disp('stimManager:verifyPhaseDetailsOK:phaseDetails not struct with correct fields!');
                 ok = ok && false;
             end
@@ -932,15 +937,9 @@ classdef stimManager
             if ~all(cellfun(@islogical,{phaseDetails.LEDON}))
                 disp('stimManager:verifyPhaseDetailsOK:LEDON not all logical!');
                 ok = ok && false;
+                requestsLED = false;
             end
-            
-            for i = 1:length(phaseDetails)
-                if phaseDetails(i).LEDON
-                    ok = ok && stimManager.verifyLEDParamsOK(phaseDetails(i).IlluminationModes);
-                else
-                    ok = ok && isempty(phaseDetails(i).IlluminationModes);
-                end
-            end
+            requestsLED = any([phaseDetails.LEDON]);
             
             if ~all(cellfun(@iscell,{phaseDetails.soundsPlayed}))
                 disp('stimManager:verifyPhaseDetailsOK:LEDON not all cells!');

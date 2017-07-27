@@ -321,7 +321,7 @@ classdef subject
             p = s.protocol;
             assert(isPositiveIntegerValuedNumeric(i) && i<=p.numTrainingSteps,...
                 'i needs to be positive scalar < numTrainingSteps');
-            assert(r.authCheck(auth),'author check failed')
+            assert(r.authorCheck(auth),'author check failed')
             
             [s, r]=setProtocolAndStep(s,p,0,0,1,i,r,comment,auth);
         end

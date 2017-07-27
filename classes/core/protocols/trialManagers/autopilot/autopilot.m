@@ -36,7 +36,7 @@ classdef autopilot<trialManager
             rewardSizeULorMS=0;
             requestRewardSizeULorMS=0;
             msPuff=0;
-            msRewardSound=50; % #### this is an attempt at trying soundsToPlay
+            msRewardSound=0; % #### this is an attempt at trying soundsToPlay
             msPenalty=0;
             msPenaltySound=0;
             updateRM = false;
@@ -152,7 +152,7 @@ classdef autopilot<trialManager
             which = strcmp('discrimStim',stimNames);
             discrimStim = stimParams{which};
             framesUntilTimeoutDiscrim = discrimStim.framesUntilTimeout;
-            soundPlayedDiscrim = {'keepGoing',50};
+            soundPlayedDiscrim = {'keepGoingSound',50};
             stimSpecs{i} = stimSpec(discrimStim.stimulus,criterion,discrimStim.stimType,discrimStim.startFrame,...
                 discrimStim.framesUntilTimeout,discrimStim.autoTrigger,discrimStim.scaleFactor,false,hz,'discrim','discrim',...
                 false,true,indexPulses,discrimStim.ledON,soundPlayedDiscrim); % discrimSoundPlayed is preset
@@ -176,18 +176,17 @@ classdef autopilot<trialManager
                     i=i+1;
                 end
             end
-
-            % required reinforcement phase
-            criterion={[],i+1};
-            soundPlayedReinforcment = {'correctSound',50};
-            stimSpecs{i} = stimSpec([],criterion,'cache',0,[],[],0,false,hz,'reinforced','reinforcement',false,false,[],false,soundPlayedReinforcment); % do not punish responses here, and LED is hardcoded to false (bad idea in general)
-            i=i+1;
             
             % required final ITL phase
             which = strcmp('interTrialStim',stimNames);
             interTrialStim = stimParams{which};
+            if interTrialStim.duration<15
+                sca;
+                keyboard
+            end
+            soundPlayedITL = {'correctSound',50};
             criterion={[],i+1};
-            stimSpecs{i} = stimSpec(interTrialStim.interTrialLuminance,criterion,'cache',0,interTrialStim.duration,[],0,true,hz,'itl','intertrial luminance',false,false,[],false,[]); % do not punish responses here. itl has LED hardcoded to false
+            stimSpecs{i} = stimSpec(interTrialStim.interTrialLuminance,criterion,'cache',0,interTrialStim.duration,[],0,true,hz,'itl','intertrial luminance',false,false,[],false,soundPlayedITL); % do not punish responses here. itl has LED hardcoded to false
             i=i+1;
         end
     end

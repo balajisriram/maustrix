@@ -40,7 +40,7 @@ classdef standardVisionPhysiologyStationWithLED < standardVisionBehaviorStation
             com = sprintf('COM%d',com);
             s.arduinoCONN = serial(com);
             fopen(s.arduinoCONN);
-            pause(3);
+            pause(1); %%####changed from 3
         end
         
         function [r, exitByFinishingTrialQuota]=doTrials(s,r,n,rn,trustOsRecordFiles)

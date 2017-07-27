@@ -82,7 +82,7 @@ classdef AGPhysStationUtil
                     BCoreUtil.replicateTrialRecords({rx.standAlonePath},deleteOnSuccess);
                 end
                 [~, ~] = emptyAllBoxes(rx,'done running trials in standAloneRun',auth);
-                %BCoreUtil.compileDetailedRecords
+                BCoreUtil.compileDetailedRecords([],{subjectID},false,BCoreUtil.getLocalPermanentDataPath,BCoreUtil.getLocalCompiledDataPath);
                 AGPhysStationUtil.cleanup;
             catch ex
                 disp(['CAUGHT ERROR: ' getReport(ex,'extended')])

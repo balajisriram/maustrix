@@ -30,7 +30,7 @@ classdef AGPhysStationUtil
                 d=dir(fullfile(BCoreUtil.getServerDataPath, 'db.mat'));
                 switch length(d)
                     case 0
-                        rx = BCoreUtil.createDefaultPhysiologyBCore();
+                        rx = AGPhysStationUtil.createVisionPhysiologyBCore();
                     case 1
                         rx=BCore(BCoreUtil.getServerDataPath,0,fullfile(BCoreUtil.getBCoreDataPath,'PermanentTrialRecordStore'));
                     otherwise
@@ -92,7 +92,7 @@ classdef AGPhysStationUtil
                 AGPhysStationUtil.notify(AGPhysStationUtil.EXPERIMENTER,'Error in Rig',message);
                 deleteOnSuccess = true;
                 [~, ~] = emptyAllBoxes(rx,'done running trials in standAloneRun',auth);
-                cleanup;
+                AGPhysStationUtil.cleanup;
                 BCoreUtil.replicateTrialRecords({rx.standAlonePath},deleteOnSuccess);
                 AGPhysStationUtil.cleanup;
                 rethrow(ex)
@@ -266,10 +266,10 @@ classdef AGPhysStationUtil
         function r = setProtocolHeadFixed(r,subjIDs)
             assert(isa(r,'BCore'),'BCoreUtil:setProtocolDEMONoRequest:invalidInput','need a BCore object. You sent object of class %s',class(r));
             % TrialManager FreeDrinks
-            tmAutoPilot = BCoreUtil.makeVisionPhysAutopilotTrialManager();
-            ts1 = AGPhysStationUtil.makeOrientationSweepTS(tmAutoPilot,numTrialsDoneCriterionLatestStreak(5),noTimeOff(), 'OrSweep');
-            ts2 = AGPhysStationUtil.makeLongDurationTS(tmEarned,numTrialsDoneCriterionLatestStreak(5),noTimeOff(), 'LongDurationOR');
-            ts3 = AGPhysStationUtil.makeShortDurationTS(tmEarned,numTrialsDoneCriterionLatestStreak(20),noTimeOff(), 'ShortDurationOR');
+            tmAutoPilot = AGPhysStationUtil.makeVisionPhysAutopilotTrialManager();
+            ts1 = AGPhysStationUtil.makeOrientationSweepTS(tmAutoPilot,numTrialsDoneCriterion(5),noTimeOff(), 'OrSweep');
+            ts2 = AGPhysStationUtil.makeLongDurationTS(tmAutoPilot,numTrialsDoneCriterion(5),noTimeOff(), 'LongDurationOR');
+            ts3 = AGPhysStationUtil.makeShortDurationTS(tmAutoPilot,numTrialsDoneCriterion(20),noTimeOff(), 'ShortDurationOR');
             descriptiveString='Headfix protocol 7/26/2017';
             
             pHeadFix = protocol(descriptiveString,...
@@ -278,7 +278,7 @@ classdef AGPhysStationUtil
             %%%%%%%%%%%%
             for i=1:length(subjIDs)
                 subj=getSubjectFromID(r,subjIDs{i});
-                [~, r]=setProtocolAndStep(subj,pElementaryVision100915,true,false,true,stepNum,r,'call to setProtocolMIN','bas');
+                [~, r]=setProtocolAndStep(subj,pHeadFix,true,false,true,stepNum,r,'call to setProtocolHeadFixed','bas');
             end
             
         end

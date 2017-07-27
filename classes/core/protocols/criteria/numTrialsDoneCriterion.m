@@ -14,7 +14,7 @@ classdef numTrialsDoneCriterion<criterion
              
         end
         
-        function [graduate details] = checkCriterion(c,subject,trainingStep,trialRecords, compiledRecords)
+        function [graduate, details] = checkCriterion(c,subject,trainingStep,trialRecords, compiledRecords)
             % this criterion will graduate if we have done a certain number of trials in this trainingStep
 
 

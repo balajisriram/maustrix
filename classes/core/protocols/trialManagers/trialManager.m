@@ -1055,7 +1055,6 @@ classdef trialManager
                                     = tm.updateFrameIndexUsingTextureCache(frameIndexed, loop, trigger, timeIndexed, frameIndex, indexedFrames, size(stim,3), isRequesting, ...
                                     i, frameNum, timedFrames, responseOptions, done, doFramePulse, didPulse, scheduledFrameNum);
                                 indexPulse=getIndexPulse(spec,i);
-                                fprintf('\ndone is %d\n',done)
                                 switch strategy
                                     case 'textureCache'
                                         tm.drawFrameUsingTextureCache(window, i, frameNum, size(stim,3), lastI, dontclear, textures(i), destRect, ...
@@ -1187,7 +1186,6 @@ classdef trialManager
                 end
                 
                 timestamps.enteringPhaseLogic=GetSecs;
-                fprintf('\ndone is %d\n',done)
                 if ~paused
                     result = trialRecords(trialInd).result;
                     tD = trialRecords(trialInd).trialDetails;

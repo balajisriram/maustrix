@@ -123,7 +123,7 @@ classdef standardVisionPhysiologyStationWithLED < standardVisionBehaviorStation
                 while keepWorking
                     trialNum=trialNum+1;
                     
-                    s.sendZMQ(sprintf('TrialStart::%d'),trialNum+lastTrialNumForSubject);
+                    s.sendZMQ(sprintf('TrialStart::%d',trialNum+lastTrialNumForSubject));
                     [subject, r, keepWorking, ~, trialRecords, s]= ...
                         subject.doTrial(r,s,rn,trialRecords,sessionNumber,compiledRecords);
                     s.sendZMQ('TrialEnd');

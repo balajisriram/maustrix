@@ -975,9 +975,13 @@ classdef BCoreUtil
             try
                 out = max(ranges(2,:));
             catch ex
-                getReport(ex);
-                keyboard
-                out = 0;
+                switch ex.identifier
+                    case 'MATLAB:badsubscript'
+                        disp('came here because this is probably the first trial for the animal');
+                        out = 0;
+                    otherwise
+                        rethrow(ex)
+                end
             end
         end
         

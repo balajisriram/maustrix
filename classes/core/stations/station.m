@@ -28,7 +28,7 @@ classdef station
                 end
             end
         end
-
+        
         function sub=getCurrentSubject(s,r)
             validateattributes(r,{'BCore'},{'nonempty'})
             subs=getSubjectsForStationID(r,s.id);
@@ -88,6 +88,16 @@ classdef station
         
         function out = numPorts
             out = 0;
+        end
+    end
+    
+    methods %Defaults - does nothing
+        function sendZMQ(str)
+            % do nothing
+        end
+        
+        function setStatePins(~,~,~)
+            % do nothing
         end
     end
 end

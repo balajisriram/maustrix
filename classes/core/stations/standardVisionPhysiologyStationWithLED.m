@@ -65,7 +65,96 @@ classdef standardVisionPhysiologyStationWithLED < standardVisionBehaviorStation
         function [r, exitByFinishingTrialQuota]=doTrials(s,r,n,rn,trustOsRecordFiles)
             s = s.setupArduino();
             s = s.setupZMQ();
-            [r, exitByFinishingTrialQuota]=doTrials@standardVisionBehaviorStation(s,r,n,rn,trustOsRecordFiles);
+            
+            %this will doTrials on station=(s) of BCore=(r).
+            %n=number of trials, where 0 means repeat indefinitely
+            %rn is a BCore network object, which only the server uses, otherwise leave empty
+            %trustOsRecordFiles is risky because we know that they can be wrong when
+            %the server is taxed. The BCore downstairs does not trust them. But you
+            %are free of oracle dependency. It is not recommended to trustOsRecordFiles
+            %unless your permanentStore is local, then it might be okay.
+            if ~exist('trustOsRecordFiles','var')
+                trustOsRecordFiles=true; % bas cahnged this to debug some stuff ####
+            end
+            exitByFinishingTrialQuota = false;
+            assert(~isempty(getStationByID(r,s.id)),...
+                'standardVisionBehaviorStation:doTrials:incompatibleValue',...
+                'that BCore doesn''t contain this station');
+            
+            subject=getCurrentSubject(s,r);
+            keepWorking=1;
+            trialNum=0;
+            
+            lastTrialNumForSubject = BCoreUtil.getLastTrialNum(subject.id);
+            assert(n>=0,...
+                'standardVisionBehaviorStation:doTrials:incorrectValu',...
+                'n must be >= 0');
+            
+            ListenChar(2);
+            if usejava('jvm')
+                FlushEvents('keyDown');
+            end
+            
+            try
+                
+                s=s.startPTB();
+                
+                % ==========================================================================
+                
+                % This is a hard coded trial records filter
+                % Need to decide where to parameterize this
+                filter = {'lastNTrials',int32(100)};
+                
+                % Load a subset of the previous trial records based on the given filter
+                [trialRecords, localRecordsIndex, sessionNumber, compiledRecords] = r.getTrialRecordsForSubjectID(subject.id,filter, trustOsRecordFiles);
+                
+                % take care of ZMQ stuff
+                pause(0.1); s.sendZMQ(sprintf('Starting recording on subject ID: %s',subject.id));
+                pause(0.1); s.sendZMQ(sprintf('LocalTime: %2.3f',now));
+                pause(0.1); s.sendZMQ(sprintf('MAC ID of station: %s',s.MACAddress));
+                pause(0.1); s.sendZMQ(sprintf('protocol: %s',subject.protocol.id));
+                pause(0.1); s.sendZMQ(sprintf('numSteps in protocol: %d',subject.protocol.numTrainingSteps));
+                names = subject.protocol.getTrainingStepNames();
+                for i = 1:length(names)
+                    pause(0.1); s.sendZMQ(sprintf('\t %d: %s',i,names{i}));
+                end
+                pause(0.1);
+                
+                while keepWorking
+                    trialNum=trialNum+1;
+                    
+                    s.sendZMQ(sprintf('TrialStart::%d'),trialNum+lastTrialNumForSubject);
+                    [subject, r, keepWorking, ~, trialRecords, s]= ...
+                        subject.doTrial(r,s,rn,trialRecords,sessionNumber,compiledRecords);
+                    s.sendZMQ('TrialEnd');
+                    % Cut off a trial record as we increment trials, IFF we
+                    % still have remote records (because we need to keep all
+                    % local records to properly save the local .mat)
+                    if localRecordsIndex > 1
+                        trialRecords = trialRecords(2:end);
+                    end
+                    % Now update the local index (eventually all of the records
+                    % will be local if run long enough)
+                    localRecordsIndex = max(1,localRecordsIndex-1);
+                    % Only save the local records to the local copy!
+                    r.updateTrialRecordsForSubjectID(subject.id,trialRecords(localRecordsIndex:end));
+                    
+                    if n>0 && trialNum>=n
+                        keepWorking=0;
+                        exitByFinishingTrialQuota = true;
+                    end
+                end
+                
+                stopPTB(s);
+            catch ex
+                disp(['CAUGHT ER (at doTrials): ' getReport(ex)]);
+                rethrow(ex);
+            end
+            
+            close all
+            FlushEvents('mouseUp','mouseDown','keyDown','autoKey','update');
+            ListenChar(0);            
+            
             s = s.closeArduino();
             s = s.closeZMQ();
         end

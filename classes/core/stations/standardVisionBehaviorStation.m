@@ -92,10 +92,6 @@ classdef standardVisionBehaviorStation < station
                 ports(s.sensorPins.invs)=~ports(s.sensorPins.invs);
         end
         
-        function setStatePins(s,which,val)
-            % do nothing
-        end
-          
         % valves
         function valves =getValves(s)
             status=fastDec2Bin(lptread(s.valvePins.decAddr));

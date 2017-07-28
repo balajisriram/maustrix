@@ -10,10 +10,12 @@ classdef standardVisionPhysiologyStationWithLED < standardVisionBehaviorStation
     
     properties (Constant = true)
         numLED = 1;
+        zMQURL = 'tcp://192.168.137.37:5556';
     end
     
     properties (Transient=true)
         arduinoCONN = [];
+        zMQConnection = [];
     end
     
     methods
@@ -48,11 +50,24 @@ classdef standardVisionPhysiologyStationWithLED < standardVisionBehaviorStation
             pause(1);
         end
         
+        function s = setupZMQ(s)
+            s.zMQConnection = zeroMQwrapper('StartConnectThread',s.zMQURL);
+        end
+        
+        function s = closeZMQ(s)
+            zeroMQwrapper('CloseThread',s.zMQConnection);
+        end
+                
+        function sendZMQ(s,str)
+            zeroMQwrapper('Send',s.zMQConnection,str);
+        end
         
         function [r, exitByFinishingTrialQuota]=doTrials(s,r,n,rn,trustOsRecordFiles)
             s = s.setupArduino();
+            s = s.setupZMQ();
             [r, exitByFinishingTrialQuota]=doTrials@standardVisionBehaviorStation(s,r,n,rn,trustOsRecordFiles);
             s = s.closeArduino();
+            s = s.closeZMQ();
         end
         
         function setStatePins(s,pin,state)

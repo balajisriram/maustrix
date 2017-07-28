@@ -972,7 +972,13 @@ classdef BCoreUtil
         function out = getLastTrialNum(subjectID)
             p = fullfile(BCoreUtil.getLocalPermanentDataPath(),subjectID);
             [~,ranges] = BCoreUtil.getTrialRecordFiles(p,true);
-            out = max(ranges(2,:));
+            try
+                out = max(ranges(2,:));
+            catch ex
+                getReport(ex);
+                keyboard
+                out = 0;
+            end
         end
         
         function failures = compileDetailedRecords(server_name,ids,recompile,source,destination)

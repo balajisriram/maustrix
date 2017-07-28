@@ -179,6 +179,7 @@ classdef standardVisionBehaviorStation < station
             keepWorking=1;
             trialNum=0;
             
+            lastTrialNumForSubject = BCoreUtil.getLastTrialNum(subject.id);
             assert(n>=0,...
                 'standardVisionBehaviorStation:doTrials:incorrectValu',...
                 'n must be >= 0');

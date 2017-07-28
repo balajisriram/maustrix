@@ -17,7 +17,6 @@ classdef stimSpec
         indexPulses
         lockoutDuration
         ledON = false;
-        ledPulses
         punishResponses
         soundPlayed
     end
@@ -27,7 +26,7 @@ classdef stimSpec
     
     methods
         function spec=stimSpec(stimulus,transitions,stimType,startFrame,framesUntilTransition,autoTrigger,...
-                scaleFactor,isFinalPhase,hz,phaseType,phaseLabel,punishResponses,isStim,indexPulses,ledPulses,soundPlayed)
+                scaleFactor,isFinalPhase,hz,phaseType,phaseLabel,punishResponses,isStim,indexPulses,ledON,soundPlayed)
             % stimSpec  class constructor.
             % spec=stimSpec(stimulus,transitions,stimType,startFrame,framesUntilTransition,
             %	autoTrigger,scaleFactor,isFinalPhase,hz,phaseType,phaseLabel,punishResponses,isStim,indexPulses)
@@ -127,9 +126,9 @@ classdef stimSpec
             spec.hz=hz;
                 
             % phaseType - we need this so that runRealTimeLoop knows whether or not this phase should do a reward/airpuff, etc
-            potentialPhaseTypes = {'reinforced','pre-request','pre-response','discrim','pre-dicrim','post-discrim','itl','earlyPenalty'};
+            potentialPhaseTypes = {'reinforced','pre-request','pre-response','discrim','pre-discrim','post-discrim','itl','earlyPenalty'};
             assert(any(~cellfun(@isempty,strfind(potentialPhaseTypes,phaseType))),'stimSpec:stimSpec:incorrectValue',...
-                'phaseType must be ''reinforced'', ''pre-request'', ''pre-response'', ''discrim'', ''pre-dicrim'', ''post-dicrim'', ''itl'', ''earlyPenalty''')
+                'phaseType must be ''reinforced'', ''pre-request'', ''pre-response'', ''discrim'', ''pre-discrim'', ''post-dicrim'', ''itl'', ''earlyPenalty''')
                 spec.phaseType=phaseType;
             
             
@@ -146,8 +145,8 @@ classdef stimSpec
             spec.isStim=isStim;
             
             % ledPulses
-            assert(all(islogical(ledPulses)))
-            spec.ledPulses=ledPulses;
+            assert(all(islogical(ledON)))
+            spec.ledON=ledON;
             
             
             if (isempty(spec.scaleFactor) || isempty(spec.stimulus)) && ~strcmp(spec.phaseType,'reinforced')  && ~strcmp(spec.phaseType,'earlyPenalty') && ~strcmp(spec.phaseType,'itl')

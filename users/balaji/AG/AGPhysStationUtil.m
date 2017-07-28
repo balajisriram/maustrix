@@ -194,11 +194,10 @@ classdef AGPhysStationUtil
             doCombos = true;
             
             phaseDetails = [];
-            LEDParams.active = false;
-            LEDParams.numLEDs = 0;
+            LEDParams = [];
             
             AUTOPILOTGRAT = autopilotGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType, annuli,location,...
-                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, phaseDetails);
+                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, phaseDetails, LEDParams);
             
             % training step using other objects as passed in
             ts = trainingStep(trialManager, AUTOPILOTGRAT, performanceCrit, sch,stepName);
@@ -222,11 +221,10 @@ classdef AGPhysStationUtil
             doCombos = true;
             
             phaseDetails = [];
-            LEDParams.active = false;
-            LEDParams.numLEDs = 0;
+            LEDParams = [];
             
             AUTOPILOTGRAT = autopilotGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType, annuli,location,...
-                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, phaseDetails);
+                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, phaseDetails, LEDParams);
             
             % training step using other objects as passed in
             ts = trainingStep(trialManager, AUTOPILOTGRAT, performanceCrit, sch,stepName);
@@ -250,11 +248,10 @@ classdef AGPhysStationUtil
             doCombos = true;
             
             phaseDetails = [];
-            LEDParams.active = false;
-            LEDParams.numLEDs = 0;
+            LEDParams = [];
             
             AUTOPILOTGRAT = autopilotGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType, annuli,location,...
-                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, phaseDetails);
+                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, phaseDetails, LEDParams);
             
             % training step using other objects as passed in
             ts = trainingStep(trialManager, AUTOPILOTGRAT, performanceCrit, sch,stepName);
@@ -291,23 +288,23 @@ classdef AGPhysStationUtil
             phaseDetails(1).phaseType = 'preDiscrimStim';
             phaseDetails(1).phaseLabel = 'preDiscrimStim';
             phaseDetails(1).phaseStim = 0.5;
-            phaseDetails(1).phaseLengthInFrames = 3;
+            phaseDetails(1).phaseLengthInFrames = uint8(60);
             phaseDetails(1).LEDON = true;
-            phaseDetails(1).soundsPlayed = [];
+            phaseDetails(1).soundsPlayed = {};
             
             phaseDetails(2).phaseType = 'discrimStim';
             phaseDetails(2).phaseLabel = 'discrimStim';
             phaseDetails(2).phaseStim = '';
             phaseDetails(2).phaseLengthInFrames = NaN; % has to be nan! % set by 
             phaseDetails(2).LEDON = true; % only this is relevant eerything else has to be standard
-            phaseDetails(2).soundsPlayed = []; % has to be empty
+            phaseDetails(2).soundsPlayed = {}; % has to be empty
             
             phaseDetails(3).phaseType = 'postDiscrimStim';
-            phaseDetails(3).phaseLabel = 'postDiscrim';
+            phaseDetails(3).phaseLabel = 'postDiscrimStim';
             phaseDetails(3).phaseStim = 0.5; % 80% of max luminance or 'sameAsDiscrim'
-            phaseDetails(3).phaseLengthInFrames = 15;
+            phaseDetails(3).phaseLengthInFrames = uint8(15);
             phaseDetails(3).LEDON = false;
-            phaseDetails(3).soundsPlayed = [];
+            phaseDetails(3).soundsPlayed = {};
                         
             AUTOPILOTGRAT = autopilotGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType, annuli,location,...
                 waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, phaseDetails, LEDParams);
@@ -324,12 +321,13 @@ classdef AGPhysStationUtil
             tmAutoPilot = AGPhysStationUtil.makeVisionPhysAutopilotTrialManager();
             ts1 = AGPhysStationUtil.makeOrientationSweepTS(tmAutoPilot,numTrialsDoneCriterion(5),noTimeOff(), 'OrSweep');
             ts2 = AGPhysStationUtil.makeLongDurationTS(tmAutoPilot,numTrialsDoneCriterion(5),noTimeOff(), 'LongDurationOR');
-            ts3 = AGPhysStationUtil.makeShortDurationTS(tmAutoPilot,numTrialsDoneCriterion(20),noTimeOff(), 'ShortDurationOR');
+            ts3 = AGPhysStationUtil.makeShortDurationTS(tmAutoPilot,numTrialsDoneCriterion(5),noTimeOff(), 'ShortDurationOR');
             ts4 = AGPhysStationUtil.makeLongDurationTSWithLED(tmAutoPilot,numTrialsDoneCriterion(5),noTimeOff(), 'LongDurationOR_LED');
             descriptiveString='Headfix protocol 7/26/2017';
             
             pHeadFix = protocol(descriptiveString,...
                  {ts1,ts2,ts3,ts4});
+%                  {ts1,ts2,ts3,ts4});
             stepNum = 1;
             %%%%%%%%%%%%
             for i=1:length(subjIDs)

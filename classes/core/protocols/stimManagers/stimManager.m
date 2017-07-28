@@ -867,7 +867,7 @@ classdef stimManager
                         disp('stimManager:verifyLEDParamsOK:intensity lies between 0 1nd 1');
                         ok = ok && false;
                 end
-                cumulativeProbability = [LEDParams.IlluminationModes.probability];
+                cumulativeProbability = cumsum([LEDParams.IlluminationModes.probability]);
                 if abs(cumulativeProbability(end)-1)>eps
                     disp('stimManager:verifyLEDParamsOK:the cumulative fraction should sum to 1');
                     ok = ok && false;

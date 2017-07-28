@@ -40,12 +40,19 @@ classdef standardVisionPhysiologyStationWithLED < standardVisionBehaviorStation
             com = sprintf('COM%d',com);
             s.arduinoCONN = serial(com);
             fopen(s.arduinoCONN);
-            pause(1); %%####changed from 3
+            pause(3);
         end
+        
+        function s = closeArduino(s)
+            fclose(s.arduinoCONN);
+            pause(1);
+        end
+        
         
         function [r, exitByFinishingTrialQuota]=doTrials(s,r,n,rn,trustOsRecordFiles)
             s = s.setupArduino();
             [r, exitByFinishingTrialQuota]=doTrials@standardVisionBehaviorStation(s,r,n,rn,trustOsRecordFiles);
+            s = s.closeArduino();
         end
         
         function setStatePins(s,pin,state)
@@ -77,8 +84,8 @@ classdef standardVisionPhysiologyStationWithLED < standardVisionBehaviorStation
         end
         
         function setLED(s, led)
-            led(s.ledPins.invs)=~led(s.ledPins.invs);
-            lptWriteBits(s.ledPins.decAddr,s.ledPins.bitLocs,led);
+            led(s.LEDPin.invs)=~led(s.LEDPin.invs);
+            lptWriteBits(s.LEDPin.decAddr,s.LEDPin.bitLocs,led);
         end
         
         function setFrame(s, frame)

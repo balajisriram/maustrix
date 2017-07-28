@@ -1028,7 +1028,7 @@ classdef BCoreUtil
                     store_path = fullfile(source, ids{i});
                     %         source
                 end
-                [subjectFiles{end+1} ranges{end+1}]=getTrialRecordFiles(store_path); %unreliable if remote
+                [subjectFiles{end+1} ranges{end+1}]=BCoreUtil.getTrialRecordFiles(store_path); %unreliable if remote
             end
             
             if ~exist('source','var') || isempty(source)

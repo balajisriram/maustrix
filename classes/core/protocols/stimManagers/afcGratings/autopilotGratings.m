@@ -589,15 +589,15 @@ classdef autopilotGratings<stimManager
         
         function [details, stimList] = setupPhases(s, details, stimList, LEDDetails)
             % this is run only after we setup LEDs(assumption)
-            % return if phaseDetail is empty
+            % return if phaseDetails is empty
             details.phaseDetails = struct;
-            if isempty(s.phaseDetail)
+            if isempty(s.phaseDetails)
                 return
             end
             stimListOld = stimList;
             stimListNew = {};
             discrimStim = stimList{1,2}; % in autopilot, discrim comes first
-            
+            interTrialStim = stimList{2,2};
             % are we adding new phases?
             % preDiscrimStim
             whichPreDiscrim = strcmp({s.phaseDetails.phaseType},'preDiscrimStim');
@@ -646,6 +646,7 @@ classdef autopilotGratings<stimManager
             details.phaseDetails(end).phaseLengthInFrames = discrimStim.framesUntilTimeout;
             details.phaseDetails(end).ledON = discrimStim.ledON;
             details.phaseDetails(end).ledIntensity = LEDDetails.LEDIntensity;
+            stimListNew(end+1,:) = {'discrimStim', discrimStim};
             
             % postDiscrim
             whichPostDiscrim = strcmp({s.phaseDetails.phaseType},'postDiscrimStim');
@@ -674,14 +675,16 @@ classdef autopilotGratings<stimManager
                     postDiscrimLabel = postDiscrimPhaseDetails(i).phaseLabel;
                 end
                 details.phaseDetails(end+1).phaseLabel = postDiscrimLabel;
-                details.phaseDetails(end).phaseType = 'preDiscrimStim';
+                details.phaseDetails(end).phaseType = 'postDiscrimStim';
                 details.phaseDetails(end).phaseLengthInFrames = postDiscrimStim.framesUntilTimeout;
                 details.phaseDetails(end).ledON = postDiscrimStim.ledON;
                 details.phaseDetails(end).ledIntensity = LEDDetails.LEDIntensity;
                 
                 stimListNew(end+1,:) = {postDiscrimLabel, postDiscrimStim};
             end
-            
+            % deal with interTrialStim
+            stimListNew(end+1,:) = {'interTrialStim',interTrialStim};
+            stimList = stimListNew;
             
         end
         
@@ -696,15 +699,20 @@ classdef autopilotGratings<stimManager
             end
             
             whichRND = rand;
-            modesCumProb = [s.LEDParams.IlluminationModes.probability];
-            chosenMode = s.LEDParams.IlluminationModes(find(modesCumProb<whichRND==1,1,'last'));
+            modesCumProb = cumsum([s.LEDParams.IlluminationModes.probability]);
+            chosenMode = s.LEDParams.IlluminationModes(find(modesCumProb>whichRND==1,1,'first'));
             
+            try
             LEDDetails.LEDON = true;
             LEDDetails.whichLED = chosenMode.whichLED;
             LEDDetails.LEDIntensity = chosenMode.intensity;
             details.LEDDetails = LEDDetails;
+            catch
+                sca;
+                keyboard
+            end
             % send info to arduino
-            fwrite(st.arduinoConn, uint8(LEDDetails.LEDIntensity*255));
+            fwrite(st.arduinoCONN, uint8(LEDDetails.LEDIntensity*255));
         end
     end
     

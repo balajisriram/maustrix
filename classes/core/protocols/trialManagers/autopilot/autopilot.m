@@ -141,7 +141,7 @@ classdef autopilot<trialManager
                         preDiscrimName = 'pre-discrim';
                     end
                     stimSpecs{i} = stimSpec(preDiscrimStim(k).stimulus,criterion,preDiscrimStim(k).stimType,preDiscrimStim(k).startFrame,...
-                        preDiscrimStim(k).framesUntilTimeout,preDiscrimStim(k).autoTrigger,preDiscrimStim(k).scaleFactor,false,hz,'post-discrim',preDiscrimName,...
+                        preDiscrimStim(k).framesUntilTimeout,preDiscrimStim(k).autoTrigger,preDiscrimStim(k).scaleFactor,false,hz,'pre-discrim',preDiscrimName,...
                         preDiscrimStim(k).punishResponses,false,[],preDiscrimStim(k).ledON,preDiscrimStim(k).soundPlayed);
                     i=i+1;
                 end
@@ -180,14 +180,11 @@ classdef autopilot<trialManager
             % required final ITL phase
             which = strcmp('interTrialStim',stimNames);
             interTrialStim = stimParams{which};
-            if interTrialStim.duration<15
-                sca;
-                keyboard
-            end
             soundPlayedITL = {'correctSound',50};
             criterion={[],i+1};
             stimSpecs{i} = stimSpec(interTrialStim.interTrialLuminance,criterion,'cache',0,interTrialStim.duration,[],0,true,hz,'itl','intertrial luminance',false,false,[],false,soundPlayedITL); % do not punish responses here. itl has LED hardcoded to false
             i=i+1;
+
         end
     end
     

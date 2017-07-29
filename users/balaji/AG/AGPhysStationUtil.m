@@ -180,7 +180,7 @@ classdef AGPhysStationUtil
             % gratings stim manager
             pixPerCycs=128;
             driftfrequencies=2;
-            orientations=[-pi:pi/8:pi];
+            orientations=[-pi:pi/8:pi];orientations(end) = [];
             phases=0;
             contrasts=1;
             maxDuration=2;
@@ -235,7 +235,7 @@ classdef AGPhysStationUtil
             pixPerCycs=128;
             driftfrequencies=0;
             orientations=[-pi/4,pi/4];
-            phases=0;
+            phases=linspace(0,2*pi,9);phases(end) = [];
             contrasts=[1,0.15];
             maxDuration=[0.05,0.1 0.15,0.2,0.5];
             radii=1;annuli=0;location=[.5,.5];
@@ -288,7 +288,7 @@ classdef AGPhysStationUtil
             phaseDetails(1).phaseType = 'preDiscrimStim';
             phaseDetails(1).phaseLabel = 'preDiscrimStim';
             phaseDetails(1).phaseStim = 0.5;
-            phaseDetails(1).phaseLengthInFrames = uint8(60);
+            phaseDetails(1).phaseLengthInFrames = uint8(3);
             phaseDetails(1).LEDON = true;
             phaseDetails(1).soundsPlayed = {};
             
@@ -305,7 +305,7 @@ classdef AGPhysStationUtil
             phaseDetails(3).phaseLengthInFrames = uint8(15);
             phaseDetails(3).LEDON = false;
             phaseDetails(3).soundsPlayed = {};
-                        
+            
             AUTOPILOTGRAT = autopilotGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType, annuli,location,...
                 waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, phaseDetails, LEDParams);
             
@@ -313,21 +313,76 @@ classdef AGPhysStationUtil
             ts = trainingStep(trialManager, AUTOPILOTGRAT, performanceCrit, sch,stepName);
         end
         
+        function ts = makeShortDurationTSWithPreLED(trialManager, performanceCrit, sch, stepName)
+            % gratings stim manager
+            pixPerCycs=128;
+            driftfrequencies=0;
+            orientations=[-pi/4,pi/4];
+            phases=linspace(0,2*pi,9); phases(end) = [];
+            contrasts=[1,0.15];
+            maxDuration=[0.1];
+            radii=1;annuli=0;location=[.5,.5];
+            radiusType = 'hardEdge';waveform= 'sine';normalizationMethod='normalizeDiagonal';
+            mean=0.5;thresh=.00005;
+            maxWidth=1920;
+            maxHeight=1080;
+            scaleFactor=0;
+            interTrialLuminance={.5, 15};
+            doCombos = true;
+            
+            
+            LEDParams.numLEDs = 1;
+            LEDParams.active = true;
+            temp1.whichLED = 1;
+            temp1.intensity = 1;
+            temp1.probability = 0.5;
+            temp2.whichLED = 1;
+            temp2.intensity = 0;
+            temp2.probability = 0.5;
+            LEDParams.IlluminationModes = [temp1,temp2];
+            
+            phaseDetails(1).phaseType = 'preDiscrimStim';
+            phaseDetails(1).phaseLabel = 'preDiscrimStim';
+            phaseDetails(1).phaseStim = 0.5;
+            phaseDetails(1).phaseLengthInFrames = uint8(3);
+            phaseDetails(1).LEDON = true;
+            phaseDetails(1).soundsPlayed = {};
+            
+            phaseDetails(2).phaseType = 'discrimStim';
+            phaseDetails(2).phaseLabel = 'discrimStim';
+            phaseDetails(2).phaseStim = '';
+            phaseDetails(2).phaseLengthInFrames = NaN; % has to be nan! % set by 
+            phaseDetails(2).LEDON = false; % only this is relevant eerything else has to be standard
+            phaseDetails(2).soundsPlayed = {}; % has to be empty
+            
+            phaseDetails(3).phaseType = 'postDiscrimStim';
+            phaseDetails(3).phaseLabel = 'postDiscrimStim';
+            phaseDetails(3).phaseStim = 0.5; % 80% of max luminance or 'sameAsDiscrim'
+            phaseDetails(3).phaseLengthInFrames = uint8(15);
+            phaseDetails(3).LEDON = false;
+            phaseDetails(3).soundsPlayed = {};
+                        
+            AUTOPILOTGRAT = autopilotGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType, annuli,location,...
+                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance, doCombos, phaseDetails, LEDParams);
+            
+            % training step using other objects as passed in
+            ts = trainingStep(trialManager, AUTOPILOTGRAT, performanceCrit, sch,stepName);
+        end
+
         %% standard protocol List
         
         function r = setProtocolHeadFixed(r,subjIDs)
             assert(isa(r,'BCore'),'BCoreUtil:setProtocolDEMONoRequest:invalidInput','need a BCore object. You sent object of class %s',class(r));
             % TrialManager FreeDrinks
             tmAutoPilot = AGPhysStationUtil.makeVisionPhysAutopilotTrialManager();
-            ts1 = AGPhysStationUtil.makeOrientationSweepTS(tmAutoPilot,numTrialsDoneCriterion(5),noTimeOff(), 'OrSweep');
-            ts2 = AGPhysStationUtil.makeLongDurationTS(tmAutoPilot,numTrialsDoneCriterion(5),noTimeOff(), 'LongDurationOR');
-            ts3 = AGPhysStationUtil.makeShortDurationTS(tmAutoPilot,numTrialsDoneCriterion(5),noTimeOff(), 'ShortDurationOR');
-            ts4 = AGPhysStationUtil.makeLongDurationTSWithLED(tmAutoPilot,numTrialsDoneCriterion(5),noTimeOff(), 'LongDurationOR_LED');
-            descriptiveString='Headfix protocol 7/26/2017';
+            ts1 = AGPhysStationUtil.makeOrientationSweepTS(tmAutoPilot,numTrialsDoneLatestStreakCriterion(200),noTimeOff(), 'OrSweep');
+            ts2 = AGPhysStationUtil.makeLongDurationTSWithLED(tmAutoPilot,numTrialsDoneLatestStreakCriterion(200),noTimeOff(), 'LongDurationOR_LED');
+            ts3 = AGPhysStationUtil.makeShortDurationTS(tmAutoPilot,numTrialsDoneLatestStreakCriterion(1600),noTimeOff(), 'ShortDurationOR');
+            ts4 = AGPhysStationUtil.makeShortDurationTSWithPreLED(tmAutoPilot,repeatIndefinitely(),noTimeOff(), 'ShortDurationOR_PreLED');
+            descriptiveString='Headfix protocol 7/28/2017';
             
             pHeadFix = protocol(descriptiveString,...
                  {ts1,ts2,ts3,ts4});
-%                  {ts1,ts2,ts3,ts4});
             stepNum = 1;
             %%%%%%%%%%%%
             for i=1:length(subjIDs)

@@ -274,15 +274,12 @@ classdef subject
                     validTs=[1:p.numTrainingSteps];
                     validInputs{1}=validTs;
                     type='manual ts';
-                    typeParams.currentTsNum=currentTsNum;
-                    typeParams.trainingStepNames={};
-                    for i=validTs
-                        typeParams.trainingStepNames{end+1}=generateStepName(proto.trainingStep{i},'','');
-                    end
+                    typeParams.currentTsNum=sub.trainingStepNum;
+                    typeParams.trainingStepNames = sub.protocol.getTrainingStepNames;
                     newTsNum = userPrompt(st.window,validInputs,type,typeParams);
                     tR(end).result=[tR(end).result ' ' num2str(newTsNum)];
-                    if newTsNum~=currentTsNum
-                        [sub r]=setStepNum(sub,newTsNum,r,sprintf('manually setting to %d',newTsNum),'BCore');
+                    if newTsNum~=sub.trainingStepNum
+                        [sub, r]=sub.setStepNum(newTsNum,r,sprintf('manually setting to %d',newTsNum),'BCore');
                     end
                     keepWorking=1;
                 end

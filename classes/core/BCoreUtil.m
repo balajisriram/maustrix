@@ -33,7 +33,7 @@ classdef BCoreUtil
         
         function permanentDataPath = getLocalPermanentDataPath()
             p = BCoreUtil.getBCoreDataPath();
-            permanentDataPath = fullfile(p,'PermanentTrialRecords');
+            permanentDataPath = fullfile(p,'\PermanentTrialRecordStore');
         end
         
         function [success, mac]=getMACaddress()
@@ -980,6 +980,8 @@ classdef BCoreUtil
                         disp('came here because this is probably the first trial for the animal');
                         out = 0;
                     otherwise
+                        sca;
+                        keyboard
                         rethrow(ex)
                 end
             end

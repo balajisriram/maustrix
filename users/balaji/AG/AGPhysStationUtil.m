@@ -375,6 +375,25 @@ classdef AGPhysStationUtil
             assert(isa(r,'BCore'),'BCoreUtil:setProtocolDEMONoRequest:invalidInput','need a BCore object. You sent object of class %s',class(r));
             % TrialManager FreeDrinks
             tmAutoPilot = AGPhysStationUtil.makeVisionPhysAutopilotTrialManager();
+            ts1 = AGPhysStationUtil.makeOrientationSweepTS(tmAutoPilot,numTrialsDoneLatestStreakCriterion(400),noTimeOff(), 'OrSweep');
+            ts2 = AGPhysStationUtil.makeShortDurationTS(tmAutoPilot,numTrialsDoneLatestStreakCriterion(3200),noTimeOff(), 'ShortDurationOR');
+            descriptiveString='Headfix protocol 7/28/2017';
+            
+            pHeadFix = protocol(descriptiveString,...
+                 {ts1,ts2});
+            stepNum = 1;
+            %%%%%%%%%%%%
+            for i=1:length(subjIDs)
+                subj=getSubjectFromID(r,subjIDs{i});
+                [~, r]=setProtocolAndStep(subj,pHeadFix,true,false,true,stepNum,r,'call to setProtocolHeadFixedNoLED','bas');
+            end
+            
+        end
+        
+        function r = setProtocolHeadFixedLED(r,subjIDs)
+            assert(isa(r,'BCore'),'BCoreUtil:setProtocolDEMONoRequest:invalidInput','need a BCore object. You sent object of class %s',class(r));
+            % TrialManager FreeDrinks
+            tmAutoPilot = AGPhysStationUtil.makeVisionPhysAutopilotTrialManager();
             ts1 = AGPhysStationUtil.makeOrientationSweepTS(tmAutoPilot,numTrialsDoneLatestStreakCriterion(200),noTimeOff(), 'OrSweep');
             ts2 = AGPhysStationUtil.makeLongDurationTSWithLED(tmAutoPilot,numTrialsDoneLatestStreakCriterion(200),noTimeOff(), 'LongDurationOR_LED');
             ts3 = AGPhysStationUtil.makeShortDurationTS(tmAutoPilot,numTrialsDoneLatestStreakCriterion(1600),noTimeOff(), 'ShortDurationOR');

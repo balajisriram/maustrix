@@ -1,162 +1,57 @@
 classdef whiteNoise<stimManager
     
     properties
-        distribution = [];
-        background = [];
+        randMethod = [];
+        seed = [];
         method = [];
-        requestedStimLocation = [];
+        location = [];
+        size = [];
         stixelSize = [];
-        searchSubspace = [];
         numFrames = [];
-        duration = [];
         frameDuration = [];
-        changeable = [];
         spatialDim=[];
         patternType=[];
+        
         LUT=[];
         LUTbits=0;
-        randomizer = struct;
         
-        LEDParams = [];
     end
     
     methods
-        function s=whiteNoise(distribution,std,background,method,requestedStimLocation,stixelSize,searchSubspace,numFrames, ...
-                maxWidth,maxHeight,scaleFactor,interTrialLuminance,LEDParams)
+        function s=whiteNoise(randMethod,seed,location,size,stixelSize,numFrames,frameDuration,maxWidth,maxHeight,scaleFactor,interTrialLuminance)
             % WHITENOISE  class constructor.
             
             % s = whiteNoise(distribution,std,background,method,requestedStimLocation,stixelSize,searchSubspace,numFrames,
-            %       maxWidth,maxHeight,scaleFactor,interTrialLuminance,LEDParams)
+            %       maxWidth,maxHeight,scaleFactor,interTrialLuminance)
             s=s@stimManager(maxWidth, maxHeight, scaleFactor, interTrialLuminance);
             
-            s.LEDParams.active = false;
-            s.LEDParams.numLEDs = 0;
-            s.LEDParams.IlluminationModes = {};
+            % randMethod
+            assert(ismember(randMethod,{'twister','simdTwister','combRecursive','multFibonacci'}),'whiteNoise:whiteNoise:invalidInput','randMethod must be one of ''twister'',''simdTwister'',''combRecursive'',''multFibonacci''')
+            s.randMethod = randMethod;
             
+            % seed
+            assert((isnumeric(seed)||(ischar(seed) && strcmp(seed,'clock'))),'whiteNoise:whiteNoise:invalidInput','seed must be numeric or ''clock''');
+            s.seed = seed;
             
-            % create object using specified values
+            % location
+            assert(isnumeric(location) && size(location,2)==2,'whiteNoise:whiteNoise:invalidInput','location must be numeric of length 2');
+            s.location = location;
             
-            if ischar(distribution{1}) && ismember(distribution{1},{'gaussian','binary'})
-                s.distribution.type=distribution{1};
-            else
-                distribution{1}
-                error('distribution must be ''gaussian'' or ''binary''')
-            end
-            
-            switch s.distribution.type
-                case 'gaussian'
-                    if length(distribution)>=3
-                        % meanLuminance
-                        if isscalar(distribution{2})
-                            s.distribution.meanLuminance = distribution{2};
-                        else
-                            error('meanLuminance must be a scalar');
-                        end
-                        % std
-                        if isnumeric(distribution{3})
-                            s.distribution.std = distribution{3};
-                        else
-                            error('std must be a numeric vector');
-                        end
-                    else
-                        error('provide atleast three inputs for distribution');
-                    end
-                    if length(distribution)==5
-                        % randomizer
-                        if ischar(distribution{4}) && ismember(distribution{4},{'twister','seed','state'})
-                            s.randomizer.method = distribution{4};
-                        end
-                        % seeding
-                        if isnumeric(distribution{5}) || (ischar(distribution{5})&&(strcmp(distribution{5},'clock')))
-                            s.randomizer.seed = distribution{5};
-                        end
-                    else
-                        s.randomizer.method = 'state';
-                        s.randomizer.seed = 'clock';
-                    end
-                case 'binary'
-                    if length(distribution)==4
-                        lowVal=distribution{2};
-                        if isscalar(lowVal)
-                            s.distribution.lowVal= lowVal;
-                        else
-                            error('lowVal must be a scalar');
-                        end
-                        
-                        hiVal=distribution{3};
-                        if isscalar(hiVal)
-                            s.distribution.hiVal=hiVal;
-                        else
-                            error('hiVal must be a scalar');
-                        end
-                        
-                        if lowVal>=hiVal
-                            lowVal
-                            hiVal
-                            error('lowVal must be less than hiVal')
-                        end
-                        
-                        probability=distribution{4};
-                        if isscalar(probability) && probability>=0 probability<=0
-                            s.distribution.probability = probability;
-                        else
-                            probability
-                            error('probability must be in the range 0 and 1 inclusive');
-                        end
-                    else
-                        error('binary must have 4 arguments: ditribution name, loVal, hiVal,probability of highVal')
-                    end
-            end
-            
-            % background
-            if isscalar(std)
-                s.background = std;
-            else
-                error('background must be a scalar');
-            end
-            
-            % method
-            if ischar(background)
-                s.method = background;
-            else
-                error('method must be a string');
-            end
-            
-            %requestedStimLocation
-            if isvector(method) && length(method) == 4
-                s.requestedStimLocation = method;
-            else
-                error('requestedStimLocation must be a vector of length 4');
-            end
+            % size
+            assert(isnumeric(size) && isvector(size),'whiteNoise:whiteNoise:invalidInput','size is a numeric vector');
+            s.size = size;
             
             % stixelSize
-            if isvector(requestedStimLocation) && length(requestedStimLocation) == 2
-                s.stixelSize = requestedStimLocation;
-            else
-                error('stixelSize must be a 2-element vector');
-            end
-            % searchSubspace
-            if isnumeric(stixelSize)
-                s.searchSubspace = stixelSize;
-            else
-                error('searchSubspace must be numeric');
-            end
-            % numFrames
-            if isscalar(searchSubspace)
-                s.numFrames = searchSubspace;
-            elseif iscell(searchSubspace)
-                s.duration = searchSubspace{1};
-                s.frameDuration = searchSubspace{2};
-            else
-                error('numFrames must be a scalar');
-            end
+            assert(isscalar(stixelSize) && iswholenumber(stixelSize),'whiteNoise:whiteNoise:invalidInput','stixelSize is a numeric scalar');
+            s.stixelSize = stixelSize;
             
-            % changeable
-            if islogical(numFrames)
-                s.changeable = numFrames;
-            else
-                error('changeable must be a logicial');
-            end
+            % numFrames
+            assert(isscalar(numFrames) && iswholenumber(numFrames),'whiteNoise:whiteNoise:invalidInput','numFrames is a numeric scalar');
+            s.numFrames = numFrames;
+            
+            % frameDuration
+            assert(isscalar(frameDuration) && iswholenumber(frameDuration),'whiteNoise:whiteNoise:invalidInput','frameDuration is a numeric scalar');
+            s.frameDuration = frameDuration;
             
             %calculate spatialDim
             s.spatialDim=ceil([diff(s.requestedStimLocation([1 3])) diff(s.requestedStimLocation([2 4]))]./s.stixelSize);
@@ -173,84 +68,39 @@ classdef whiteNoise<stimManager
             else
                 s.spatialDim
                 error('should never happen')
-            end
-            
-            
-            % LED state
-            if isstruct(LEDParams)
-                s.LEDParams = LEDParams;
-            else
-                error('LED state should be a structure');
-            end
-            if s.LEDParams.numLEDs>0
-                % go through the Illumination Modes and check if they seem
-                % reasonable
-                cumulativeFraction = 0;
-                s.LEDParams
-                if s.LEDParams.active && isempty(s.LEDParams.IlluminationModes)
-                    error('need to provide atleast one illumination mode if LEDs is to be active');
-                end
-                for i = 1:length(s.LEDParams.IlluminationModes)
-                    if any(s.LEDParams.IlluminationModes{i}.whichLED)>s.LEDParams.numLEDs
-                        error('asking for an LED that is greater than numLEDs')
-                    else
-                        if length(s.LEDParams.IlluminationModes{i}.whichLED)~= length(s.LEDParams.IlluminationModes{i}.intensity) || ...
-                                any(s.LEDParams.IlluminationModes{i}.intensity>1) || any(s.LEDParams.IlluminationModes{i}.intensity<0)
-                            error('specify a single intensity for each of the LEDs and these intensities hould lie between 0 and 1');
-                        else
-                            cumulativeFraction = [cumulativeFraction cumulativeFraction(end)+s.LEDParams.IlluminationModes{i}.fraction];
-                        end
-                    end
-                end
-                
-                if abs(cumulativeFraction(end)-1)>eps
-                    error('the cumulative fraction should sum to 1');
-                else
-                    s.LEDParams.cumulativeFraction = cumulativeFraction;
-                end
-            end
-            
-            
+            end           
         end
         
-        function [stimulus,updateSM,resolutionIndex,stimList,LUT,targetPorts,distractorPorts,...
-                details,interTrialLuminance,text,indexPulses,imagingTasks] =...
-                calcStim(stimulus,trialManager,allowRepeats,resolutions,displaySize,LUTbits,...
-                responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
+        function [sm,updateSM,resInd,stimList,LUT,targetPorts,distractorPorts,details,text,indexPulses,imagingTasks,ITL] =...
+                calcStim(sm,tm,st,tR,~)
+%             [stimulus,updateSM,resolutionIndex,stimList,LUT,targetPorts,distractorPorts,...
+%                 details,interTrialLuminance,text,indexPulses,imagingTasks] =...
+%                 calcStim(stimulus,trialManager,allowRepeats,resolutions,displaySize,LUTbits,...
+%                 responsePorts,totalPorts,trialRecords,compiledRecords,arduinoCONN)
             % see BCorePath\documentation\stimManager.calcStim.txt for argument specification (applies to calcStims of all stimManagers)
-            % 1/3/0/09 - trialRecords now includes THIS trial
-            trialManagerClass=class(trialManager);
+            resolutions = st.resolutions;
+            displaySize = st.getDisplaySize();
+            responsePorts = tm.getResponsePorts(st.numPorts);
+            scaleFactor = sm.scaleFactor;
             indexPulses=[];
             imagingTasks=[];
-            LUTbits
-            displaySize
-            [LUT stimulus updateSM]=getLUT(stimulus,LUTbits);
-            % [resolutionIndex height width hz]=chooseLargestResForHzsDepthRatio(resolutions,[100 60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
-            [resolutionIndex height width hz]=chooseLargestResForHzsDepthRatio(resolutions,[100 60],32,getMaxWidth(stimulus),getMaxHeight(stimulus));
+            [LUT, sm, updateSM]=getLUT(sm,st.getLUTbits());
             
-            OLED=false;
-            if OLED
-                error('forced to 60 Hz... do you realize that?')
-                desiredWidth=800;
-                desiredHeight=600;
-                desiredHertz=60;
-                BCoreEnforcedColor=32;
-                resolutionIndex=find(([resolutions.height]==desiredHeight) & ([resolutions.width]==desiredWidth) & ([resolutions.pixelSize]==BCoreEnforcedColor) & ([resolutions.hz]==desiredHertz));
-                height=resolutions(resolutionIndex).height
-                width=resolutions(resolutionIndex).width
-                hz=resolutions(resolutionIndex).hz
-                if getMaxWidth(stimulus)~=desiredWidth
-                    getMaxWidth(stimulus)
-                    desiredWidth
-                    error('not expected for OLED')
-                end
+            [resInd, height, width, hz] = st.chooseLargestResForHzsDepthRatio(resolutions,[60],32,sm.maxWidth,sm.maxHeight);
+            
+            if isnan(resInd)
+                resInd=1;
             end
+                        
+            details.pctCorrectionTrials = tm.percentCorrectionTrials;
             
-            if isnan(resolutionIndex)
-                resolutionIndex=1;
+            if ~isempty(tR) && length(tR)>=2
+                lastRec=tR(end-1);
+            else
+                lastRec=[];
             end
+            [targetPorts, distractorPorts, details] = tm.assignPorts(details,lastRec,responsePorts);
             
-            toggleStim=true;
             type = 'expert';
             scaleFactor = getScaleFactor(stimulus);
             interTrialLuminance = getInterTrialLuminance(stimulus);
@@ -259,48 +109,14 @@ classdef whiteNoise<stimManager
             details.pctCorrectionTrials=trialManager.percentCorrectionTrials;
             details.bias = getRequestBias(trialManager);
             
-            if ~isempty(trialRecords) && length(trialRecords)>=2
-                lastRec=trialRecords(end-1);
+            if ~isempty(tR) && length(tR)>=2
+                lastRec=tR(end-1);
             else
                 lastRec=[];
             end
-            [targetPorts distractorPorts details]=assignPorts(details,lastRec,responsePorts,trialManagerClass,allowRepeats);
             
             % ================================================================================
-            % start calculating frames now
-            
-            
-            
-            background = stimulus.background;
-            method = stimulus.method;
-            requestedStimLocation = stimulus.requestedStimLocation;
-            stixelSize = stimulus.stixelSize;
-            searchSubspace = stimulus.searchSubspace;
-            
-            
-            numFrames = stimulus.numFrames;
-            % numFrames can be empty. What to do if that is the case?
-            if ~isempty(numFrames)
-                % duration and frameDuration are not set. use hz to resolve this
-                numSamples = numFrames;
-                numFramesPerSample = 1;
-                duration = numFrames/hz;
-                frameDuration = 1/hz;
-            else
-                % here we need to worry about the correspondence between frameDuration and 1/hz
-                % make frameDuration an integral multiple of 1/hz;
-                frameDuration = stimulus.frameDuration;
-                frameDuration = round(frameDuration/(1/hz))*(1/hz);
-                duration = stimulus.duration;
-                numSamples = round(duration/frameDuration);
-                numFramesPerSample = round(frameDuration*hz);
-                numFrames = numFramesPerSample*numSamples;
-                % things change based on requested and actual frameduration and
-                % duration
-                frameDuration = numFramesPerSample/hz;
-                duration = numSamples*frameDuration;
-            end
-            
+            % start calculating frames now            
             distribution = stimulus.distribution;
             patternType=stimulus.patternType;
             if isfield(stimulus,'randomizer')

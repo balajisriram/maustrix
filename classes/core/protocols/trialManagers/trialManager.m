@@ -991,7 +991,7 @@ classdef trialManager
                         setStatePins(station,'stim',true);
                     end
                     
-                    if spec.ledON
+                    if station.hasLED & spec.ledON
                         station.setLED(true);
                     else
                         station.setLED(false);

@@ -5,6 +5,7 @@ classdef standardVisionBehaviorStationWithLED < standardVisionBehaviorStation
     
     properties (Constant = true)
         numLED = 2;
+        hasLED = true;
     end
     
     properties (Transient=true)
@@ -48,4 +49,5 @@ classdef standardVisionBehaviorStationWithLED < standardVisionBehaviorStation
             
         end
     end
+    
 end

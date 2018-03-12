@@ -203,7 +203,7 @@ classdef BCoreUtil
             mac=BCoreUtil.getMACaddressSafely();
             physicalLocation = uint8([1 1 1]);
             stationPath = fullfile(BCoreUtil.getBCoreDataPath,'Stations','station1');
-            st = makeDefaultStation(id,stationPath,mac,physicalLocation);
+            st = BCoreUtil.makeDefaultStation(id,stationPath,mac,physicalLocation);
             
             % create and add box; add station to box.
             boxes=box(int8(1),fullfile(BCoreUtil.getBCoreDataPath,'Boxes','box1'));
@@ -267,7 +267,7 @@ classdef BCoreUtil
             
             switch computer
                 case {'PCWIN64','PCWIN32','PCWIN'}
-                    st=standardVisionBehaviorStation(id, path, mac, physicalLocation, '0378', int8([4,3,2]), int8([13,10,12]));
+                    st=standardVisionBehaviorStation(id, path, mac, physicalLocation, 'D010', int8([4,3,2]), int8([13,10,12]));
                 case 'MACI64'
                     st = standardOSXStation(id, path, mac, physicalLocation);
             end

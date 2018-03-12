@@ -20,6 +20,10 @@ classdef standardVisionBehaviorStation < station
         numPorts
     end
     
+    properties (Constant=true)
+        hasLED = false'
+    end
+    
     methods
         function s = standardVisionBehaviorStation(id, path, MAC, physLoc, decPPortAddr, valveSpec, sensorSpec)
             s = s@station(id, path, MAC, physLoc);
@@ -574,6 +578,9 @@ classdef standardVisionBehaviorStation < station
             width=x.width;
             hz=x.hz;
             warning('no match')
+        end
+        
+        function setLED(~)
         end
     end
 end

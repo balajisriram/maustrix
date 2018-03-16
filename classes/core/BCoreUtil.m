@@ -267,7 +267,7 @@ classdef BCoreUtil
             
             switch computer
                 case {'PCWIN64','PCWIN32','PCWIN'}
-                    st=standardVisionBehaviorStation(id, path, mac, physicalLocation, 'D010', int8([4,2,3]), int8([13,10,12]));
+                    st=standardVisionBehaviorStation(id, path, mac, physicalLocation, 'D010', int8([4,3,2]), int8([13,10,12]));
                 case 'MACI64'
                     st = standardOSXStation(id, path, mac, physicalLocation);
             end

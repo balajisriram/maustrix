@@ -141,7 +141,7 @@ classdef BCoreUtil
             tm=nAFC(sm,rm,dm,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,customDescription,responseWindowMS,showText,percentCorrectionTrials);
         end
         
-        function [tmAuto, tmEarned] = makeStandardTrialManagerFreeDrinksNoRequest()
+        function [tmAuto, tmEarned] = makeStandardTrialManagerFreeDrinks()
             % Create Sound Manager
             sm = BCoreUtil.makeStandardSoundManager();
             
@@ -267,7 +267,7 @@ classdef BCoreUtil
             
             switch computer
                 case {'PCWIN64','PCWIN32','PCWIN'}
-                    st=standardVisionBehaviorStation(id, path, mac, physicalLocation, 'D010', int8([4,3,2]), int8([13,10,12]));
+                    st=standardVisionBehaviorStation(id, path, mac, physicalLocation, 'D010', int8([4,2,3]), int8([13,10,12]));
                 case 'MACI64'
                     st = standardOSXStation(id, path, mac, physicalLocation);
             end
@@ -321,6 +321,26 @@ classdef BCoreUtil
             for i=1:length(subjIDs)
                 subj=getSubjectFromID(r,subjIDs{i});
                 [~, r]=setProtocolAndStep(subj,pElementaryVision100915,true,false,true,stepNum,r,'call to setProtocolMIN','bas');
+            end
+            
+        end
+        
+        function r = setProtocolDEMOFreeDrinks(r,subjIDs)
+            assert(isa(r,'BCore'),'BCoreUtil:setProtocolDEMO:invalidInput','need a BCore object. You sent object of class %s',class(r));
+            % TrialManager
+            [~,tm] = BCoreUtil.makeStandardTrialManagerFreeDrinks();
+            
+            ts = BCoreUtil.createFreeDrinksTrainingSteps(tm, repeatIndefinitely(),noTimeOff(), 'easyFreeDrinks');
+            
+            descriptiveString='DEMO Free drink protocol 3/16/2018';
+            
+            pFreeDrink03162018 = protocol(descriptiveString,...
+                {ts});
+            stepNum = 1;
+            %%%%%%%%%%%%
+            for i=1:length(subjIDs)
+                subj=getSubjectFromID(r,subjIDs{i});
+                [~, r]=setProtocolAndStep(subj,pFreeDrink03162018,true,false,true,stepNum,r,'call to setProtocolDEMOFreeDrinks','bas');
             end
             
         end

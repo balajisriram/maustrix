@@ -160,11 +160,11 @@ classdef BCoreUtil
             
             freeDrinkLikelihood = 0.001;
             allowRepeats = false;
-            tmAuto=freeDrinksAlternate(sm,rm,dm,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,responseWindowMS,showText,...
+            tmAuto=freeDrinks(sm,rm,dm,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,responseWindowMS,showText,...
                 freeDrinkLikelihood,allowRepeats);
             
             freeDrinkLikelihood = 0;
-            tmEarned=freeDrinksAlternate(sm,rm,dm,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,responseWindowMS,showText,...
+            tmEarned=freeDrinks(sm,rm,dm,frameDropCorner,dropFrames,reqPort,saveDetailedFrameDrops,responseWindowMS,showText,...
                 freeDrinkLikelihood,allowRepeats);
         end
         
@@ -204,6 +204,7 @@ classdef BCoreUtil
             physicalLocation = uint8([1 1 1]);
             stationPath = fullfile(BCoreUtil.getBCoreDataPath,'Stations','station1');
             st = BCoreUtil.makeDefaultStation(id,stationPath,mac,physicalLocation);
+            %st = BCoreUtil.makeDefaultKBStation(id,stationPath,mac,physicalLocation);
             
             % create and add box; add station to box.
             boxes=box(int8(1),fullfile(BCoreUtil.getBCoreDataPath,'Boxes','box1'));
@@ -268,6 +269,15 @@ classdef BCoreUtil
             switch computer
                 case {'PCWIN64','PCWIN32','PCWIN'}
                     st=standardVisionBehaviorStation(id, path, mac, physicalLocation, 'D010', int8([4,3,2]), int8([13,10,12]));
+                case 'MACI64'
+                    st = standardOSXStation(id, path, mac, physicalLocation);
+            end
+        end
+        
+        function st=makeDefaultKBStation(id,path,mac,physicalLocation,~,~,~,~,~)
+            switch computer
+                case {'PCWIN64','PCWIN32','PCWIN'}
+                    st=standardKBStation(id, path, mac, physicalLocation);
                 case 'MACI64'
                     st = standardOSXStation(id, path, mac, physicalLocation);
             end

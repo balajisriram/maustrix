@@ -338,14 +338,14 @@ classdef BCoreUtil
         function r = setProtocolDEMOFreeDrinks(r,subjIDs)
             assert(isa(r,'BCore'),'BCoreUtil:setProtocolDEMO:invalidInput','need a BCore object. You sent object of class %s',class(r));
             % TrialManager
-            [~,tm] = BCoreUtil.makeStandardTrialManagerFreeDrinks();
+            [tm1,tm2] = BCoreUtil.makeStandardTrialManagerFreeDrinks();
             
-            ts = BCoreUtil.createFreeDrinksTrainingSteps(tm, repeatIndefinitely(),noTimeOff(), 'easyFreeDrinks');
+            [ts1,ts2] = BCoreUtil.createFreeDrinksTrainingSteps({tm1,tm2}, repeatIndefinitely(),noTimeOff(), 'easyFreeDrinks v0.0.1 Apr-17-2018');
             
             descriptiveString='DEMO Free drink protocol 3/16/2018';
             
             pFreeDrink03162018 = protocol(descriptiveString,...
-                {ts});
+                {ts1,ts2});
             stepNum = 1;
             %%%%%%%%%%%%
             for i=1:length(subjIDs)
@@ -495,7 +495,7 @@ classdef BCoreUtil
             ts = trainingStep(trialManager, AFCGRAT, performanceCrit, sch,stepName);
         end
         
-        function ts = createFreeDrinksTrainingSteps(trialManager, performanceCrit, sch, stepName)
+        function [ts1,ts2] = createFreeDrinksTrainingSteps(trialManager, performanceCrit, sch, stepName)
             % makes a basic, easy gngGrating training step
             % correct response = side toward which grating tilts
             
@@ -518,7 +518,8 @@ classdef BCoreUtil
             
             
             % training step using other objects as passed in
-            ts = trainingStep(trialManager, FREESTIM, performanceCrit, sch,stepName);
+            ts1 = trainingStep(trialManager{1}, FREESTIM, performanceCrit, sch,stepName);
+            ts2 = trainingStep(trialManager{2}, FREESTIM, performanceCrit, sch,stepName);
         end
         
         function ts = createDEMOTrainingStepGNG(trialManager, performanceCrit, sch, stepName)

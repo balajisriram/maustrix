@@ -43,7 +43,7 @@ end
 auth = 'bas';
 
 % add subject if not in BCore
-switch rx.subjectIDInBCore(lower(subjectID))
+switch rx.subjectIDInBCore(subjectID)
     case true
         sub = rx.getSubjectFromID(subjectID);
     case false

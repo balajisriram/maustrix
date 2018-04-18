@@ -27,14 +27,14 @@ classdef BCore
         function out = getSubjectIDs(r)
             out=cell(1,length(r.subjects));
             for i=1:length(r.subjects)
-                out{i}=r.subjects{i}.id;
+                out{i}=lower(r.subjects{i}.id);
             end
         end
         
         function out = subjectIDInBCore(r,id)
             assert(ischar(id),'BCore:subjectIDInBCore:incorrectValue','''id'' needs to be a char. instead is of class:%s',class(id));
             ids = r.getSubjectIDs();
-            out = any(ismember(id,ids));
+            out = any(ismember(lower(id),ids));
         end
         
         function r = set.standAlonePath(r,path)

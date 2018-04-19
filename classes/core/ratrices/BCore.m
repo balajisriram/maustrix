@@ -368,7 +368,7 @@ classdef BCore
         
         function out=getBoxIDForSubjectID(r,s)
             out = 0;
-            [~, index]=ismember(s,getSubjectIDs(r));
+            [~, index]=ismember(lower(s),getSubjectIDs(r));
             
             if index>0
                 foundSubj=0;
@@ -782,7 +782,7 @@ classdef BCore
             % Go through all of the subjects in the new BCore, and
             newSubjectIDs = getSubjectIDs(newR);
             for i=1:length(newSubjectIDs)
-                [member, index]=ismember(newSubjectIDs{i},getSubjectIDs(r));
+                [member, index]=ismember(lower(newSubjectIDs{i}),getSubjectIDs(r));
                 if member
                     s=r.subjects{index};
                     newS =getSubjectFromID(newR,newSubjectIDs{i});
@@ -978,7 +978,7 @@ classdef BCore
         end
         
         function r=updateSubjectProtocol(r,s,comment,auth,listProtocol,listTrainingStep,listStepNum)
-            [member, index]=ismember(s.id,getSubjectIDs(r));
+            [member, index]=ismember(lower(s.id),getSubjectIDs(r));
             if isa(s,'subject') && member && index>0 && ~subjectIDRunning(r,s.id)
                 if r.authorCheck(auth)
                     

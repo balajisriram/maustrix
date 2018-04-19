@@ -509,7 +509,7 @@ classdef BCore
         end
         
         function s=getSubjectFromID(r,id)
-            [~, index]=ismember(id,getSubjectIDs(r));
+            [~, index]=ismember(lower(id),getSubjectIDs(r));
             if index>0
                 s=r.subjects{index};
             else

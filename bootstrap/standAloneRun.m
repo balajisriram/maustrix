@@ -43,6 +43,7 @@ end
 auth = 'bas';
 
 % add subject if not in BCore
+addedSubject = false;
 switch rx.subjectIDInBCore(subjectID)
     case true
         sub = rx.getSubjectFromID(subjectID);
@@ -52,14 +53,19 @@ switch rx.subjectIDInBCore(subjectID)
         sub.timeout = 10000;
         sub.puff = 0;
         rx=rx.addSubject(sub,auth);
+        addedSubject = true;
 end
 
-if ~exist('setup','var') || isempty(setup)
+if addedSubject && (~exist('setup','var') || isempty(setup))
     setup=@BCoreUtil.setProtocolDEMO;
-elseif ~isa(setup,'function_handle')
-    error('standAloneRun:incompatibleInput','you input setupFile thats not a function handle');
+    rx=setup(rx,{subjectID});
+elseif isa(setup,'function_handle')
+    rx=setup(rx,{subjectID});
+else
+    error('standAloneRun:incompatibleInput','we create a default setup for new subjects of setup must be a valid function handle to a set_protocol function');
 end
-rx=setup(rx,{subjectID});
+
+
 
 try
     % make sure all the previous data gets shifted to the appropriate place

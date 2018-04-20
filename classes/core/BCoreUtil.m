@@ -1018,39 +1018,26 @@ classdef BCoreUtil
             end
         end
         
-        function failures = compileDetailedRecords(server_name,ids,recompile,source,destination)
-            failures = {};
+        function failures = compileDetailedRecords(ids,recompile,source,destination)
             
-            % ==============================================================================================
-            % set up parameters if not passed in
-            if (~exist('server_name','var') || isempty(server_name)) && (~exist('ids','var') || isempty(ids)) ...
-                    && (~exist('source','var') || isempty(source))
-                error('we need a server_name to know which subjects to compile, or need a list of ids passed in, or at least a source to look in')
-            end
             if ~exist('recompile','var') || isempty(recompile)
                 recompile = false;
             end
+            
+            if ~exist('source','var') || isempty(source)
+                source = BCoreUtil.getLocalPermanentDataPath();
+            end
+            
+            if ~exist('destination','var') || isempty(destination)
+                destination = BCoreUtil.getLocalCompiledDataPath();
+            end
+            
+            failures = {};
+            
             if ~exist('ids','var') || isempty(ids) % if ids not given as input, retrieve from oracle or from source
-                if exist('server_name','var') && ~isempty(server_name)
-                    % get from oracle b/c server_name is provided
-                    conn = dbConn();
-                    ids = getSubjectIDsFromServer(conn, server_name);
-                    closeConn(conn);
-                    if isempty(ids)
-                        error('could not find any subjects for this server: %s', server_name);
-                    end
-                elseif exist('source','var') && ~isempty(source)
-                    % get from source directory b/c server_name is not provided
-                    ids={};
-                    d=dir(source);
-                    for i=1:length(d)
-                        if d(i).isdir && ~strcmp(d(i).name,'.') && ~strcmp(d(i).name,'..')
-                            ids{end+1} = d(i).name;
-                        end
-                    end
-                else
-                    error('should not be here - must either have a server_name or a source if no subjectIDs are given');
-                end
+                d=dir(source);
+                d = d([d.isdir] & ~ismember({d.name},{'.','..'}));;
+                ids = {d.name};
             end
             
             % ==============================================================================================
@@ -1058,51 +1045,21 @@ classdef BCoreUtil
             subjectFiles={};
             ranges={};
             
-            if ~exist('source','var') || isempty(source)
-                conn=dbConn();
-            end
-            
             for i=1:length(ids)
-                % if we have source, don't overwrite it!
-                if ~exist('source','var') || isempty(source)
-                    store_path = getPermanentStorePathBySubject(conn, ids{i});
-                    store_path = store_path{1}; % b/c this gets returned by the query as a 1x1 cell array holding the char array
-                else
-                    store_path = fullfile(source, ids{i});
-                    %         source
-                end
+                store_path = fullfile(source, ids{i});
                 [subjectFiles{end+1} ranges{end+1}]=BCoreUtil.getTrialRecordFiles(store_path); %unreliable if remote
             end
             
-            if ~exist('source','var') || isempty(source)
-                closeConn(conn);
-            end
-            
-            %this will recompile from scratch every time -- add feature to only compile new data by default
-            % 12/12/08 - added parameter 'recompile'; if false will try to load existing compiledRecords
-            
-            if ~exist('destination','var') || isempty(destination)
-                conn=dbConn();
-            end
-            
-            
             for i=1:length(ids)
-                try
+%                 try
                     fprintf('\ndoing %s\n',ids{i});
                     compiledDetails=[];
                     compiledTrialRecords=[]; % used to be called basicRecs, but we want to keep same syntax as compileTrialRecords
                     compiledLUT={};
                     expectedTrialNumber=1;
                     classes={};
-                    if ~exist('destination', 'var') || isempty(destination)
-                        compiledRecordsDirectory=getCompilePathBySubject(conn, ids{i});
-                        compiledRecordsDirectory = compiledRecordsDirectory{1};
-                    else
-                        compiledRecordsDirectory=destination;
-                    end
+                    compiledRecordsDirectory=destination;
                     
-                    % 12/12/08 - need to load old compiledTrialRecords and compiledDetails (if they exist in destination), also set expectedTrialNumber and classes appropriately
-                    % get compiledFile and compiledRange for this subjectID
                     d=dir(fullfile(compiledRecordsDirectory,[ids{i} '.compiledTrialRecords.*.mat'])); %unreliable if remote
                     compiledFile=[];
                     compiledRange=zeros(2,1);
@@ -1110,13 +1067,12 @@ classdef BCoreUtil
                     addedRecords=false;
                     for k=1:length(d)
                         if ~d(k).isdir
-                            [rng num er]=sscanf(d(k).name,[ids{i} '.compiledTrialRecords.%d-%d.mat'],2);
+                            [rng, num, er]=sscanf(d(k).name,[ids{i} '.compiledTrialRecords.%d-%d.mat'],2);
                             if num~=2
                                 d(k).name
                                 er
                                 error('couldnt parse')
                             else
-                                %d(k).name
                                 if ~done
                                     compiledFile=fullfile(compiledRecordsDirectory,d(k).name);
                                     if ~recompile
@@ -1325,6 +1281,7 @@ classdef BCoreUtil
                                     fprintf('\t\tmaking first %s\n',LUTlookup(sessionLUT,tr(k).stimManagerClass))
                                     classes{1,end+1}=LUTlookup(sessionLUT,tr(k).stimManagerClass);
                                     try
+                                        keyboard % looks like this is the first call to create classes here
                                         classes{2,end}=eval(LUTlookup(sessionLUT,tr(k).stimManagerClass)); %construct default stimManager of correct type, to fake static method call
                                     catch
                                         classes{2,end}=eval('stimManager()');
@@ -1490,17 +1447,10 @@ classdef BCoreUtil
                         dispStr=sprintf('nothing to do for %s',ids{i});
                         disp(dispStr);
                     end
-                    
-                    
-                    %     doPlot=true;
-                    %     if doPlot
-                    %         figure
-                    %         tmp=tmp(:,b);
-                    %         plot(tmp(1,:),tmp(2,:))
-                    %     end
-                catch ex
-                    failures{end+1} = sprintf('failed on %s: %s',ids{i},ex.identifier);
-                end
+
+%                 catch ex
+%                     failures{end+1} = sprintf('failed on %s: %s',ids{i},ex.identifier);
+%                 end
             end % end for each subject loop
             
             if ~exist('destination','var') || isempty(destination)

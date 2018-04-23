@@ -1355,7 +1355,7 @@ classdef whiteNoiseBubble<stimManager
             timeWindowFramesStim=ceil(timeWindowMsStim*(refreshRate/1000));
             
             if (ischar(stimulusDetails.strategy) && strcmp(stimulusDetails.strategy,'expert')) || ...
-                    (exist('fieldsInLUT','var') && ismember('stimDetails.strategy',fieldsInLUT) && strcmp(LUTlookup(sessionLUT,stimulusDetails.strategy),'expert'))
+                    (exist('fieldsInLUT','var') && ismember('stimDetails.strategy',fieldsInLUT) && strcmp(BCoreUtil.LUTlookup(sessionLUT,stimulusDetails.strategy),'expert'))
                 seeds=stimulusDetails.seedValues;
                 spatialDim = stimulusDetails.spatialDim;
                 

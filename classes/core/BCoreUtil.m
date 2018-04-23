@@ -1018,8 +1018,8 @@ classdef BCoreUtil
             end
         end
         
-        function failures = compileDetailedRecords(ids,recompile,source,destination)
-            
+        function failures = compileRecords(ids,recompile,source,destination)
+            failures = [];
             if ~exist('recompile','var') || isempty(recompile)
                 recompile = false;
             end
@@ -1036,18 +1036,18 @@ classdef BCoreUtil
             
             if ~exist('ids','var') || isempty(ids) % if ids not given as input, retrieve from oracle or from source
                 d=dir(source);
-                d = d([d.isdir] & ~ismember({d.name},{'.','..'}));;
+                d = d([d.isdir] & ~ismember({d.name},{'.','..'}));
                 ids = {d.name};
             end
             
             % ==============================================================================================
             % get trialRecord files
-            subjectFiles={};
-            ranges={};
+            subjectFiles=cell(1,length(ids));
+            ranges=cell(1,length(ids));
             
             for i=1:length(ids)
                 store_path = fullfile(source, ids{i});
-                [subjectFiles{end+1} ranges{end+1}]=BCoreUtil.getTrialRecordFiles(store_path); %unreliable if remote
+                [subjectFiles{i}, ranges{i}]=BCoreUtil.getTrialRecordFiles(store_path); %unreliable if remote
             end
             
             for i=1:length(ids)
@@ -1063,184 +1063,60 @@ classdef BCoreUtil
                     d=dir(fullfile(compiledRecordsDirectory,[ids{i} '.compiledTrialRecords.*.mat'])); %unreliable if remote
                     compiledFile=[];
                     compiledRange=zeros(2,1);
-                    done=false;
                     addedRecords=false;
-                    for k=1:length(d)
-                        if ~d(k).isdir
-                            [rng, num, er]=sscanf(d(k).name,[ids{i} '.compiledTrialRecords.%d-%d.mat'],2);
-                            if num~=2
-                                d(k).name
-                                er
-                                error('couldnt parse')
-                            else
-                                if ~done
-                                    compiledFile=fullfile(compiledRecordsDirectory,d(k).name);
-                                    if ~recompile
-                                        compiledRange=rng;
-                                        done=true;
-                                    end
-                                else
-                                    d.name
-                                    error('found multiple compiledTrialRecords files')
-                                end
-                            end
-                        else
-                            d(k).name
-                            error('bad dir name')
-                        end
+                    if length(d)>1
+                        error('BCoreUtil:improperData','too many (%d) compiledRecords found for id::%s. Expected ONE',length(d),ids{i});
+                    elseif length(d)<1
+                        % no compilation has been done
+                    else
+                        [rng, num, er]=sscanf(d.name,[ids{i} '.compiledTrialRecords.%d-%d.mat'],2);
+                        assert(num==2,'BCoreUtil:compileDetailedRecords:incompatibleFormat','unable to parse compiledTrialRecords - error::%s',er);
+                        compiledFile=fullfile(compiledRecordsDirectory,d.name);
+                        compiledRange=rng;
                     end
+                        
                     % load from existing compile record if it exists
                     if ~isempty(compiledFile) && ~recompile
-                        fieldNames={  'trialNumber',...
-                            'sessionNumber',...
-                            'date',...
-                            'soundOn',...
-                            'physicalLocation',...
-                            'numPorts',...
-                            'step',...
-                            'trainingStepName',...
-                            'protocolName',...
-                            'numStepsInProtocol',...
-                            'manualVersion',...
-                            'autoVersion',...
-                            'protocolDate',...
-                            'correct',...
-                            'trialManagerClass',...
-                            'stimManagerClass',...
-                            'schedulerClass',...
-                            'criterionClass',...
-                            'reinforcementManagerClass',...
-                            'scaleFactor',... no longer part of stimMAnager, they are details about the stim spec
-                            'type',... no longer part of stimMAnager, they are details about the stim spec
-                            'targetPorts',...
-                            'distractorPorts',...
-                            'result',...
-                            'containedManualPokes',...
-                            'didHumanResponse',...
-                            'containedForcedRewards',...
-                            'didStochasticResponse',...
-                            'containedAPause',...
-                            'correctionTrial',...
-                            'numRequests',...
-                            'firstIRI',...
-                            'response',...
-                            'responseTime',...
-                            'actualRewardDuration'};
-                        try
-                            [compiledTrialRecords, compiledDetails, compiledLUT]=loadDetailedTrialRecords(compiledFile,compiledRange,fieldNames);
-                        catch ex
-                            disp(['CAUGHT ERROR: ' getReport(ex,'extended')])
-                            % if loadDetailedTrialRecords throws an error, then skip this subject and try to compile the next one
-                            % typically this means that old-style compiledRecords exist for this subject
-                            warning('error loading compiledRecord for %s, most likely because the compiled file is old-style for this subject - skipping!',ids{i});
-                            continue;
-                        end
+                        fieldNames = BCoreUtil.getStandardCompiledFields();
+                        [compiledTrialRecords, compiledDetails, compiledLUT]=loadDetailedTrialRecords(compiledFile,compiledRange,fieldNames);
                         % set expectedTrialNumber
                         expectedTrialNumber = compiledTrialRecords.trialNumber(end) + 1;
                         % set classes
+                        classes = cell(2,length(compiledDetails));
                         for k=1:length(compiledDetails)
-                            classes{1,k} = compiledDetails(k).className;
-                            try
-                                classes{2,k} = eval(compiledDetails(k).className);
-                            catch
-                                classes{2,k} = eval('stimManager()');
-                            end
-                            classes{3,k} = sort([compiledDetails(k).trialNums compiledDetails(k).bailedTrialNums]);
+                            classes{1,k} = compiledDetails(k).className; % class name
+                            classes{2,k} = sort([compiledDetails(k).trialNums compiledDetails(k).bailedTrialNums]);
                         end
-                    end % end load from existing compile record
+                    end
                     
                     allDetails=compiledDetails;
                     for j=1:length(subjectFiles{i})
-                        % why do this?
-                        for k=1:size(classes,2)
-                            classes{3,k}=[];
-                        end
                         [~, tokens] = regexpi(subjectFiles{i}{j}, 'trialRecords_(\d+)-(\d+).*\.mat', 'match', 'tokens');
-                        rng=[str2num(tokens{1}{1}) str2num(tokens{1}{2})];
+                        rng=[str2double(tokens{1}{1}), str2double(tokens{1}{2})];
                         if expectedTrialNumber ~= rng(1)
-                            %             dispStr=sprintf('skipping %d-%d where expected was %d\n',rng(1),rng(2),expectedTrialNumber);
-                            %             disp(dispStr);
-                            continue;
+                            continue; % this is not the trial records we were looking for
                         end
                         addedRecords=true; % if we ever got passed the skip, then we added records and thus can delete compiledFile
+                        
                         fprintf('\tdoing %s of %d\n',subjectFiles{i}{j},ranges{i}(2,end));
                         warning('off','MATLAB:elementsNowStruc'); %expect some class defs to be out of date, will get structs instead of objects (shouldn't keep objects in records anyway)
                         tr=load(subjectFiles{i}{j});
                         warning('on','MATLAB:elementsNowStruc');
-                        try
-                            sessionLUT=tr.sessionLUT;
-                            fieldsInLUT=tr.fieldsInLUT;
-                        catch
-                            % no LUT in this trialRecords.mat file
-                            warning('no LUT found for this trialRecords file');
-                            sessionLUT=[];
-                            fieldsInLUT=[];
-                        end
+                        
+                        sessionLUT=tr.sessionLUT;
+                        fieldsInLUT=tr.fieldsInLUT;
                         tr=tr.trialRecords;
-                        
-                        
-                        printFrameDropReports=false;
-                        if printFrameDropReports
-                            frameDropDir=fullfile(compiledRecordsDirectory,'framedropReports',ids{i});
-                            [status,message,messageid]=mkdir(frameDropDir);
-                            
-                            if status~=1
-                                message
-                                messageid
-                                status
-                                error('couldn''t make framedrop dir')
-                            end
-                            
-                            try
-                                trialNums=[tr.trialNumber];
-                                [frameDropFID frameDropMsg] = fopen(fullfile(frameDropDir,['framedrops.' ids{i} '.trials.' sprintf('%d-%d',trialNums(1),trialNums(end)) '.txt']), 'wt');
-                                
-                                if frameDropFID==-1 || ~isempty(frameDropMsg)
-                                    frameDropMsg
-                                    error('couldn''t open framedrop file')
-                                end
-                                
-                                for trNum=1:length(tr)
-                                    for phNum=1:length(tr(trNum).phaseRecords)
-                                        thisRec=tr(trNum).phaseRecords(phNum).responseDetails;
-                                        fprintf(frameDropFID,'framedrop report for trial %d phase %d:\n',trNum,phNum);
-                                        
-                                        for mNum=1:length(thisRec.misses)
-                                            printDroppedFrameReport(frameDropFID,thisRec.missTimestamps(mNum),thisRec.misses(mNum),thisRec.missIFIs(mNum),tr(trNum).station.ifi,'caught');
-                                        end
-                                        if length(thisRec.misses) ~= length(thisRec.missTimestamps) || length(thisRec.misses) ~= length(thisRec.missIFIs)
-                                            fprintf(frameDropFID,'hmm, %d misses, but %d miss timestamps and %d miss ifis\n',length(thisRec.misses),length(thisRec.missTimestamps),length(thisRec.missIFIs));
-                                        end
-                                        
-                                        for mNum=1:length(thisRec.apparentMisses)
-                                            printDroppedFrameReport(frameDropFID,thisRec.apparentMissTimestamps(mNum),thisRec.apparentMisses(mNum),thisRec.apparentMissIFIs(mNum),tr(trNum).station.ifi,'unnoticed');
-                                        end
-                                        if length(thisRec.apparentMisses) ~= length(thisRec.apparentMissTimestamps) || length(thisRec.apparentMisses) ~= length(thisRec.apparentMissIFIs)
-                                            fprintf(frameDropFID,'hmm, %d apparent misses, but %d apparent miss timestamps and %d apparent miss ifis\n',length(thisRec.apparentMisses),length(thisRec.apparentMissTimestamps),length(thisRec.apparentMissIFIs));
-                                        end
-                                        
-                                        fprintf(frameDropFID,'\n\n');
-                                    end
-                                    fprintf(frameDropFID,'*********end of trial*******\n\n');
-                                end
-                                fclose(frameDropFID);
-                            catch ex
-                                disp(['CAUGHT ERROR: ' getReport(ex,'extended')])
-                                if frameDropFID~=-1
-                                    fclose(frameDropFID);
-                                end
-                                warning('couldn''t write frame drop report file')
-                            end
-                        end
                         
                         % 3/5/09 - we should separate the compile process based on trainingStepNum
                         % to handle manual training step transitions gracefully
                         % tsIntervals should be [tsNum startNum stopNum; ...] for each unique ts interval
+                        
+                        % xx some thinking necessary about changes in protocol
                         tsNums=double([tr.trainingStepNum]);
                         tsIntervals=[];
-                        tsIntervals(:,1)=[tsNums(find(diff(tsNums))) tsNums(end)]';
-                        tsIntervals(:,2)=[1 find(diff(tsNums))+1];
-                        tsIntervals(:,3)=[find(diff(tsNums)) length(tsNums)];
+                        tsIntervals(:,1)=[tsNums(find(diff(tsNums))) tsNums(end)]'; % find the places where tsNums changes and get tsNums there
+                        tsIntervals(:,2)=[1 find(diff(tsNums))+1]; % trial numbers corresponding to start of tsInterval
+                        tsIntervals(:,3)=[find(diff(tsNums)) length(tsNums)]; % trial numbers corresponding to end of tsInterval
                         loadedClasses=classes;
                         
                         for intInd=1:size(tsIntervals,1)
@@ -1252,46 +1128,28 @@ classdef BCoreUtil
                             % START COMPILE PROCESS
                             % ================================================
                             for k=thisTsInds
-                                if tr(k).trialNumber ~= expectedTrialNumber
-                                    k
-                                    tr(k).trialNumber
-                                    expectedTrialNumber
-                                    error('got unexpected trial number')
-                                else
-                                    expectedTrialNumber=expectedTrialNumber+1;
-                                end
+                                assert(tr(k).trialNumber==expectedTrialNumber,'BCoreUtil:compileRecords:incorrectData',...
+                                    'unexpected trial number. Expected %d. Got %d',expectedTrialNumber,tr(k).trialNumber);
+                                expectedTrialNumber=expectedTrialNumber+1;
                                 if ~isempty(classes)
-                                    % throw out all classes that aren't this trainingStep's type
-                                    toDelete=[];
-                                    for x=1:size(classes,2)
-                                        if ~strcmp(classes{1,x},LUTlookup(sessionLUT,tr(k).stimManagerClass))
-                                            toDelete=[toDelete x];
-                                        end
-                                    end
-                                    classes(:,toDelete)=[];
-                                    ind=find(strcmp(LUTlookup(sessionLUT,tr(k).stimManagerClass),classes(1,:)));
+                                    ind=find(strcmp(BCoreUtil.LUTlookup(sessionLUT,tr(k).stimManagerClass),classes(1,:)));
                                 else
                                     ind=[];
                                 end
-                                if length(ind)==1
+                                
+                                if length(ind)==1 %should this be ind==1 if we are deleting????
                                     %nothing
                                 elseif length(ind)>1
-                                    error('found more than one cached default stim manager class match')
+                                    error('BCoreUtil:compileRecords:unexpectedData','found more than one cached default stim manager class match')
                                 else
-                                    fprintf('\t\tmaking first %s\n',LUTlookup(sessionLUT,tr(k).stimManagerClass))
-                                    classes{1,end+1}=LUTlookup(sessionLUT,tr(k).stimManagerClass);
-                                    try
-                                        keyboard % looks like this is the first call to create classes here
-                                        classes{2,end}=eval(LUTlookup(sessionLUT,tr(k).stimManagerClass)); %construct default stimManager of correct type, to fake static method call
-                                    catch
-                                        classes{2,end}=eval('stimManager()');
-                                    end
-                                    classes{3,end}=[];
-                                    ind=size(classes,2);
+                                    fprintf('\t\tmaking first %s\n',BCoreUtil.LUTlookup(sessionLUT,tr(k).stimManagerClass))
+                                    classes{1,end+1}=BCoreUtil.LUTlookup(sessionLUT,tr(k).stimManagerClass);
+                                    ind=length(classes);
+                                    % this confusing term just means that we set the indices of trialRecords that belong to this class
+                                    % to start indexing at 1, instead of wherever they might fall on the session's multiple trainingSteps
+                                    classes{2,end}=k-(thisTsInds(1)-1);
                                 end
-                                % this confusing term just means that we set the indices of trialRecords that belong to this class
-                                % to start indexing at 1, instead of wherever they might fall on the session's multiple trainingSteps
-                                classes{3,ind}(end+1)=k-(thisTsInds(1)-1);
+                                
                             end
                             
                             % it is very important that this function keep the same fieldNames in newBasicRecs as they were in trialRecords
@@ -1324,7 +1182,7 @@ classdef BCoreUtil
                                     %                     warning(warningStr);
                                     continue;
                                 end
-                                [indices compiledLUT] = addOrFindInLUT(compiledLUT, thisFieldValues);
+                                [indices, compiledLUT] = addOrFindInLUT(compiledLUT, thisFieldValues);
                                 for nn=1:length(indices)
                                     evalStr=sprintf('newBasicRecs.%s(nn) = indices(nn);',newBasicRecsToUpdate{n});
                                     eval(evalStr); % set new indices
@@ -1353,15 +1211,7 @@ classdef BCoreUtil
                                     LUTparams=[];
                                     LUTparams.lastIndex=length(compiledLUT);
                                     LUTparams.compiledLUT=compiledLUT;
-                                    [newRecs compiledLUT]=extractDetailFields(classes{2,c},colsFromAllFields(newBasicRecs,colInds),tr(thisTsInds),LUTparams);
-                                    % if extractDetailFields returns a stim-specific LUT, add it to our main compiledLUT
-                                    % 5/14/09 - this already happens b/c we pass in the compiledLUT to extractDetailFields!
-                                    %                     if ~isempty(newLUT)
-                                    %                         compiledLUT = [compiledLUT newLUT];
-                                    %                     end
-                                    
-                                    
-                                    
+                                    [newRecs compiledLUT]=extractDetailFields(classes{2,c},colsFromAllFields(newBasicRecs,colInds),tr(thisTsInds),LUTparams);                                    
                                     verifyAllFieldsNCols(newRecs,length(classes{3,c}));
                                     bailed=isempty(fieldnames(newRecs)); %extractDetailFields bailed for some reason (eg unimplemented or missing fields from old records)
                                     
@@ -1458,6 +1308,97 @@ classdef BCoreUtil
             end
             
         end % end function
+        
+        function out = getStandardCompiledFields()
+            out={  'trialNumber',...
+                'sessionNumber',...
+                'date',...
+                'soundOn',...
+                'physicalLocation',...
+                'numPorts',...
+                'step',...
+                'trainingStepName',...
+                'protocolName',...
+                'numStepsInProtocol',...
+                'manualVersion',...
+                'autoVersion',...
+                'protocolDate',...
+                'correct',...
+                'trialManagerClass',...
+                'stimManagerClass',...
+                'schedulerClass',...
+                'criterionClass',...
+                'reinforcementManagerClass',...
+                'scaleFactor',...
+                'type',...
+                'targetPorts',...
+                'distractorPorts',...
+                'result',...
+                'containedManualPokes',...
+                'didHumanResponse',...
+                'containedForcedRewards',...
+                'didStochasticResponse',...
+                'containedAPause',...
+                'correctionTrial',...
+                'numRequests',...
+                'firstIRI',...
+                'response',...
+                'responseTime',...
+                'actualRewardDuration'};
+        end
+        
+        function [compiledTrialRecords, compiledDetails, compiledLUT]=loadDetailedTrialRecords(compiledFile,compiledRange,fieldNames)
+            %loads the compiled detailed records in the specified range, for the requested (expected) field names
+            %won't allow a load if the names don't match.
+            %
+            %12/5/08 - also returns LUT for dynamic caching
+            
+            fprintf('\nloading %s...\n',compiledFile);
+            t=GetSecs;
+            ctr=load(compiledFile);
+            fprintf('elapsed time: %g\n',GetSecs-t)
+            compiledTrialRecords=ctr.compiledTrialRecords;
+            if isfield(ctr,'compiledDetails')
+                compiledDetails=ctr.compiledDetails;
+            else
+                compiledDetails={};
+            end
+            if isfield(ctr,'compiledLUT')
+                compiledLUT=ctr.compiledLUT;
+            else
+                compiledLUT={};
+            end
+            trialNums=[compiledTrialRecords.trialNumber];
+            
+            if ~all(trialNums==compiledRange(1):compiledRange(2)) || compiledRange(1)~=1
+                compiledFile
+                min(trialNums)
+                max(trialNums)
+                compiledRange
+                error('compiledTrialRecords file found not to contain proper trial numbers')
+            end
+            if length(fieldNames)~=length(fields(compiledTrialRecords))
+                setdiff(fieldNames,fields(compiledTrialRecords))
+                warning('compiledTrialRecords have different fields than the targets (this is okay now because we have nan padding)');
+            end
+            for m=1:length(fieldNames)
+                if ~ismember(fieldNames{m},fields(compiledTrialRecords))
+                    fieldNames
+                    fields(compiledTrialRecords)
+                    warning('compiledTrialRecords don''t contain all target fields (this is okay now because we have nan padding)');
+                end
+            end
+            
+            %cast all vectors to be doubles (for back compatibility, in case they were logicals) pmm
+            existingFields=fields(compiledTrialRecords);
+            for i=1:length(existingFields)
+                if ~strcmp(class(compiledTrialRecords.(existingFields{i})),'double') && ~iscell(compiledTrialRecords.(existingFields{i}))
+                    compiledTrialRecords.(existingFields{i})=double(compiledTrialRecords.(existingFields{i}));
+                    disp(existingFields{i})
+                    warning('found a non-double vector, casting it as double')
+                end
+            end
+        end
         
         function a=concatAllFields(a,b)
             if isempty(a) && isscalar(b) && isstruct(b)
@@ -1563,8 +1504,8 @@ classdef BCoreUtil
                 doWarn = true;
             end
             
-            if ~isempty(findstr('\\',permanentStore)) && doWarn
-                warning('this function is dangerous when used remotely -- dir can silently fail or return a subset of existing files')
+            if ~isempty(strfind(permanentStore,'\\')) && doWarn
+                warning('BCoreUtil:getTrialRecordFiles:useWithCaution','this function is dangerous when used remotely -- dir can silently fail or return a subset of existing files')
             end
             
             %this needs to trust the FS in standalone conditions, but consider relying
@@ -1575,22 +1516,22 @@ classdef BCoreUtil
             try
                 fileRecs=BCoreUtil.getRangesFromTrialRecordFileNames({historyFiles.name},true);
             catch ex
-                permanentStore
+                fprintf('Issue with the permanent store : %s\n',permanentStore);
                 rethrow(ex)
             end
             
             if ~isempty(fileRecs)
                 ranges=[[fileRecs.trialStart];[fileRecs.trialStop]];
                 
-                verifiedHistoryFiles={};
+                verifiedHistoryFiles=cell(1,length(fileRecs));
                 for i=1:length(fileRecs)
-                    verifiedHistoryFiles{end+1}=fullfile(permanentStore,fileRecs(i).name);
+                    verifiedHistoryFiles{i}=fullfile(permanentStore,fileRecs(i).name);
                 end
             else
-                permanentStore
+                fprintf('permanent store path:%s\n',permanentStore);
                 ranges=[];
                 verifiedHistoryFiles={};
-                warning('no filenames')
+                warning('BCoreUtil:getTrialRecordFiles:unexpectedCondition','no filenames')
             end
         end
         
@@ -1599,57 +1540,30 @@ classdef BCoreUtil
             if ~exist('checkRanges','var') || isempty(checkRanges)
                 checkRanges=true;
             end
-            
-            goodRecs=[];
+            goodRecs = [];
             for i=1:length(fileNames)
                 goodRecs(end+1).name=fileNames{i};
-                [ranges len]= textscan(goodRecs(end).name,'trialRecords_%d-%d_%15s-%15s.mat');
-                if length(goodRecs(end).name)== len && ~isempty(ranges) && length(ranges)==4 && ~any(cellfun(@isempty,ranges))
-                    goodRecs(end).trialStart = ranges{1};
-                    goodRecs(end).trialStop = ranges{2};
-                    goodRecs(end).dateStart = datenumFor30(ranges{3}{1});
-                    goodRecs(end).dateStop = datenumFor30(ranges{4}{1});
-                else
-                    % 2006b on osx ppc can't do: [ranges len]= textscan('3-9','%d-%d') - it misses the 9
-                    [a1 b1 c1 d1]=sscanf(goodRecs(end).name','%[trialRecords_]%*d%[-]%*d%[_]%*15s%[-]%*15s%[.mat]');
-                    [a2 b2 c2 d2]=sscanf(goodRecs(end).name','%*[trialRecords_]%d%*[-]%d%*[_]%*15s%*[-]%*15s%*[.mat]');
-                    [a3 b3 c3 d3]=sscanf(goodRecs(end).name','%*[trialRecords_]%*d%*[-]%*d%*[_]%15s%*[-]%*15s%*[.mat]');
-                    [a4 b4 c4 d4]=sscanf(goodRecs(end).name','%*[trialRecords_]%*d%*[-]%*d%*[_]%*15s%*[-]%15s%*[.mat]');
-                    if strcmp(char(a1)','trialRecords_-_-.mat') && length(a2)==2 && length(a3)==15 && length(a4)==15 && all(1+length(goodRecs(end).name)==[d1 d2 d3 d4]) &&...
-                            all(cellfun(@isempty,{c1 c2 c3 c4})) && all([b1 b2 b3 b4]==[5 2 1 1])
-                        goodRecs(end).trialStart = a2(1);
-                        goodRecs(end).trialStop = a2(2);
-                        goodRecs(end).dateStart = datenumFor30(char(a3)');
-                        goodRecs(end).dateStop = datenumFor30(char(a4)');
-                    else
-                        goodRecs(end).name
-                        ranges
-                        len
-                        error('can''t parse filename')
-                    end
-                end
+                ranges= textscan(goodRecs(end).name,'trialRecords_%d-%d_%15s-%15s.mat');
+                goodRecs(end).trialStart = ranges{1};
+                goodRecs(end).trialStop = ranges{2};
+                goodRecs(end).dateStart = BCoreUtil.datenumFor30(ranges{3}{1});
+                goodRecs(end).dateStop = BCoreUtil.datenumFor30(ranges{4}{1});
             end
             
-            if ~isempty(goodRecs)
-                if checkRanges
-                    [sorted order]=sort([goodRecs.trialStart]);
-                    goodRecs=goodRecs(order);
-                    ranges=[[goodRecs.trialStart];[goodRecs.trialStop]];
-                    
-                    if goodRecs(1).trialStart ~= 1
-                        ranges
-                        error('first file doesn''t start at 1')
-                    end
-                    
-                    if ~all(ranges(1,:)==([1 ranges(2,1:end-1)+1])) || ~all(ranges(2,:)>=ranges(1,:))
-                        ranges
-                        ranges(:,find(ranges(1,:)~=([1 ranges(2,1:end-1)+1])))
-                        error('ranges don''t follow consecutively')
-                    end
+            if checkRanges
+                [~, order]=sort([goodRecs.trialStart]);
+                goodRecs=goodRecs(order);
+                ranges=[[goodRecs.trialStart];[goodRecs.trialStop]];
+                
+                assert(ranges(1,1) == 1,'BCoreUtil:getRangesFromTrialRecordFileNames:incorrectData','first file doesn''t start at 1');
+                
+                if ~all(ranges(1,:)==([1 ranges(2,1:end-1)+1])) || ~all(ranges(2,:)>=ranges(1,:))
+                    disp(ranges);
+                    disp('The problem trial ranges');
+                    whichProblematic = ranges(1,:)~=([1 ranges(2,1:end-1)+1]); 
+                    disp(ranges(:,whichProblematic))
+                    error('ranges don''t follow consecutively')
                 end
-            else
-                fileNames
-                warning('no files?')
             end
         end
         %% Infrastructure
@@ -1755,5 +1669,69 @@ classdef BCoreUtil
                 end
             end
         end
+        
+        %% Utilities for Compilation
+        function n=datenumFor30(x)
+            %converts text strings of iso 8601 into matlab's datenum
+            %oddly datenum does not support this type, maybe it's the 'T'
+            %
+            %x='20071013T000552'
+            %y=datenumFor30 (x)
+            
+            year=str2double(x(1:4));
+            month=str2double(x(5:6));
+            day=str2double(x(7:8));
+            hour=str2double(x(10:11));
+            minute=str2double(x(12:13));
+            second=str2double(x(14:15));
+            
+            n = datenum(year,month,day,hour,minute,second);
+            
+            assert(strcmp(x,datestr(n,30)),'BCoreUtil:datenumFor30:invalidConversion','fails to preserve ID of that time');
+        end
+        
+        function value = LUTlookup(LUT, key)
+            % returns the value specified by the given key in the LUT
+            % if LUT is empty, then just return the key (for convenience in compileDetailedRecords)
+            if ~isempty(LUT)
+                value = LUT{key};
+            else
+                value=key;
+            end
+            
+        end
+        
+        function [indices, LUT] = addOrFindInLUT(LUT, fields)
+            % this function takes in an existing LUT and fields, both as cell arrays
+            % and tries to find each element in fields in the LUT.
+            % if the field does not exist in LUT, then it is added to the LUT
+            % returns the updated LUT, and indices, which is an array of the same size as fields that contains the index for each element in fields
+            % whether or not it was added.
+            
+            indices=zeros(1,length(fields));
+            for i=1:length(fields)
+                if ischar(fields{i})
+                    result=find(strcmp(LUT,fields{i}));
+                    if isempty(result) % did not find in LUT - ADD
+                        LUT{end+1} = fields{i};
+                        result=length(LUT);
+                    end
+                    indices(i)=result;
+                elseif isempty(fields{i})
+                    % don't add the empty set, tho it is a number according to matlab
+                    indices(i)=nan;
+                elseif isnumeric(fields{i})
+                    result=find(cellfun(@(x) isnumeric(x)&&all(x==fields{i}), LUT));
+                    if isempty(result) % did not find in LUT - ADD
+                        LUT{end+1} = fields{i};
+                        result=length(LUT);
+                    end
+                    indices(i)=result;
+                else
+                    error('can only add strings and numerics to the LUT');
+                end
+            end
+            
+        end % end function
     end
 end

@@ -757,7 +757,7 @@ classdef stimManager
             
             % adding code to get details about reinforcement
             [out.potentialRewardMS,compiledLUT]                             = extractFieldAndEnsure(trialRecords, {'reinforcementManager','rewardSizeULorMS'},'scalar',compiledLUT);
-            [out.potentialRequestRewardMS,compiledLUT]                             = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','requestRewardSizeULorMS'},'scalar',compiledLUT);
+            [out.potentialRequestRewardMS,compiledLUT]                      = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','requestRewardSizeULorMS'},'scalar',compiledLUT);
             [out.potentialRewardScalar,compiledLUT]                         = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','scalar'},'scalar',compiledLUT);
             [out.potentialPenalty,compiledLUT]                              = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','msPenalty'},'scalar',compiledLUT);
             

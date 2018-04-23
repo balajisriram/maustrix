@@ -81,7 +81,7 @@ try
         BCoreUtil.replicateTrialRecords({rx.standAlonePath},deleteOnSuccess);
     end
     [~, ~] = rx.emptyAllBoxes('done running trials in standAloneRun',auth);
-%     BCoreUtil.compileDetailedRecords(subjectID);
+%     BCoreUtil.compileRecords(subjectID);
     cleanup;
 catch ex
     disp(['CAUGHT ERROR: ' getReport(ex,'extended')])
@@ -93,7 +93,7 @@ catch ex
     [~, ~] = rx.emptyAllBoxes('done running trials in standAloneRun',auth);
     cleanup;
     BCoreUtil.replicateTrialRecords({rx.standAlonePath},deleteOnSuccess);
-%     BCoreUtil.compileDetailedRecords(subjectID);
+%     BCoreUtil.compileRecords(subjectID);
     cleanup;
     rethrow(ex)
 end

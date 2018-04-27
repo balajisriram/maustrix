@@ -23,7 +23,8 @@ while true
     end
     
     t=closed;
-    t(valves(codes(cellfun(@KbName,{'1!' '2@' '3#'})) | out(sensors)))='1';
+    t(valves(codes(cellfun(@KbName,{'1!' '2@' '3#'}))))='1';
+    % t(valves(codes(cellfun(@KbName,{'1!' '2@' '3#'})) | out(sensors)))='1';
     lptwrite(hex2dec(addr),bin2dec(t));
 end
 
@@ -86,4 +87,5 @@ if false
             end
         end
     end
+end
 end

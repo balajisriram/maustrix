@@ -17,7 +17,7 @@ function standAloneRun(subjectID,BCoreServerPath,setup)
 setupEnvironment;
 
 % create ratrix if necessary
-if exist('BCorePath','var') && ~isempty(BCoreServerPath)
+if exist('BCoreServerPath','var') && ~isempty(BCoreServerPath)
     assert(isdir(BCoreServerPath),'standAloneRun:incorrectValue','if BCorePath supplied, it must be a path to a preexisting BCore ''db.mat'' file')
 	rx=BCore(BCoreServerPath,0);
 else
@@ -44,19 +44,23 @@ auth = 'bas';
 
 % add subject if not in BCore
 addedSubject = false;
+subjectAlreadyExists = false;
 switch rx.subjectIDInBCore(subjectID)
     case true
         sub = rx.getSubjectFromID(subjectID);
+        subjectAlreadyExists = true;
     case false
         sub = virtual(subjectID, 'unknown');
-        sub.reward = 10;
+        sub.reward = 1;
         sub.timeout = 10000;
         sub.puff = 0;
         rx=rx.addSubject(sub,auth);
         addedSubject = true;
 end
 
-if addedSubject && (~exist('setup','var') || isempty(setup))
+if subjectAlreadyExists
+    % dont need to do anything
+elseif addedSubject && (~exist('setup','var') || isempty(setup))
     setup=@BCoreUtil.setProtocolDEMO;
     rx=setup(rx,{subjectID});
 elseif isa(setup,'function_handle')

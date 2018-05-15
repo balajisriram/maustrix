@@ -355,6 +355,28 @@ classdef BCoreUtil
             
         end
         
+        function r = setProtocolBehavior(r,subjIDs)
+            assert(isa(r,'BCore'),'BCoreUtil:setProtocolDEMO:invalidInput','need a BCore object. You sent object of class %s',class(r));
+            % TrialManager
+            [tm1,tm2] = BCoreUtil.makeStandardTrialManagerFreeDrinks();
+            tm3 = BCoreUtil.makeStandardTrialManagerNAFC();
+            
+            ts1 = BCoreUtil.createFreeDrinksTrainingSteps(tm1, repeatIndefinitely(),noTimeOff(), 'easyFreeDrinks v0.0.1 Apr-17-2018 stochastic');
+            ts2 = BCoreUtil.createFreeDrinksTrainingSteps(tm2, repeatIndefinitely(),noTimeOff(), 'easyFreeDrinks v0.0.1 Apr-17-2018 earned');
+            ts3 = BCoreUtil.createDEMOTrainingStepAFCGratings(tm3,repeatIndefinitely(),noTimeOff(),'easy afcGratings v0.0.1 May-15-2018');
+            descriptiveString='DEMO Behavior protocol 5/15/2018';
+            
+            pBehavior05152018 = protocol(descriptiveString,...
+                {ts1,ts2,ts3});
+            stepNum = 1;
+            %%%%%%%%%%%%
+            for i=1:length(subjIDs)
+                subj=getSubjectFromID(r,subjIDs{i});
+                [~, r]=setProtocolAndStep(subj,pBehavior05152018,true,false,true,stepNum,r,'call to setProtocolBehavior','bas');
+            end
+            
+        end
+        
         function r = setProtocolDEMONoRequest(r,subjIDs)
             assert(isa(r,'BCore'),'BCoreUtil:setProtocolDEMONoRequest:invalidInput','need a BCore object. You sent object of class %s',class(r));
             % TrialManager
@@ -495,7 +517,7 @@ classdef BCoreUtil
             ts = trainingStep(trialManager, AFCGRAT, performanceCrit, sch,stepName);
         end
         
-        function [ts1,ts2] = createFreeDrinksTrainingSteps(trialManager, performanceCrit, sch, stepName)
+        function ts = createFreeDrinksTrainingSteps(trialManager, performanceCrit, sch, stepName)
             % makes a basic, easy gngGrating training step
             % correct response = side toward which grating tilts
             
@@ -518,8 +540,7 @@ classdef BCoreUtil
             
             
             % training step using other objects as passed in
-            ts1 = trainingStep(trialManager{1}, FREESTIM, performanceCrit, sch,stepName);
-            ts2 = trainingStep(trialManager{2}, FREESTIM, performanceCrit, sch,stepName);
+            ts = trainingStep(trialManager, FREESTIM, performanceCrit, sch,stepName);
         end
         
         function ts = createDEMOTrainingStepGNG(trialManager, performanceCrit, sch, stepName)

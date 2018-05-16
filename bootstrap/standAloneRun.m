@@ -58,8 +58,10 @@ switch rx.subjectIDInBCore(subjectID)
         addedSubject = true;
 end
 
-if subjectAlreadyExists
+if subjectAlreadyExists && (~exist('setup','var') || isempty(setup))
     % dont need to do anything
+elseif subjectAlreadyExists && exist('setup','var') && isa(setup,'function_handle')
+    rx=setup(rx,{subjectID});
 elseif addedSubject && (~exist('setup','var') || isempty(setup))
     setup=@BCoreUtil.setProtocolDEMO;
     rx=setup(rx,{subjectID});

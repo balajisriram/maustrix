@@ -534,6 +534,44 @@ classdef BCoreUtil
             ts = trainingStep(trialManager, AFCGRAT, performanceCrit, sch,stepName);
         end
         
+        function ts = createDEMOTrainingStepAFCGratingsPosition(trialManager, performanceCrit, sch, stepName)
+            % makes a basic, easy gngGrating training step
+            % correct response = side toward which grating tilts
+            
+            % gratings stim manager
+            pixPerCycs={[128],[128]};
+            driftfrequencies={[0],[0]};
+            orientations={deg2rad([0,45,90,135]),deg2rad([0,45,90,135])};
+            phases={linspace(0,2*pi,8),linspace(0,2*pi,8)};
+            contrasts={[1],[1]};
+            maxDuration={[1],[1]};
+            radii={[0.2],[0.2]};
+            radiusType = 'gaussian';
+            annuli={[0],[0]};
+            location={[.25 .5],[0.75 0.5]};      % center of mask
+            waveform= 'sine';
+            normalizationMethod='normalizeDiagonal';
+            mean=0.5;
+            thresh=.00005;
+            maxWidth=1920;
+            maxHeight=1080;
+            scaleFactor=0;
+            interTrialLuminance=.5;
+            doCombos = true;
+            
+            doPostDiscrim = true;
+            phaseDetails = [];
+            LEDParams.active = false;
+            LEDParams.numLEDs = 0;
+            
+            AFCGRAT = afcGratings(pixPerCycs,driftfrequencies,orientations,phases,contrasts,maxDuration,radii,radiusType,annuli,location,...
+                waveform,normalizationMethod,mean,thresh,maxWidth,maxHeight,scaleFactor,interTrialLuminance,doCombos,doPostDiscrim);
+
+            
+            % training step using other objects as passed in
+            ts = trainingStep(trialManager, AFCGRAT, performanceCrit, sch,stepName);
+        end
+        
         function ts = createFreeDrinksTrainingSteps(trialManager, performanceCrit, sch, stepName)
             % makes a basic, easy gngGrating training step
             % correct response = side toward which grating tilts

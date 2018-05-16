@@ -89,9 +89,18 @@ classdef BCoreUtil
                 soundClip('trialStartSound','allOctaves',200,20000)});
         end
         
-        function rm = makeStandardReinforcementManager()
+        function rm = makeStandardReinforcementManager(requestRewardON)
+            if ~exist('requestRewardON','var')|| isempty(requestRewardON)
+                requestRewardON = false;
+            end
+                
             rewardScalar          =1;
-            requestRewardScalar   =0;
+            if requestRewardON
+                requestRewardScalar   =0;
+            else
+                requestRewardScalar   =0.2;
+            end
+                
             requestMode           ='first';
             penaltyScalar         =1;
             fractionOpenTimeSoundIsOn =1;
@@ -101,12 +110,16 @@ classdef BCoreUtil
             rm=constantReinforcement(rewardScalar,requestRewardScalar,penaltyScalar,puffScalar,fractionOpenTimeSoundIsOn,fractionPenaltySoundIsOn,requestMode);
         end
         
-        function tm = makeStandardTrialManagerNAFC()
+        function tm = makeStandardTrialManagerNAFC(requestRewardON)
+            if ~exist('requestRewardON','var')|| isempty(requestRewardON)
+                requestRewardON = false;
+            end
+            
             % Create Sound Manager
             sm = BCoreUtil.makeStandardSoundManager();
             
             % Reward Manager
-            rm = BCoreUtil.makeStandardReinforcementManager();
+            rm = BCoreUtil.makeStandardReinforcementManager(requestRewardON);
             
             
             dropFrames=false;
@@ -359,16 +372,20 @@ classdef BCoreUtil
             assert(isa(r,'BCore'),'BCoreUtil:setProtocolDEMO:invalidInput','need a BCore object. You sent object of class %s',class(r));
             % TrialManager
             [tm1,tm2] = BCoreUtil.makeStandardTrialManagerFreeDrinks();
-            tm3 = BCoreUtil.makeStandardTrialManagerNAFC();
+            requestRewardON = true;
+            tm3 = BCoreUtil.makeStandardTrialManagerNAFC(requestRewardON);
+            requestRewardON = false;
+            tm4 = BCoreUtil.makeStandardTrialManagerNAFC(requestRewardON);
             
-            ts1 = BCoreUtil.createFreeDrinksTrainingSteps(tm1, repeatIndefinitely(),noTimeOff(), 'easyFreeDrinks v0.0.1 Apr-17-2018 stochastic');
-            ts2 = BCoreUtil.createFreeDrinksTrainingSteps(tm2, repeatIndefinitely(),noTimeOff(), 'easyFreeDrinks v0.0.1 Apr-17-2018 earned');
-            ts3 = BCoreUtil.createDEMOTrainingStepAFCGratings(tm3,repeatIndefinitely(),noTimeOff(),'easy afcGratings v0.0.1 May-15-2018');
-            descriptiveString='DEMO Behavior protocol 5/15/2018';
+            ts1 = BCoreUtil.createFreeDrinksTrainingSteps(tm1, repeatIndefinitely(),noTimeOff(), 'easyFreeDrinks v0.0.2 Apr-17-2018 stochastic');
+            ts2 = BCoreUtil.createFreeDrinksTrainingSteps(tm2, repeatIndefinitely(),noTimeOff(), 'easyFreeDrinks v0.0.2 Apr-17-2018 earned');
+            ts3 = BCoreUtil.createDEMOTrainingStepAFCGratings(tm3,repeatIndefinitely(),noTimeOff(),'easy afcGratings v0.0.2 May-15-2018 w/ request reward');
+            ts4 = BCoreUtil.createDEMOTrainingStepAFCGratings(tm4,repeatIndefinitely(),noTimeOff(),'easy afcGratings v0.0.2 May-15-2018 no request reward');
+            descriptiveString='DEMO Behavior protocol 5/16/2018 v0.0.2';
             
             pBehavior05152018 = protocol(descriptiveString,...
                 {ts1,ts2,ts3});
-            stepNum = 1;
+            stepNum = 3;
             %%%%%%%%%%%%
             for i=1:length(subjIDs)
                 subj=getSubjectFromID(r,subjIDs{i});

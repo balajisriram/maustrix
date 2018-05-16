@@ -96,9 +96,9 @@ classdef BCoreUtil
                 
             rewardScalar          =1;
             if requestRewardON
-                requestRewardScalar   =0;
-            else
                 requestRewardScalar   =0.2;
+            else
+                requestRewardScalar   =0;
             end
                 
             requestMode           ='first';
@@ -114,7 +114,7 @@ classdef BCoreUtil
             if ~exist('requestRewardON','var')|| isempty(requestRewardON)
                 requestRewardON = false;
             end
-            
+
             % Create Sound Manager
             sm = BCoreUtil.makeStandardSoundManager();
             

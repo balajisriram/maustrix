@@ -379,12 +379,12 @@ classdef BCoreUtil
             
             ts1 = BCoreUtil.createFreeDrinksTrainingSteps(tm1, repeatIndefinitely(),noTimeOff(), 'easyFreeDrinks v0.0.2 Apr-17-2018 stochastic');
             ts2 = BCoreUtil.createFreeDrinksTrainingSteps(tm2, repeatIndefinitely(),noTimeOff(), 'easyFreeDrinks v0.0.2 Apr-17-2018 earned');
-            ts3 = BCoreUtil.createDEMOTrainingStepAFCGratings(tm3,repeatIndefinitely(),noTimeOff(),'easy afcGratings v0.0.2 May-15-2018 w/ request reward');
-            ts4 = BCoreUtil.createDEMOTrainingStepAFCGratings(tm4,repeatIndefinitely(),noTimeOff(),'easy afcGratings v0.0.2 May-15-2018 no request reward');
+            ts3 = BCoreUtil.createDEMOTrainingStepAFCGratingsPosition(tm3,repeatIndefinitely(),noTimeOff(),'easy afcGratings v0.0.2 May-15-2018 w/ request reward');
+            ts4 = BCoreUtil.createDEMOTrainingStepAFCGratingsPosition(tm4,repeatIndefinitely(),noTimeOff(),'easy afcGratings v0.0.2 May-15-2018 no request reward');
             descriptiveString='DEMO Behavior protocol 5/16/2018 v0.0.2';
             
             pBehavior05152018 = protocol(descriptiveString,...
-                {ts1,ts2,ts3});
+                {ts1,ts2,ts3,ts4});
             stepNum = 3;
             %%%%%%%%%%%%
             for i=1:length(subjIDs)

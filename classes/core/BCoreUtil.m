@@ -1,6 +1,6 @@
 classdef BCoreUtil
     properties (Constant = true)
-        EXPERIMENTER = 'sbalaji1984@gmail.com';
+        EXPERIMENTER = 'balaji.sriram@biogen.com';
     end
     methods (Static)
         %% get paths

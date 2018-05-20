@@ -1258,7 +1258,7 @@ classdef BCoreUtil
                                     %                     warning(warningStr);
                                     continue;
                                 end
-                                [indices, compiledLUT] = addOrFindInLUT(compiledLUT, thisFieldValues);
+                                [indices, compiledLUT] = BCoreUtil.addOrFindInLUT(compiledLUT, thisFieldValues);
                                 for nn=1:length(indices)
                                     evalStr=sprintf('newBasicRecs.%s(nn) = indices(nn);',newBasicRecsToUpdate{n});
                                     eval(evalStr); % set new indices
@@ -1277,18 +1277,20 @@ classdef BCoreUtil
                             end
                             for c=1:size(classes,2)
                                 
-                                if length(classes{3,c})>0 %prevent subtle bug that is easy to write into extractDetailFields -- if you send zero trials to them, they may try to look deeper than the top level of fields, but they won't exist ('MATLAB:nonStrucReference') -- see example in crossModal.extractDetailFields()
+                                if length(classes{2,c})>0 %prevent subtle bug that is easy to write into extractDetailFields -- if you send zero trials to them, they may try to look deeper than the top level of fields, but they won't exist ('MATLAB:nonStrucReference') -- see example in crossModal.extractDetailFields()
                                     %no way to guarantee that a stim manager's calcStim will make a stimDetails
                                     %that includes all info its super class would have, so cannot call this
                                     %method on every anscestor class.  must leave calling super class's
                                     %extractDetailFields up to the sub class.
-                                    colInds=classes{3,c};
+                                    colInds=classes{2,c};
                                     
                                     LUTparams=[];
                                     LUTparams.lastIndex=length(compiledLUT);
                                     LUTparams.compiledLUT=compiledLUT;
-                                    [newRecs compiledLUT]=extractDetailFields(classes{2,c},colsFromAllFields(newBasicRecs,colInds),tr(thisTsInds),LUTparams);                                    
-                                    verifyAllFieldsNCols(newRecs,length(classes{3,c}));
+                                    % call on the class name
+                                    evalStr = sprintf('%s.extractDetailFields(colsFromAllFields(newBasicRecs,colInds),tr(thisTsInds),LUTparams);',classes{1,c});
+                                    [newRecs, compiledLUT]=eval(evalStr);
+                                    verifyAllFieldsNCols(newRecs,length(classes{2,c}));
                                     bailed=isempty(fieldnames(newRecs)); %extractDetailFields bailed for some reason (eg unimplemented or missing fields from old records)
                                     
                                     if length(compiledDetails)<c
@@ -1302,16 +1304,16 @@ classdef BCoreUtil
                                         compiledDetails(c).bailedTrialNums=[];
                                     elseif strcmp(compiledDetails(c).className,classes{1,c})
                                         if ~bailed
-                                            compiledDetails(c).records=concatAllFields(compiledDetails(c).records,newRecs);
+                                            compiledDetails(c).records=BCoreUtil.concatAllFields(compiledDetails(c).records,newRecs);
                                         end
                                     else
                                         error('class name doesn''t match')
                                     end
                                     tmp=colsFromAllFields(newBasicRecs,colInds);
                                     if bailed
-                                        compiledDetails(c).bailedTrialNums(end+1:end+length(classes{3,c}))=tmp.trialNumber;
+                                        compiledDetails(c).bailedTrialNums(end+1:end+length(classes{2,c}))=tmp.trialNumber;
                                     else
-                                        compiledDetails(c).trialNums(end+1:end+length(classes{3,c}))=tmp.trialNumber;
+                                        compiledDetails(c).trialNums(end+1:end+length(classes{2,c}))=tmp.trialNumber;
                                     end
                                 end
                             end

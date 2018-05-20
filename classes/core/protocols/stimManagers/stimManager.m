@@ -154,178 +154,6 @@ classdef stimManager
         % ==================================================================
         % HELPER FUNCTIONS
         
-        function out=encodeResult(result,targs,dstrs,correct)
-            
-            if isa(result,'double') && all(result==1 | result==0)
-                warning('edf sees double rather than logical response on osx 01.21.09 -- why?')
-                result=logical(result);
-            end
-            if targs==0 %empty target ports (in decimal representation)
-                targs=[];
-            end
-            if dstrs==0 % empty distractor ports (in decimal representation)
-                dstrs=[];
-            end
-            % if we do decide to re-implement errorchecking on targets/distractors, keep in mind that
-            % targs/dstrs are in DECIMAL format (ie targetPorts [1,3] = '101' = 5)
-            
-            if ischar(result)
-                switch result
-                    case 'nominal'
-                        out=1;
-                    case 'timedout'
-                        out=2;
-                    case 'multiple ports'
-                        out=-1;
-                    case 'none'
-                        out=-2;
-                    case 'manual kill'
-                        out=0;
-                    case 'shift-2 kill'
-                        out=-4;
-                    case 'server kill'
-                        out=-5;
-                    case 'manual flushPorts'
-                        out=-8;
-                    otherwise
-                        % 1/22/09 - if the response is 'manual training step %d'
-                        match=regexp(result,'manual training step \d+','match');
-                        if ~isempty(match)
-                            out=-7; % manually set training step
-                        else
-                            out=-6;
-                            result
-                            warning('unrecognized response')
-                        end
-                end
-            else
-                result
-                class(result)
-                error('unrecognized result type')
-            end
-            
-            % if ismember(out,targs) == correct
-            %     %pass
-            % else
-            %     out
-            %     targs
-            %     correct
-            %     error('bad correct calc')
-            % end
-            
-            if all(isempty(intersect(dstrs,targs)))
-                %pass
-            else
-                error('found intersecting targets and distractors')
-            end
-            
-        end
-        
-        function [out, compiledLUT] = ensureScalarOrAddCellToLUT(fieldArray, compiledLUT)
-            % this function either returns a scalar array, or if it finds that fieldArray is a cell array, performs LUT processing on the fieldArray
-            % this allows extractBasicFields to support versions of trialRecords that dont use a LUT
-            try
-                out=ensureScalar(fieldArray);
-            catch
-                ensureTypedVector(fieldArray,'char'); % ensure that this is cell array of characters, otherwise no point using a LUT
-                [out compiledLUT] = addOrFindInLUT(compiledLUT, fieldArray);
-            end
-            
-        end % end function
-        
-        function out = getResponseFromTrialRecords(trialRecords)
-            % Get the trialRecords.response field if it exists, otherwise look for trialRecords.phaseRecords.responseDetails.tries
-            % return -1 if neither exists...uh oh
-            out=ones(1,length(trialRecords))*-1;
-            if isfield(trialRecords,'response')
-                out=cell2mat(cellfun(@decideResponse,{trialRecords.response},'UniformOutput',false));
-            end
-            if isfield(trialRecords,'phaseRecords') && isfield(trialRecords,'result') && ...
-                    ~all(cellfun(@isempty,{trialRecords.phaseRecords})) % these two 'if' cases should be mutually exclusive in latest code, but not always been the case
-                out=cell2mat(cellfun(@getResponseFromTries,{trialRecords.phaseRecords},'UniformOutput',false));
-            end
-        end
-        
-        function out = getResponseTimeFromTrialRecords(trialRecords)
-            % Get the trialRecords.responseTime field if it exists, otherwise look for trialRecords.phaseRecords.responseDetails.tries
-            % return -1 if neither exists...uh oh
-            out=ones(1,length(trialRecords))*-1;
-            if isfield(trialRecords,'responseTime')
-                out=cell2mat({trialRecords.responseTime});
-            end
-            if isfield(trialRecords,'phaseRecords') && isfield(trialRecords,'result') && ...
-                    ~all(cellfun(@isempty,{trialRecords.phaseRecords})) % these two 'if' cases should be mutually exclusive in latest code, but not always been the case
-                out=cell2mat(cellfun(@getResponseTimeFromPhaseRecords,{trialRecords.phaseRecords},'UniformOutput',false));
-            end
-        end
-        
-        function out = decideResponse(response)
-            resp=find(response);
-            if length(resp)==1 && ~ischar(response)
-                out=resp;
-            else
-                out=-1;
-            end
-        end % end function
-        
-        function out = getResponseTimeFromPhaseRecords(phaseRecords)
-            % #define response time = start of discrim phase to start of reinforced
-            % phase
-            % designed by balaji Aug 17 2012
-            phaseTypes = {phaseRecords.phaseType};
-            % remove emptys
-            phaseTypes = phaseTypes(~cellfun(@isempty,phaseTypes));
-            whichDiscrim = ismember(phaseTypes,'discrim');
-            whichReinf = ismember(phaseTypes,'reinforced');
-            if ~any(whichDiscrim) || ~any(whichReinf)
-                out = NaN;
-            elseif length(find(whichDiscrim))>1 || length(find(whichReinf))>1
-                error('you need to support multiple reinfs or discrims separately');
-            else
-                out = phaseRecords(whichReinf).responseDetails.startTime-phaseRecords(whichDiscrim).responseDetails.startTime;
-            end
-            % keyboard
-        end
-        
-        function out = getResponseFromTries(phaseRecords)
-            found = false;
-            
-            try
-                pInd=find(strcmp({phaseRecords.phaseLabel},'discrim'));
-                % we assume the last try of the 'discrim' phase to be the response
-                if length(pInd)==1
-                    tries=phaseRecords(pInd).responseDetails.tries;
-                    response=tries{end};
-                    out=decideResponse(response);
-                    found = true;
-                end
-            catch
-                disp('failed probably because the reponse was in the post-discrim phase...')
-            end
-            
-            if ~found
-                % it is possible that the actual response is in the post-discrim
-                pIndAlt=find(strcmp({phaseRecords.phaseType},'post-discrim'));
-                for i = 1:length(pIndAlt)
-                    if ~found
-                        try
-                            triesAlt = phaseRecords(pIndAlt(i)).responseDetails.tries;
-                            responseAlt=triesAlt{end};
-                            out=decideResponse(responseAlt);
-                            found = true;
-                        catch
-                            disp('didnt catch on this phase, trying another phase');
-                        end
-                    end
-                end
-            end
-            
-            
-            if ~found
-                out = -1;
-            end
-        end % end function
-        
         function [out, newLUT]=extractDetailFields(sm,basicRecords,trialRecords,LUTparams)
             out=struct;
             newLUT=LUTparams.compiledLUT;
@@ -725,7 +553,7 @@ classdef stimManager
             [out.targetPorts, compiledLUT]                                =extractFieldAndEnsure(trialRecords,{'targetPorts'},{'bin2dec',num2cell(out.numPorts)},compiledLUT);
             [out.distractorPorts, compiledLUT]                            =extractFieldAndEnsure(trialRecords,{'distractorPorts'},{'bin2dec',num2cell(out.numPorts)},compiledLUT);
             try
-                out.result                                                   =ensureScalar(cellfun(@encodeResult,{trialRecords.result},num2cell(out.targetPorts),num2cell(out.distractorPorts),num2cell(out.correct),'UniformOutput',false));
+                out.result                                                   =ensureScalar(cellfun(@stimManager.encodeResult,{trialRecords.result},num2cell(out.targetPorts),num2cell(out.distractorPorts),num2cell(out.correct),'UniformOutput',false));
             catch
                 ple
                 out.result=ones(1,length(trialRecords))*nan;
@@ -757,15 +585,15 @@ classdef stimManager
             
             % adding code to get details about reinforcement
             [out.potentialRewardMS,compiledLUT]                             = extractFieldAndEnsure(trialRecords, {'reinforcementManager','rewardSizeULorMS'},'scalar',compiledLUT);
-            [out.potentialRequestRewardMS,compiledLUT]                      = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','requestRewardSizeULorMS'},'scalar',compiledLUT);
-            [out.potentialRewardScalar,compiledLUT]                         = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','scalar'},'scalar',compiledLUT);
-            [out.potentialPenalty,compiledLUT]                              = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','msPenalty'},'scalar',compiledLUT);
+%            [out.potentialRequestRewardMS,compiledLUT]                      = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','requestRewardSizeULorMS'},'scalar',compiledLUT);
+%            [out.potentialRewardScalar,compiledLUT]                         = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','scalar'},'scalar',compiledLUT);
+%            [out.potentialPenalty,compiledLUT]                              = extractFieldAndEnsure(trialRecords, {'reinforcementManager','reinforcementManager','msPenalty'},'scalar',compiledLUT);
             
             
             % 3/5/09 - we need to calculate a 'response' field for analysis based either on trialRecords.response (old-style)
             % or trialRecords.phaseRecords.responseDetails.tries (new-style) for the phase labeled 'discrim'
-            [out.response]                                               =getResponseFromTrialRecords(trialRecords);
-            [out.responseTime]                                           =getResponseTimeFromTrialRecords(trialRecords);
+            [out.response]                                               =stimManager.getResponseFromTrialRecords(trialRecords);
+            [out.responseTime]                                           =stimManager.getResponseTimeFromTrialRecords(trialRecords);
             
             %12/10/09 - access to more lick info... only do it for goNoGos to prevent bloat
             % this would be reasonable: any(strcmp(trialRecords(1).trialManagerClass,{'cuedGoNoGo','goNoGo'}))
@@ -951,5 +779,179 @@ classdef stimManager
             out.numLEDs = 0;
             out.active = false;
         end
+        
+        function out = getResponseFromTrialRecords(trialRecords)
+            % Get the trialRecords.response field if it exists, otherwise look for trialRecords.phaseRecords.responseDetails.tries
+            % return -1 if neither exists...uh oh
+            out=ones(1,length(trialRecords))*-1;
+            if isfield(trialRecords,'response')
+                out=cell2mat(cellfun(@stimManager.decideResponse,{trialRecords.response},'UniformOutput',false));
+            end
+            if isfield(trialRecords,'phaseRecords') && isfield(trialRecords,'result') && ...
+                    ~all(cellfun(@isempty,{trialRecords.phaseRecords})) % these two 'if' cases should be mutually exclusive in latest code, but not always been the case
+                out=cell2mat(cellfun(@stimManager.getResponseFromTries,{trialRecords.phaseRecords},'UniformOutput',false));
+            end
+        end
+        
+        function out = getResponseTimeFromTrialRecords(trialRecords)
+            % Get the trialRecords.responseTime field if it exists, otherwise look for trialRecords.phaseRecords.responseDetails.tries
+            % return -1 if neither exists...uh oh
+            out=ones(1,length(trialRecords))*-1;
+            if isfield(trialRecords,'responseTime')
+                out=cell2mat({trialRecords.responseTime});
+            end
+            if isfield(trialRecords,'phaseRecords') && isfield(trialRecords,'result') && ...
+                    ~all(cellfun(@isempty,{trialRecords.phaseRecords})) % these two 'if' cases should be mutually exclusive in latest code, but not always been the case
+                out=cell2mat(cellfun(@stimManager.getResponseTimeFromPhaseRecords,{trialRecords.phaseRecords},'UniformOutput',false));
+            end
+        end
+        
+        function out = decideResponse(response)
+            resp=find(response);
+            if length(resp)==1 && ~ischar(response)
+                out=resp;
+            else
+                out=-1;
+            end
+        end % end function
+        
+        function out = getResponseTimeFromPhaseRecords(phaseRecords)
+            % #define response time = start of discrim phase to start of reinforced
+            % phase
+            % designed by balaji Aug 17 2012
+            phaseTypes = {phaseRecords.phaseType};
+            % remove emptys
+            phaseTypes = phaseTypes(~cellfun(@isempty,phaseTypes));
+            whichDiscrim = ismember(phaseTypes,'discrim');
+            whichReinf = ismember(phaseTypes,'reinforced');
+            if ~any(whichDiscrim) || ~any(whichReinf)
+                out = NaN;
+            elseif length(find(whichDiscrim))>1 || length(find(whichReinf))>1
+                error('you need to support multiple reinfs or discrims separately');
+            else
+                out = phaseRecords(whichReinf).responseDetails.startTime-phaseRecords(whichDiscrim).responseDetails.startTime;
+            end
+            % keyboard
+        end
+        
+        function out = getResponseFromTries(phaseRecords)
+            found = false;
+            
+            try
+                pInd=find(strcmp({phaseRecords.phaseLabel},'discrim'));
+                % we assume the last try of the 'discrim' phase to be the response
+                if length(pInd)==1
+                    tries=phaseRecords(pInd).responseDetails.tries;
+                    response=tries{end};
+                    out=decideResponse(response);
+                    found = true;
+                end
+            catch
+                disp('failed probably because the reponse was in the post-discrim phase...')
+            end
+            
+            if ~found
+                % it is possible that the actual response is in the post-discrim
+                pIndAlt=find(strcmp({phaseRecords.phaseType},'post-discrim'));
+                for i = 1:length(pIndAlt)
+                    if ~found
+                        try
+                            triesAlt = phaseRecords(pIndAlt(i)).responseDetails.tries;
+                            responseAlt=triesAlt{end};
+                            out=decideResponse(responseAlt);
+                            found = true;
+                        catch
+                            disp('didnt catch on this phase, trying another phase');
+                        end
+                    end
+                end
+            end
+            
+            
+            if ~found
+                out = -1;
+            end
+        end % end function
+        
+        function out=encodeResult(result,targs,dstrs,correct)
+            
+            if isa(result,'double') && all(result==1 | result==0)
+                warning('edf sees double rather than logical response on osx 01.21.09 -- why?')
+                result=logical(result);
+            end
+            if targs==0 %empty target ports (in decimal representation)
+                targs=[];
+            end
+            if dstrs==0 % empty distractor ports (in decimal representation)
+                dstrs=[];
+            end
+            % if we do decide to re-implement errorchecking on targets/distractors, keep in mind that
+            % targs/dstrs are in DECIMAL format (ie targetPorts [1,3] = '101' = 5)
+            
+            if ischar(result)
+                switch result
+                    case 'nominal'
+                        out=1;
+                    case 'timedout'
+                        out=2;
+                    case 'multiple ports'
+                        out=-1;
+                    case 'none'
+                        out=-2;
+                    case 'manual kill'
+                        out=0;
+                    case 'shift-2 kill'
+                        out=-4;
+                    case 'server kill'
+                        out=-5;
+                    case 'manual flushPorts'
+                        out=-8;
+                    otherwise
+                        % 1/22/09 - if the response is 'manual training step %d'
+                        match=regexp(result,'manual training step \d+','match');
+                        if ~isempty(match)
+                            out=-7; % manually set training step
+                        else
+                            out=-6;
+                            result
+                            warning('unrecognized response')
+                        end
+                end
+            else
+                result
+                class(result)
+                error('unrecognized result type')
+            end
+            
+            % if ismember(out,targs) == correct
+            %     %pass
+            % else
+            %     out
+            %     targs
+            %     correct
+            %     error('bad correct calc')
+            % end
+            
+            if all(isempty(intersect(dstrs,targs)))
+                %pass
+            else
+                error('found intersecting targets and distractors')
+            end
+            
+        end
+        
+        function [out, compiledLUT] = ensureScalarOrAddCellToLUT(fieldArray, compiledLUT)
+            % this function either returns a scalar array, or if it finds that fieldArray is a cell array, performs LUT processing on the fieldArray
+            % this allows extractBasicFields to support versions of trialRecords that dont use a LUT
+            try
+                out=ensureScalar(fieldArray);
+            catch
+                ensureTypedVector(fieldArray,'char'); % ensure that this is cell array of characters, otherwise no point using a LUT
+                [out compiledLUT] = addOrFindInLUT(compiledLUT, fieldArray);
+            end
+            
+        end % end function
+        
+        
     end
 end

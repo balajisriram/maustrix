@@ -1095,7 +1095,6 @@ classdef BCoreUtil
         end
         
         function failures = compileRecords(ids,recompile,source,destination)
-            failures = [];
             if ~exist('recompile','var') || isempty(recompile)
                 recompile = false;
             end
@@ -1380,10 +1379,6 @@ classdef BCoreUtil
 %                     failures{end+1} = sprintf('failed on %s: %s',ids{i},ex.identifier);
 %                 end
             end % end for each subject loop
-            
-            if ~exist('destination','var') || isempty(destination)
-                closeConn(conn);
-            end
             
         end % end function
         

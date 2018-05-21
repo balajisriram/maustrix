@@ -170,7 +170,7 @@ classdef afcGratingsWithPhaseDetails<afcGratings
     end
     
     methods(Static)
-        function [out, newLUT]=extractDetailFields(basicRecords,trialRecords,LUTparams)
+        function [out, newLUT]=extractDetailFields(sm,basicRecords,trialRecords,LUTparams)
             newLUT=LUTparams.compiledLUT;
             
             try

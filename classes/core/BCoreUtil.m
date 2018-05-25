@@ -974,7 +974,7 @@ classdef BCoreUtil
                     end
                     if ischar(trialRecords(1).(fn))
                         % this field is a char - use LUT
-                        [indices sessionLUT] = addOrFindInLUT(sessionLUT,{trialRecords.(fn)});
+                        [indices sessionLUT] = BCoreUtil.addOrFindInLUT(sessionLUT,{trialRecords.(fn)});
                         for i=1:length(indices)
                             trialRecords(i).(fn) = indices(i);
                         end
@@ -1004,7 +1004,7 @@ classdef BCoreUtil
                         for trialInd=1:length(trialRecords)
                             thisRecordCell=[trialRecords(trialInd).(fn)];
                             if all(cellfun('isclass',thisRecordCell,'char') | cellfun('isreal',thisRecordCell)) % 3/3/09 - should change to if all(ischar or isscalar)
-                                [indices sessionLUT] = addOrFindInLUT(sessionLUT,thisRecordCell);
+                                [indices sessionLUT] = BCoreUtil.addOrFindInLUT(sessionLUT,thisRecordCell);
                                 trialRecords(trialInd).(fn)=indices;
                                 addToLUT=true;
                             end
@@ -1015,7 +1015,7 @@ classdef BCoreUtil
                     elseif ismember(fieldPath,fieldsInLUT)
                         % 5/5/09 - if this field was LUTized in a prior training step interval, ALWAYS LUTize it here!
                         % just do basic processing on this field (fails for char -> struct/cell conversions)
-                        [indices sessionLUT] = addOrFindInLUT(sessionLUT,{trialRecords.(fn)});
+                        [indices sessionLUT] = BCoreUtil.addOrFindInLUT(sessionLUT,{trialRecords.(fn)});
                         for i=1:length(indices)
                             trialRecords(i).(fn) = indices(i);
                         end

@@ -513,7 +513,7 @@ classdef BCore
             if index>0
                 s=r.subjects{index};
             else
-                error('request for subject id not contained in BCore')
+                error('BCore:getSubjectFromID:IncorrectValue','request for subject id not contained in BCore')
             end
         end
         
@@ -1090,23 +1090,19 @@ classdef BCore
     
     methods % change the parameters for subjects
         function changeReward(r,subjectID,value)
-            [isMember, index]=ismember(lower(subjectID),getSubjectIDs(r));
-            if isMember
-                r.subjects{index}.reward = value;
-                saveDB(r,0);
-            else
-                error('BCore:changeReward:IncorrectValue','subject id: %s not found in BCore', subjectID);
-            end
+            s = r.getSubjectFromID(subjectID);
+            oldVal = s.reward;
+            s.reward = value;
+            commentStr = sprintf('changed reward for %s from %2.2f to %2.2f',subjectID,oldVal,value);
+            r.updateSubjectProtocol(s,commentStr,'bas',false,false,false);
         end
         
         function changeTimeout(r,subjectID,value)
-            [isMember, index]=ismember(lower(subjectID),getSubjectIDs(r));
-            if isMember
-                r.subjects{index}.timeout = value;
-                saveDB(r,0);
-            else
-                error('BCore:changeReward:IncorrectValue','subject id: %s not found in BCore', subjectID);
-            end
+            s = r.getSubjectFromID(subjectID);
+            oldVal = s.timeout;
+            s.timeout = value;
+            commentStr = sprintf('changed timeout for %s from %2.2f to %2.2f',subjectID,oldVal,value);
+            r.updateSubjectProtocol(s,commentStr,'bas',false,false,false);
         end
     end
     

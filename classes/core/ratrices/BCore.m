@@ -1088,6 +1088,28 @@ classdef BCore
         
     end
     
+    methods % change the parameters for subjects
+        function changeReward(r,subjectID,value)
+            [isMember, index]=ismember(lower(subjectID),getSubjectIDs(r));
+            if isMember
+                r.subjects{index}.reward = value;
+                saveDB(r,0);
+            else
+                error('BCore:changeReward:IncorrectValue','subject id: %s not found in BCore', subjectID);
+            end
+        end
+        
+        function changeTimeout(r,subjectID,value)
+            [isMember, index]=ismember(lower(subjectID),getSubjectIDs(r));
+            if isMember
+                r.subjects{index}.timeout = value;
+                saveDB(r,0);
+            else
+                error('BCore:changeReward:IncorrectValue','subject id: %s not found in BCore', subjectID);
+            end
+        end
+    end
+    
     methods (Access = protected)
 
         function saveDB(r,alsoReplaceSubjectData)
